@@ -54,7 +54,20 @@
     <string name="app_detail_split_line">↓ %1$s · ↑ %2$s</string>
     <string name="app_detail_note">Days the sync did not cover have no bars.</string>
     <string name="app_detail_empty_body">This app has no recorded traffic in the last 7 days. Its figures appear after the next sync.</string>
-    <string name="saver_body">Budgets and data protection for individual apps will be managed here.</string>
+    <string name="saver_title">Network guard</string>
+    <string name="saver_subtitle">Keep the apps you choose off the internet — locally, without root.</string>
+    <string name="saver_consent_title">Step one: VPN consent</string>
+    <string name="saver_consent_body">Android requires explicit consent before any app can create a VPN tunnel. The system dialog appears once; after that, Mizan can block traffic from the apps you block on your device.</string>
+    <string name="saver_consent_action">Grant VPN consent</string>
+    <string name="saver_consent_granted_title">Consent granted</string>
+    <string name="saver_consent_granted_body">Protection does not start automatically.</string>
+    <string name="saver_how_title">How blocking works</string>
+    <string name="saver_how_body">When enabled, Android routes only the blocked apps into a local tunnel inside Mizan. Their packets never leave the device; they are dropped here. Every other app stays outside the tunnel and works normally.</string>
+    <string name="saver_privacy_title">Private by design</string>
+    <string name="saver_privacy_body">Mizan has no internet permission, so it cannot send your data to any server. No analytics, no accounts, and every list and decision stays on your device.</string>
+    <string name="saver_limits_title">Limits to know</string>
+    <string name="saver_limits_body">One VPN at a time: enabling Mizan\u2019s guard disconnects any other VPN. A VPN icon appears in the status bar. Blocked apps lose connectivity even on Wi-Fi.</string>
+    <string name="saver_revoke_note">You can revoke consent from the system\u2019s VPN settings at any time.</string>
 
     <string name="history_last_7_days">Last 7 days</string>
     <string name="history_today_hours">Today by hour</string>
@@ -97,8 +110,6 @@
     <string name="history_export_action">Save CSV file</string>
     <string name="history_export_saved">CSV file saved</string>
     <string name="history_export_failed">Could not save the file</string>
-
-    <string name="section_in_progress">In progress</string>
 
     <string name="notification_channel_monitoring">Live monitoring</string>
     <string name="notification_channel_monitoring_description">Shows live speed and today usage while monitoring runs.</string>

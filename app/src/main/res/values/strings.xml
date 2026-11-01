@@ -56,7 +56,20 @@
     <string name="app_detail_split_line">↓ %1$s · ↑ %2$s</string>
     <string name="app_detail_note">الأيام التي لم تغطها المزامنة تظهر بلا أعمدة.</string>
     <string name="app_detail_empty_body">لا يوجد استهلاك مسجّل لهذا التطبيق في آخر 7 أيام. ستظهر أرقامه بعد المزامنة القادمة.</string>
-    <string name="saver_body">تُضبط هنا الميزانيات وحماية التطبيقات من استهلاك البيانات.</string>
+    <string name="saver_title">حماية الشبكة</string>
+    <string name="saver_subtitle">امنع التطبيقات التي تختارها من الاتصال بالإنترنت — محلياً، وبلا root.</string>
+    <string name="saver_consent_title">الخطوة الأولى: موافقة VPN</string>
+    <string name="saver_consent_body">يطلب أندرويد موافقة صريحة قبل أن ينشئ أي تطبيق نفق VPN. ستظهر نافذة النظام مرة واحدة؛ بعدها يستطيع ميزان حجب حزم التطبيقات المحظورة على جهازك.</string>
+    <string name="saver_consent_action">منح موافقة VPN</string>
+    <string name="saver_consent_granted_title">الموافقة ممنوحة</string>
+    <string name="saver_consent_granted_body">لن تبدأ الحماية تلقائياً.</string>
+    <string name="saver_how_title">كيف تعمل الحماية؟</string>
+    <string name="saver_how_body">عند التفعيل، يوجّه أندرويد التطبيقات المحظورة وحدها إلى نفق محلي داخل ميزان. لا تغادر حزمها الجهاز، بل تُسقط هنا. بقية التطبيقات تبقى خارج النفق وتعمل طبيعياً.</string>
+    <string name="saver_privacy_title">خصوصية بالتصميم</string>
+    <string name="saver_privacy_body">ميزان لا يملك إذن الإنترنت، فلا يستطيع إرسال بياناتك إلى أي سيرفر. لا تحليلات ولا حسابات، وكل القوائم والقرارات تبقى على جهازك.</string>
+    <string name="saver_limits_title">قيود يجب معرفتها</string>
+    <string name="saver_limits_body">VPN واحد فقط: تفعيل حماية ميزان يقطع أي VPN آخر. ستظهر أيقونة VPN في شريط الحالة. التطبيقات المحظورة ستفقد اتصالها حتى على Wi-Fi.</string>
+    <string name="saver_revoke_note">يمكنك سحب الموافقة من إعدادات VPN في النظام في أي وقت.</string>
 
     <string name="history_last_7_days">آخر 7 أيام</string>
     <string name="history_today_hours">ساعات اليوم</string>
@@ -99,8 +112,6 @@
     <string name="history_export_action">حفظ ملف CSV</string>
     <string name="history_export_saved">تم حفظ ملف CSV</string>
     <string name="history_export_failed">تعذّر حفظ الملف</string>
-
-    <string name="section_in_progress">قيد الإنشاء</string>
 
     <string name="notification_channel_monitoring">المراقبة الجارية</string>
     <string name="notification_channel_monitoring_description">إشعار دائم يعرض السرعة اللحظية واستهلاك اليوم أثناء المراقبة.</string>

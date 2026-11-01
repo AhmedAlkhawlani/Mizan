@@ -3,15 +3,11 @@ package com.maknoon.mizan.app
 import android.net.Uri
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
@@ -20,13 +16,10 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -37,28 +30,24 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.maknoon.mizan.R
 import com.maknoon.mizan.core.designsystem.theme.MizanTheme
-import com.maknoon.mizan.core.designsystem.theme.statusColors
 import com.maknoon.mizan.ui.apps.AppDetailScreen
 import com.maknoon.mizan.ui.apps.AppsScreen
 import com.maknoon.mizan.ui.budget.BudgetScreen
 import com.maknoon.mizan.ui.dashboard.DashboardScreen
 import com.maknoon.mizan.ui.history.HistoryScreen
+import com.maknoon.mizan.ui.saver.SaverScreen
 
 /**
  * The four top-level destinations of the shell in docs/04.
- *
- * [bodyRes] describes a section that still shows a placeholder; the dashboard, apps and
- * history screens are built, so only the saver has one.
  */
 enum class MizanDestination(
     val route: String,
     @param:StringRes val labelRes: Int,
     @param:DrawableRes val iconRes: Int,
-    @param:StringRes val bodyRes: Int? = null,
 ) {
     Dashboard("dashboard", R.string.nav_dashboard, R.drawable.ic_dashboard),
     Apps("apps", R.string.nav_apps, R.drawable.ic_apps),
-    Saver("saver", R.string.nav_saver, R.drawable.ic_shield, R.string.saver_body),
+    Saver("saver", R.string.nav_saver, R.drawable.ic_shield),
     History("history", R.string.nav_history, R.drawable.ic_history),
 }
 
@@ -173,15 +162,8 @@ fun MizanApp(
                 )
             }
             composable(MizanDestination.History.route) { HistoryScreen() }
+            composable(MizanDestination.Saver.route) { SaverScreen() }
             composable(BUDGET_ROUTE) { BudgetScreen() }
-            MizanDestination.entries
-                .filter { it.bodyRes != null }
-                .forEach { destination ->
-                    composable(destination.route) {
-                        val bodyRes = destination.bodyRes ?: return@composable
-                        SectionPlaceholder(destination, bodyRes)
-                    }
-                }
         }
     }
 }
@@ -195,44 +177,6 @@ private fun NavHostController.navigateToTab(destination: MizanDestination) {
         popUpTo(graph.findStartDestination().id) { saveState = true }
         launchSingleTop = true
         restoreState = true
-    }
-}
-
-@Composable
-private fun SectionPlaceholder(
-    destination: MizanDestination,
-    @StringRes bodyRes: Int,
-    modifier: Modifier = Modifier,
-) {
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Icon(
-            painter = painterResource(destination.iconRes),
-            contentDescription = null,
-            modifier = Modifier.size(48.dp),
-            tint = MaterialTheme.colorScheme.primary,
-        )
-        Text(
-            text = stringResource(destination.labelRes),
-            style = MaterialTheme.typography.headlineSmall,
-            textAlign = TextAlign.Center,
-        )
-        Text(
-            text = stringResource(bodyRes),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center,
-        )
-        Text(
-            text = stringResource(R.string.section_in_progress),
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.statusColors.guard,
-        )
     }
 }
 

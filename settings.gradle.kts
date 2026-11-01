@@ -11,6 +11,7 @@ pluginManagement {
         gradlePluginPortal()
     }
 }
+
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
@@ -20,5 +21,9 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "Mizan"
+
 include(":app")
- 
+include(":core:domain")
+include(":core:data")
+include(":core:platform")
+include(":core:designsystem")

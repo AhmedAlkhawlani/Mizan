@@ -2,6 +2,7 @@ package com.maknoon.mizan.core.data.db
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
@@ -13,10 +14,12 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         AppDailyEntity::class,
         BudgetEntity::class,
         AlertEventEntity::class,
+        NetworkProfileEntity::class,
     ],
-    version = 6,
+    version = 7,
     exportSchema = true,
 )
+@TypeConverters(NetworkProfileConverters::class)
 abstract class MizanDatabase : RoomDatabase() {
 
     abstract fun deviceUsageDao(): DeviceUsageDao
@@ -26,6 +29,8 @@ abstract class MizanDatabase : RoomDatabase() {
     abstract fun budgetDao(): BudgetDao
 
     abstract fun alertEventDao(): AlertEventDao
+
+    abstract fun networkProfileDao(): NetworkProfileDao
 
     companion object {
         const val NAME = "mizan.db"
@@ -149,6 +154,36 @@ abstract class MizanDatabase : RoomDatabase() {
                     CREATE UNIQUE INDEX IF NOT EXISTS
                     `index_alert_events_type_scope_targetId_period_periodStartEpochDay`
                     ON `alert_events` (`type`, `scope`, `targetId`, `period`, `periodStartEpochDay`)
+                    """.trimIndent(),
+                )
+            }
+        }
+
+        /**
+         * Adds the user's network profiles. Nothing is backfilled: a profile is a manual
+         * decision, and inventing one for the connection in progress would mislabel it.
+         */
+        val MIGRATION_6_7 = object : Migration(6, 7) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS `network_profiles` (
+                        `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        `name` TEXT NOT NULL,
+                        `transport` TEXT NOT NULL,
+                        `systemMetered` INTEGER NOT NULL,
+                        `metered` INTEGER NOT NULL,
+                        `monthlyBudgetBytes` INTEGER,
+                        `blockedPackages` TEXT NOT NULL,
+                        `createdAt` INTEGER NOT NULL
+                    )
+                    """.trimIndent(),
+                )
+                db.execSQL(
+                    """
+                    CREATE UNIQUE INDEX IF NOT EXISTS
+                    `index_network_profiles_transport_systemMetered`
+                    ON `network_profiles` (`transport`, `systemMetered`)
                     """.trimIndent(),
                 )
             }

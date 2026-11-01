@@ -26,6 +26,7 @@ object MizanDatabaseProvider {
                 MizanDatabase.MIGRATION_3_4,
                 MizanDatabase.MIGRATION_4_5,
                 MizanDatabase.MIGRATION_5_6,
+                MizanDatabase.MIGRATION_6_7,
             )
             .build()
             .also { instance = it }
@@ -38,4 +39,6 @@ object MizanDatabaseProvider {
     fun appUsageDao(context: Context): AppUsageDao = get(context).appUsageDao()
 
     fun budgetDao(context: Context): BudgetDao = get(context).budgetDao()
+
+    fun networkProfileDao(context: Context): NetworkProfileDao = get(context).networkProfileDao()
 }

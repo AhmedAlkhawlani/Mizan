@@ -1,6 +1,7 @@
 package com.maknoon.mizan.ui.budget
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -12,6 +13,8 @@ import com.maknoon.mizan.core.data.settings.MizanSettings
 import com.maknoon.mizan.core.domain.budget.BudgetPeriod
 import com.maknoon.mizan.core.domain.budget.BudgetScope
 import com.maknoon.mizan.core.domain.budget.DEVICE_TARGET_ID
+import com.maknoon.mizan.widget.BudgetWidget
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -86,6 +89,7 @@ class BudgetViewModel(application: Application) : AndroidViewModel(application) 
                     ?: newBudget(period, limitBytes = bytes, enabled = true),
             )
         }
+        refreshBudgetWidget()
     }
 
     private suspend fun setEnabled(period: BudgetPeriod, enabled: Boolean) {
@@ -95,6 +99,18 @@ class BudgetViewModel(application: Application) : AndroidViewModel(application) 
                 existing?.copy(enabled = enabled)
                     ?: newBudget(period, limitBytes = 0L, enabled = enabled),
             )
+        }
+        refreshBudgetWidget()
+    }
+
+    /** The ring shows this cap, so it follows each committed edit instead of waiting a minute. */
+    private suspend fun refreshBudgetWidget() {
+        try {
+            BudgetWidget.refresh(getApplication())
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Log.w(TAG, "budget widget refresh failed", e)
         }
     }
 
@@ -109,6 +125,7 @@ class BudgetViewModel(application: Application) : AndroidViewModel(application) 
 
     companion object {
         private const val STOP_TIMEOUT_MILLIS = 5_000L
+        private const val TAG = "MizanBudget"
 
         fun factory(application: Application): ViewModelProvider.Factory =
             viewModelFactory {

@@ -189,6 +189,8 @@ class AppUsageRepositoryTest {
             .map { (packageName, appRows) ->
                 PackageBytes(packageName, appRows.sumOf { it.rxBytes + it.txBytes })
             }
+
+        override suspend fun topForDay(epochDay: Long): AppUsageTotal? = error("not used")
     }
 
     private class FakePerAppUsageSource : PerAppUsageSource {

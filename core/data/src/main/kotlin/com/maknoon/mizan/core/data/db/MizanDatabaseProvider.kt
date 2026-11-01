@@ -38,6 +38,8 @@ object MizanDatabaseProvider {
      */
     fun appUsageDao(context: Context): AppUsageDao = get(context).appUsageDao()
 
+    fun deviceUsageDao(context: Context): DeviceUsageDao = get(context).deviceUsageDao()
+
     fun budgetDao(context: Context): BudgetDao = get(context).budgetDao()
 
     fun networkProfileDao(context: Context): NetworkProfileDao = get(context).networkProfileDao()

@@ -10,6 +10,7 @@ import com.maknoon.mizan.core.data.usage.AppUsageRepository
 import com.maknoon.mizan.core.platform.usage.AndroidInstalledAppsSource
 import com.maknoon.mizan.core.platform.usage.AndroidNetworkStatsSource
 import com.maknoon.mizan.core.platform.usage.UsageAccess
+import com.maknoon.mizan.widget.BudgetWidget
 import kotlinx.coroutines.CancellationException
 
 /**
@@ -37,6 +38,7 @@ class AppUsageSyncWorker(
             Log.i(TAG, "synced ${result.rowsWritten} rows for ${apps.size} apps")
             // Per-app caps only move when this sync writes new totals, so evaluate here too.
             BudgetAlerts.check(context)
+            refreshWidget(context)
             Result.success()
         } catch (e: CancellationException) {
             throw e
@@ -44,6 +46,17 @@ class AppUsageSyncWorker(
             // The database or the platform call can fail transiently; back off and try again.
             Log.w(TAG, "sync failed", e)
             Result.retry()
+        }
+    }
+
+    /** The widget's top-app line is fed by this sync; a launcher error must not retry it. */
+    private suspend fun refreshWidget(context: Context) {
+        try {
+            BudgetWidget.refresh(context)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Log.w(TAG, "widget refresh after sync failed", e)
         }
     }
 

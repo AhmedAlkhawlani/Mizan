@@ -18,6 +18,7 @@ import com.maknoon.mizan.alerts.BudgetAlerts
 import com.maknoon.mizan.core.data.usage.DeviceUsageRepository
 import com.maknoon.mizan.core.platform.traffic.AndroidTrafficSource
 import com.maknoon.mizan.core.platform.traffic.TrafficSource
+import com.maknoon.mizan.widget.BudgetWidget
 import com.maknoon.mizan.widget.SpeedWidget
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -73,7 +74,10 @@ class MonitoringService : Service() {
     private var lastBudgetCheckAtMillis: Long? = null
 
     /** Widgets redraw far less often than the notification; each redraw is a RemoteViews push. */
-    private var lastWidgetRefreshAtMillis: Long? = null
+    private var lastSpeedWidgetRefreshAtMillis: Long? = null
+
+    /** The ring reads several tables, so it follows the budget cadence, not the speed one. */
+    private var lastBudgetWidgetRefreshAtMillis: Long? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -97,11 +101,7 @@ class MonitoringService : Service() {
         MonitoringStateHolder.publish(MonitoringState(running = false))
         // The service is already gone, so its own scope cannot carry this push.
         CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
-            try {
-                SpeedWidget.refresh(this@MonitoringService)
-            } catch (e: Exception) {
-                Log.w(TAG, "widget refresh on stop failed", e)
-            }
+            refreshWidgetsAfterStop()
         }
         ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
         super.onDestroy()
@@ -131,7 +131,8 @@ class MonitoringService : Service() {
             )
             MonitoringStateHolder.publish(state)
             refreshNotification(state)
-            refreshWidgetIfDue()
+            refreshSpeedWidgetIfDue()
+            refreshBudgetWidgetIfDue()
             checkBudgets()
             delay(SAMPLE_INTERVAL_MILLIS)
         }
@@ -153,18 +154,35 @@ class MonitoringService : Service() {
         }
     }
 
-    private suspend fun refreshWidgetIfDue() {
+    private suspend fun refreshSpeedWidgetIfDue() {
         val now = SystemClock.elapsedRealtime()
-        val last = lastWidgetRefreshAtMillis
-        if (last != null && now >= last && now - last < WIDGET_REFRESH_INTERVAL_MILLIS) return
-        lastWidgetRefreshAtMillis = now
+        val last = lastSpeedWidgetRefreshAtMillis
+        if (last != null && now >= last && now - last < SPEED_WIDGET_REFRESH_INTERVAL_MILLIS) return
+        lastSpeedWidgetRefreshAtMillis = now
+        refreshWidget("speed") { SpeedWidget.refresh(this) }
+    }
+
+    private suspend fun refreshBudgetWidgetIfDue() {
+        val now = SystemClock.elapsedRealtime()
+        val last = lastBudgetWidgetRefreshAtMillis
+        if (last != null && now >= last && now - last < BUDGET_WIDGET_REFRESH_INTERVAL_MILLIS) return
+        lastBudgetWidgetRefreshAtMillis = now
+        refreshWidget("budget") { BudgetWidget.refresh(this) }
+    }
+
+    private suspend fun refreshWidgetsAfterStop() {
+        refreshWidget("speed") { SpeedWidget.refresh(this) }
+        refreshWidget("budget") { BudgetWidget.refresh(this) }
+    }
+
+    private suspend fun refreshWidget(name: String, refresh: suspend () -> Unit) {
         try {
-            SpeedWidget.refresh(this)
+            refresh()
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
             // A launcher rejection must never stop measurement.
-            Log.w(TAG, "widget refresh failed", e)
+            Log.w(TAG, "$name widget refresh failed", e)
         }
     }
 
@@ -192,7 +210,10 @@ class MonitoringService : Service() {
         const val ACTION_STOP = "com.maknoon.mizan.action.STOP_MONITORING"
 
         private const val BUDGET_CHECK_INTERVAL_MILLIS = 60_000L
-        private const val WIDGET_REFRESH_INTERVAL_MILLIS = SpeedWidget.REFRESH_INTERVAL_SECONDS * 1_000L
+        private const val SPEED_WIDGET_REFRESH_INTERVAL_MILLIS =
+            SpeedWidget.REFRESH_INTERVAL_SECONDS * 1_000L
+        private const val BUDGET_WIDGET_REFRESH_INTERVAL_MILLIS =
+            BudgetWidget.REFRESH_INTERVAL_SECONDS * 1_000L
         private const val OPEN_REQUEST_CODE = 10
         private const val STOP_REQUEST_CODE = 11
         private const val TAG = "MizanMonitor"

@@ -102,4 +102,22 @@ interface AppUsageDao {
         """,
     )
     suspend fun totalsByPackage(fromEpochDay: Long, toEpochDay: Long): List<PackageBytes>
+
+    /** The heaviest app on one day, for the home-screen widget. */
+    @Query(
+        """
+        SELECT packageName,
+               MAX(label) AS label,
+               SUM(rxBytes) AS rxBytes,
+               SUM(txBytes) AS txBytes,
+               MAX(lastSyncedAt) AS lastSyncedAt
+        FROM app_daily
+        WHERE epochDay = :epochDay
+          AND uid >= 10000
+        GROUP BY packageName
+        ORDER BY (SUM(rxBytes) + SUM(txBytes)) DESC, packageName
+        LIMIT 1
+        """,
+    )
+    suspend fun topForDay(epochDay: Long): AppUsageTotal?
 }

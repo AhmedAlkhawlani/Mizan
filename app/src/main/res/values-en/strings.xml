@@ -121,4 +121,13 @@
     <string name="widget_speed_unknown">↓ —</string>
     <string name="widget_speed_stopped">Monitoring is off</string>
     <string name="widget_today">Today</string>
+
+    <string name="widget_budget_name">Mizan budget</string>
+    <string name="widget_budget_description">Today\'s budget ring and top app; tap to open Mizan.</string>
+    <string name="widget_budget_title">Today\'s budget</string>
+    <string name="widget_budget_percent">%1$d%%</string>
+    <string name="widget_budget_of_limit">of %1$s</string>
+    <string name="widget_budget_no_limit">No budget</string>
+    <string name="widget_top_app">Top app</string>
+    <string name="widget_top_app_none">No app data yet</string>
 </resources>

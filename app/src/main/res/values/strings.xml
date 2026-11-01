@@ -123,4 +123,13 @@
     <string name="widget_speed_unknown">↓ —</string>
     <string name="widget_speed_stopped">المراقبة متوقفة</string>
     <string name="widget_today">اليوم</string>
+
+    <string name="widget_budget_name">ميزانية ميزان</string>
+    <string name="widget_budget_description">حلقة ميزانية اليوم وأكثر تطبيق استهلاكاً؛ اضغط لفتح ميزان.</string>
+    <string name="widget_budget_title">ميزانية اليوم</string>
+    <string name="widget_budget_percent">%1$d%%</string>
+    <string name="widget_budget_of_limit">من %1$s</string>
+    <string name="widget_budget_no_limit">بدون ميزانية</string>
+    <string name="widget_top_app">الأكثر استهلاكاً</string>
+    <string name="widget_top_app_none">لا بيانات تطبيقات بعد</string>
 </resources>

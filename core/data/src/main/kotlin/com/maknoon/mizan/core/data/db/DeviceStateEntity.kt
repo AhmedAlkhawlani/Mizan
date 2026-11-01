@@ -20,6 +20,14 @@ data class DeviceStateEntity(
     val updatedAtMillis: Long,
     val startedAtMillis: Long,
     val partial: Boolean,
+    val lastMobileRxBytes: Long? = null,
+    val lastMobileTxBytes: Long? = null,
+    val todayMobileRxBytes: Long? = null,
+    val todayMobileTxBytes: Long? = null,
+    val lastLoopbackRxBytes: Long? = null,
+    val lastLoopbackTxBytes: Long? = null,
+    val todayLoopbackRxBytes: Long? = null,
+    val todayLoopbackTxBytes: Long? = null,
 ) {
     fun toUsageState(): UsageState = UsageState(
         epochDay = epochDay,
@@ -31,6 +39,14 @@ data class DeviceStateEntity(
         updatedAtMillis = updatedAtMillis,
         startedAtMillis = startedAtMillis,
         partial = partial,
+        lastMobileRxBytes = lastMobileRxBytes,
+        lastMobileTxBytes = lastMobileTxBytes,
+        todayMobileRxBytes = todayMobileRxBytes,
+        todayMobileTxBytes = todayMobileTxBytes,
+        lastLoopbackRxBytes = lastLoopbackRxBytes,
+        lastLoopbackTxBytes = lastLoopbackTxBytes,
+        todayLoopbackRxBytes = todayLoopbackRxBytes,
+        todayLoopbackTxBytes = todayLoopbackTxBytes,
     )
 
     companion object {
@@ -46,6 +62,14 @@ data class DeviceStateEntity(
             updatedAtMillis = state.updatedAtMillis,
             startedAtMillis = state.startedAtMillis,
             partial = state.partial,
+            lastMobileRxBytes = state.lastMobileRxBytes,
+            lastMobileTxBytes = state.lastMobileTxBytes,
+            todayMobileRxBytes = state.todayMobileRxBytes,
+            todayMobileTxBytes = state.todayMobileTxBytes,
+            lastLoopbackRxBytes = state.lastLoopbackRxBytes,
+            lastLoopbackTxBytes = state.lastLoopbackTxBytes,
+            todayLoopbackRxBytes = state.todayLoopbackRxBytes,
+            todayLoopbackTxBytes = state.todayLoopbackTxBytes,
         )
     }
 }

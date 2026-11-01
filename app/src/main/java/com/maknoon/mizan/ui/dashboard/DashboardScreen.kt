@@ -171,7 +171,7 @@ private fun TodayCard(uiState: DashboardUiState, modifier: Modifier = Modifier) 
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Column {
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(
                     text = stringResource(R.string.dashboard_today),
                     style = MaterialTheme.typography.labelLarge,
@@ -181,6 +181,16 @@ private fun TodayCard(uiState: DashboardUiState, modifier: Modifier = Modifier) 
                     text = uiState.todayTotal,
                     style = MaterialTheme.typography.titleLarge,
                 )
+                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    ChannelFigure(
+                        label = stringResource(R.string.dashboard_mobile),
+                        value = uiState.mobileTotal,
+                    )
+                    ChannelFigure(
+                        label = stringResource(R.string.dashboard_wifi),
+                        value = uiState.wifiTotal,
+                    )
+                }
             }
             if (uiState.partial) {
                 Text(
@@ -191,6 +201,16 @@ private fun TodayCard(uiState: DashboardUiState, modifier: Modifier = Modifier) 
             }
         }
     }
+}
+
+@Composable
+private fun ChannelFigure(label: String, value: String, modifier: Modifier = Modifier) {
+    Text(
+        text = "$label $value",
+        modifier = modifier,
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
 }
 
 @Composable
@@ -240,6 +260,8 @@ private fun DashboardRunningPreview() {
                 downSpeed = "12.4 MB/s",
                 upSpeed = "1.2 MB/s",
                 todayTotal = "1.24 GB",
+                mobileTotal = "120 MB",
+                wifiTotal = "1.12 GB",
             ),
             onStart = {},
             onStop = {},

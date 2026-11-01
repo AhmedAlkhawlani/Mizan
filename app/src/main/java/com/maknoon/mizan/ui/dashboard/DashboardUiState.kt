@@ -15,6 +15,8 @@ data class DashboardUiState(
     val downSpeed: String = UNKNOWN,
     val upSpeed: String = UNKNOWN,
     val todayTotal: String = UNKNOWN,
+    val mobileTotal: String = UNKNOWN,
+    val wifiTotal: String = UNKNOWN,
     val partial: Boolean = false,
 ) {
     companion object {
@@ -33,6 +35,16 @@ internal fun MonitoringState.toDashboardUiState(): DashboardUiState {
         downSpeed = ByteFormatter.rate(usage.downBytesPerSecond),
         upSpeed = ByteFormatter.rate(usage.upBytesPerSecond),
         todayTotal = ByteFormatter.data(usage.totalBytes),
+        mobileTotal = channelTotal(usage.mobileRxBytes, usage.mobileTxBytes),
+        wifiTotal = channelTotal(usage.wifiRxBytes, usage.wifiTxBytes),
         partial = usage.partial,
     )
 }
+
+/** A split with a missing half is unknown as a whole; summing one side would understate it. */
+private fun channelTotal(rxBytes: Long?, txBytes: Long?): String =
+    if (rxBytes == null || txBytes == null) {
+        DashboardUiState.UNKNOWN
+    } else {
+        ByteFormatter.data(rxBytes + txBytes)
+    }

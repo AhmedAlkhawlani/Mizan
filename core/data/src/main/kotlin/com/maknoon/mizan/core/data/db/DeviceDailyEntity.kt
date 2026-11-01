@@ -6,9 +6,9 @@ import androidx.room.PrimaryKey
 /**
  * One row per local day (docs/03).
  *
- * Only what the device can actually report is stored. The mobile/Wi-Fi split from the schema
- * sketch is deliberately absent until per-interface counters are implemented in phase 2.4 —
- * storing zeroes for traffic we never measured would be a lie the charts would repeat.
+ * The mobile and Wi-Fi columns are null when the split could not be measured: for example a
+ * device that does not report loopback counters, or a day that began under an older schema.
+ * Storing zeroes there would be a lie the charts, the export and the app screens would repeat.
  *
  * [partial] marks a day the app did not observe from its first second, for example one that
  * started before an overnight reboot.
@@ -20,4 +20,8 @@ data class DeviceDailyEntity(
     val txBytes: Long,
     val partial: Boolean,
     val updatedAtMillis: Long,
+    val mobileRxBytes: Long? = null,
+    val mobileTxBytes: Long? = null,
+    val wifiRxBytes: Long? = null,
+    val wifiTxBytes: Long? = null,
 )

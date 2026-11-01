@@ -77,4 +77,46 @@ class DashboardUiStateTest {
         assertThat(ui.downSpeed).isEqualTo("0 B/s")
         assertThat(ui.todayTotal).isEqualTo("0 B")
     }
+
+    @Test
+    fun `the split shows formatted mobile and wifi totals`() {
+        val usage = DailyUsage(
+            epochDay = 20_000L,
+            rxBytes = 560_000_000L,
+            txBytes = 60_000_000L,
+            downBytesPerSecond = 0.0,
+            upBytesPerSecond = 0.0,
+            partial = false,
+            mobileRxBytes = 100_000_000L,
+            mobileTxBytes = 20_000_000L,
+            wifiRxBytes = 460_000_000L,
+            wifiTxBytes = 40_000_000L,
+        )
+
+        val ui = MonitoringState(running = true, usage = usage).toDashboardUiState()
+
+        assertThat(ui.mobileTotal).isEqualTo("120 MB")
+        assertThat(ui.wifiTotal).isEqualTo("500 MB")
+    }
+
+    @Test
+    fun `an unknown split shows dashes instead of guessing`() {
+        val usage = DailyUsage(
+            epochDay = 20_000L,
+            rxBytes = 1_000L,
+            txBytes = 0L,
+            downBytesPerSecond = 0.0,
+            upBytesPerSecond = 0.0,
+            partial = false,
+            mobileRxBytes = 500L,
+            mobileTxBytes = null,
+            wifiRxBytes = null,
+            wifiTxBytes = null,
+        )
+
+        val ui = MonitoringState(running = true, usage = usage).toDashboardUiState()
+
+        assertThat(ui.mobileTotal).isEqualTo(DashboardUiState.UNKNOWN)
+        assertThat(ui.wifiTotal).isEqualTo(DashboardUiState.UNKNOWN)
+    }
 }

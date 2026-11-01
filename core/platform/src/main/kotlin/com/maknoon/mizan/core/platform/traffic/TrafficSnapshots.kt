@@ -20,6 +20,10 @@ internal object TrafficSnapshots {
         txBytes: Long,
         atMillis: Long,
         elapsedRealtimeMillis: Long,
+        mobileRxBytes: Long? = null,
+        mobileTxBytes: Long? = null,
+        loopbackRxBytes: Long? = null,
+        loopbackTxBytes: Long? = null,
     ): TrafficSnapshot? {
         if (rxBytes < 0L || txBytes < 0L) return null
         return TrafficSnapshot(
@@ -29,6 +33,10 @@ internal object TrafficSnapshots {
             // the accountant uses to decide whether today's counters are complete.
             bootEpochMillis = atMillis - elapsedRealtimeMillis,
             atMillis = atMillis,
+            mobileRxBytes = mobileRxBytes?.takeIf { it >= 0L },
+            mobileTxBytes = mobileTxBytes?.takeIf { it >= 0L },
+            loopbackRxBytes = loopbackRxBytes?.takeIf { it >= 0L },
+            loopbackTxBytes = loopbackTxBytes?.takeIf { it >= 0L },
         )
     }
 }

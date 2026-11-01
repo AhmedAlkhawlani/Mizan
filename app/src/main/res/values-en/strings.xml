@@ -10,6 +10,8 @@
     <string name="dashboard_speed_down">Download</string>
     <string name="dashboard_speed_up">Upload</string>
     <string name="dashboard_today">Today usage</string>
+    <string name="dashboard_mobile">Mobile</string>
+    <string name="dashboard_wifi">Wi-Fi</string>
     <string name="dashboard_partial">Partial day</string>
     <string name="dashboard_status_running">Monitoring is running</string>
     <string name="dashboard_status_stopped">Monitoring is stopped — tap start.</string>

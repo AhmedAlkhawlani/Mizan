@@ -20,7 +20,7 @@ object MizanDatabaseProvider {
             MizanDatabase::class.java,
             MizanDatabase.NAME,
         )
-            .addMigrations(MizanDatabase.MIGRATION_1_2)
+            .addMigrations(MizanDatabase.MIGRATION_1_2, MizanDatabase.MIGRATION_2_3)
             .build()
             .also { instance = it }
     }

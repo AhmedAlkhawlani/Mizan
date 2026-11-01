@@ -7,7 +7,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 
 @Database(
     entities = [DeviceDailyEntity::class, DeviceHourlyEntity::class, DeviceStateEntity::class],
-    version = 2,
+    version = 3,
     exportSchema = true,
 )
 abstract class MizanDatabase : RoomDatabase() {
@@ -35,6 +35,30 @@ abstract class MizanDatabase : RoomDatabase() {
                     )
                     """.trimIndent(),
                 )
+            }
+        }
+
+        /**
+         * Adds the per-interface split. Both tables use nullable columns because a reading that
+         * was never taken is unknown, not zero. Rows written before this migration leave the
+         * split null, so the day in progress stays unsplit rather than showing only the traffic
+         * counted after the upgrade; the next midnight starts a fully seeded day.
+         */
+        val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE `device_daily` ADD COLUMN `mobileRxBytes` INTEGER")
+                db.execSQL("ALTER TABLE `device_daily` ADD COLUMN `mobileTxBytes` INTEGER")
+                db.execSQL("ALTER TABLE `device_daily` ADD COLUMN `wifiRxBytes` INTEGER")
+                db.execSQL("ALTER TABLE `device_daily` ADD COLUMN `wifiTxBytes` INTEGER")
+
+                db.execSQL("ALTER TABLE `device_state` ADD COLUMN `lastMobileRxBytes` INTEGER")
+                db.execSQL("ALTER TABLE `device_state` ADD COLUMN `lastMobileTxBytes` INTEGER")
+                db.execSQL("ALTER TABLE `device_state` ADD COLUMN `todayMobileRxBytes` INTEGER")
+                db.execSQL("ALTER TABLE `device_state` ADD COLUMN `todayMobileTxBytes` INTEGER")
+                db.execSQL("ALTER TABLE `device_state` ADD COLUMN `lastLoopbackRxBytes` INTEGER")
+                db.execSQL("ALTER TABLE `device_state` ADD COLUMN `lastLoopbackTxBytes` INTEGER")
+                db.execSQL("ALTER TABLE `device_state` ADD COLUMN `todayLoopbackRxBytes` INTEGER")
+                db.execSQL("ALTER TABLE `device_state` ADD COLUMN `todayLoopbackTxBytes` INTEGER")
             }
         }
     }

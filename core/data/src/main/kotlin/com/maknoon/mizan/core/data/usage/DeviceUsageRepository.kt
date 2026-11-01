@@ -134,6 +134,10 @@ class DeviceUsageRepository(
                 txBytes = usage.txBytes,
                 partial = usage.partial,
                 updatedAtMillis = atMillis,
+                mobileRxBytes = usage.mobileRxBytes,
+                mobileTxBytes = usage.mobileTxBytes,
+                wifiRxBytes = usage.wifiRxBytes,
+                wifiTxBytes = usage.wifiTxBytes,
             ),
         )
         memoryState.load()?.let { state -> dao.upsertState(DeviceStateEntity.from(state)) }

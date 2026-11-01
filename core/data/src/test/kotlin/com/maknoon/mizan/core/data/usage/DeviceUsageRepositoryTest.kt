@@ -39,7 +39,20 @@ class DeviceUsageRepositoryTest {
         tx: Long = 0,
         bootEpochMillis: Long = millisAt(hour = 0, minute = 1),
         atMillis: Long,
-    ) = TrafficSnapshot(rx, tx, bootEpochMillis, atMillis)
+        mobileRx: Long? = null,
+        mobileTx: Long? = null,
+        loopbackRx: Long? = null,
+        loopbackTx: Long? = null,
+    ) = TrafficSnapshot(
+        rxBytes = rx,
+        txBytes = tx,
+        bootEpochMillis = bootEpochMillis,
+        atMillis = atMillis,
+        mobileRxBytes = mobileRx,
+        mobileTxBytes = mobileTx,
+        loopbackRxBytes = loopbackRx,
+        loopbackTxBytes = loopbackTx,
+    )
 
     @Test
     fun `the first sample writes both the daily row and the state row`() = runTest {
@@ -143,6 +156,38 @@ class DeviceUsageRepositoryTest {
 
         assertThat(dao.stateRow!!.bootEpochMillis).isEqualTo(boot)
         assertThat(dao.stateRow!!.todayRxBytes).isEqualTo(1_000)
+    }
+
+    @Test
+    fun `the daily row keeps the split and an unknown split stays null`() = runTest {
+        repository.record(
+            snapshot(
+                rx = 5_000,
+                tx = 2_000,
+                atMillis = millisAt(hour = 8),
+                mobileRx = 1_000,
+                mobileTx = 400,
+                loopbackRx = 250,
+                loopbackTx = 100,
+            ),
+        )
+
+        val row = dao.dailyRows[day1.toEpochDay()]!!
+        assertThat(row.mobileRxBytes).isEqualTo(1_000)
+        assertThat(row.mobileTxBytes).isEqualTo(400)
+        assertThat(row.wifiRxBytes).isEqualTo(3_750)
+        assertThat(row.wifiTxBytes).isEqualTo(1_500)
+        assertThat(dao.stateRow!!.lastLoopbackRxBytes).isEqualTo(250)
+    }
+
+    @Test
+    fun `a device without interface counters writes nulls, not zeroes`() = runTest {
+        repository.record(snapshot(rx = 5_000, atMillis = millisAt(hour = 8)))
+
+        val row = dao.dailyRows[day1.toEpochDay()]!!
+        assertThat(row.mobileRxBytes).isNull()
+        assertThat(row.wifiRxBytes).isNull()
+        assertThat(row.wifiTxBytes).isNull()
     }
 
     @Test

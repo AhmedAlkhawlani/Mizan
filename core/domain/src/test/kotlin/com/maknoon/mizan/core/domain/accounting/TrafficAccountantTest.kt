@@ -32,7 +32,20 @@ class TrafficAccountantTest {
         tx: Long = 0,
         bootEpochMillis: Long = millisAt(hour = 0, minute = 1),
         atMillis: Long,
-    ) = TrafficSnapshot(rx, tx, bootEpochMillis, atMillis)
+        mobileRx: Long? = null,
+        mobileTx: Long? = null,
+        loopbackRx: Long? = null,
+        loopbackTx: Long? = null,
+    ) = TrafficSnapshot(
+        rxBytes = rx,
+        txBytes = tx,
+        bootEpochMillis = bootEpochMillis,
+        atMillis = atMillis,
+        mobileRxBytes = mobileRx,
+        mobileTxBytes = mobileTx,
+        loopbackRxBytes = loopbackRx,
+        loopbackTxBytes = loopbackTx,
+    )
 
     @Test
     fun `first sample after a boot today counts the counters as today usage`() {
@@ -225,6 +238,171 @@ class TrafficAccountantTest {
 
         assertThat(usage.rxBytes).isEqualTo(2_000)
         assertThat(usage.downBytesPerSecond).isWithin(0.001).of(1_000.0)
+    }
+
+    @Test
+    fun `the first sample splits the counters into mobile and wifi`() {
+        val usage = accountant().record(
+            snapshot(
+                rx = 5_000,
+                tx = 2_000,
+                atMillis = millisAt(hour = 8),
+                mobileRx = 1_000,
+                mobileTx = 500,
+                loopbackRx = 250,
+                loopbackTx = 100,
+            ),
+        )
+
+        assertThat(usage.mobileRxBytes).isEqualTo(1_000)
+        assertThat(usage.mobileTxBytes).isEqualTo(500)
+        assertThat(usage.wifiRxBytes).isEqualTo(3_750)
+        assertThat(usage.wifiTxBytes).isEqualTo(1_400)
+    }
+
+    @Test
+    fun `observed deltas grow the mobile and wifi share`() {
+        val accountant = accountant()
+        val boot = millisAt(hour = 0, minute = 1)
+        accountant.record(
+            snapshot(
+                rx = 5_000,
+                atMillis = millisAt(hour = 8, second = 0),
+                mobileRx = 1_000,
+                loopbackRx = 250,
+            ),
+        )
+
+        val usage = accountant.record(
+            snapshot(
+                rx = 6_000,
+                atMillis = millisAt(hour = 8, second = 1),
+                mobileRx = 1_500,
+                loopbackRx = 250,
+            ),
+        )
+
+        assertThat(usage.mobileRxBytes).isEqualTo(1_500)
+        // 6_000 total − 1_500 mobile − 250 loopback.
+        assertThat(usage.wifiRxBytes).isEqualTo(4_250)
+    }
+
+    @Test
+    fun `wifi is unknown when the loopback counter is unavailable`() {
+        val usage = accountant().record(
+            snapshot(
+                rx = 5_000,
+                atMillis = millisAt(hour = 8),
+                mobileRx = 1_000,
+                mobileTx = 500,
+            ),
+        )
+
+        assertThat(usage.mobileRxBytes).isEqualTo(1_000)
+        assertThat(usage.wifiRxBytes).isNull()
+        assertThat(usage.wifiTxBytes).isNull()
+    }
+
+    @Test
+    fun `wifi is unknown when the mobile counter is unavailable`() {
+        val usage = accountant().record(
+            snapshot(rx = 5_000, atMillis = millisAt(hour = 8), loopbackRx = 1_000),
+        )
+
+        assertThat(usage.mobileRxBytes).isNull()
+        assertThat(usage.wifiRxBytes).isNull()
+    }
+
+    @Test
+    fun `a mobile counter that appears mid-day does not claim the whole day`() {
+        val accountant = accountant()
+        val boot = millisAt(hour = 0, minute = 1)
+        accountant.record(
+            snapshot(rx = 5_000, atMillis = millisAt(hour = 8, second = 0), loopbackRx = 100),
+        )
+
+        val usage = accountant.record(
+            snapshot(
+                rx = 6_000,
+                atMillis = millisAt(hour = 8, second = 1),
+                mobileRx = 1_000,
+                loopbackRx = 100,
+            ),
+        )
+
+        assertThat(usage.mobileRxBytes).isNull()
+        assertThat(usage.wifiRxBytes).isNull()
+    }
+
+    @Test
+    fun `a reboot adds the new mobile and loopback counters`() {
+        val accountant = accountant()
+        val firstBoot = millisAt(hour = 0, minute = 1)
+        accountant.record(
+            snapshot(
+                rx = 2_000,
+                atMillis = millisAt(hour = 8, second = 0),
+                mobileRx = 1_000,
+                loopbackRx = 200,
+            ),
+        )
+
+        val usage = accountant.record(
+            snapshot(
+                rx = 500,
+                bootEpochMillis = millisAt(hour = 9),
+                atMillis = millisAt(hour = 9, minute = 5),
+                mobileRx = 300,
+                loopbackRx = 50,
+            ),
+        )
+
+        assertThat(usage.mobileRxBytes).isEqualTo(1_300)
+        assertThat(usage.wifiRxBytes).isEqualTo(950)
+    }
+
+    @Test
+    fun `a day that began before its boot reports a zero split that grows`() {
+        val accountant = accountant()
+        val bootBeforeMidnight = millisAt(date = day1.minusDays(1), hour = 22)
+        accountant.record(
+            snapshot(
+                rx = 5_000,
+                bootEpochMillis = bootBeforeMidnight,
+                atMillis = millisAt(hour = 9, second = 0),
+                mobileRx = 2_000,
+                loopbackRx = 300,
+            ),
+        )
+
+        val usage = accountant.record(
+            snapshot(
+                rx = 5_500,
+                bootEpochMillis = bootBeforeMidnight,
+                atMillis = millisAt(hour = 9, second = 1),
+                mobileRx = 2_400,
+                loopbackRx = 320,
+            ),
+        )
+
+        // The first sample cannot tell which part of the counter predates midnight, the same
+        // rule the total follows; only the observed delta is attributed to today.
+        assertThat(usage.mobileRxBytes).isEqualTo(400)
+        assertThat(usage.partial).isTrue()
+    }
+
+    @Test
+    fun `an inconsistent split never produces negative wifi`() {
+        val usage = accountant().record(
+            snapshot(
+                rx = 100,
+                atMillis = millisAt(hour = 8),
+                mobileRx = 150,
+                loopbackRx = 0,
+            ),
+        )
+
+        assertThat(usage.wifiRxBytes).isEqualTo(0)
     }
 
     private class FakeUsageStateStore(var state: UsageState? = null) : UsageStateStore {

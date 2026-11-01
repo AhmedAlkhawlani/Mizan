@@ -12,6 +12,8 @@
     <string name="dashboard_speed_down">تنزيل</string>
     <string name="dashboard_speed_up">رفع</string>
     <string name="dashboard_today">استهلاك اليوم</string>
+    <string name="dashboard_mobile">خلوي</string>
+    <string name="dashboard_wifi">Wi-Fi</string>
     <string name="dashboard_partial">يوم جزئي</string>
     <string name="dashboard_status_running">المراقبة تعمل</string>
     <string name="dashboard_status_stopped">المراقبة متوقفة — اضغط بدء القياس.</string>

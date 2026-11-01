@@ -16,5 +16,10 @@
 
     <string name="notification_channel_monitoring">Live monitoring</string>
     <string name="notification_channel_monitoring_description">Shows live speed and today usage while monitoring runs.</string>
-    <string name="notification_monitoring_starting">Starting measurement…</string>
+    <string name="notification_speed_line">↓ %1$s · ↑ %2$s</string>
+    <string name="notification_speed_unknown">↓ — · ↑ —</string>
+    <string name="notification_today_line">Today %1$s</string>
+    <string name="notification_today_partial">Today %1$s (partial)</string>
+    <string name="notification_today_unknown">Today —</string>
+    <string name="notification_action_pause">Pause</string>
 </resources>

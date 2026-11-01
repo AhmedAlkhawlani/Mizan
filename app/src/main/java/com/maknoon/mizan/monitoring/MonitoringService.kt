@@ -1,11 +1,17 @@
 package com.maknoon.mizan.monitoring
 
+import android.Manifest
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
 import androidx.core.app.ServiceCompat
+import androidx.core.content.ContextCompat
+import com.maknoon.mizan.MainActivity
 import com.maknoon.mizan.core.data.usage.InMemoryUsageStateStore
 import com.maknoon.mizan.core.domain.accounting.TrafficAccountant
 import com.maknoon.mizan.core.platform.traffic.AndroidTrafficSource
@@ -39,13 +45,33 @@ class MonitoringService : Service() {
      */
     private val accountant = TrafficAccountant(InMemoryUsageStateStore())
 
+    private val notificationManager by lazy { getSystemService(NotificationManager::class.java) }
+
+    private val openIntent by lazy {
+        PendingIntent.getActivity(
+            this,
+            OPEN_REQUEST_CODE,
+            Intent(this, MainActivity::class.java),
+            PendingIntent.FLAG_IMMUTABLE,
+        )
+    }
+
+    private val stopIntent by lazy {
+        PendingIntent.getBroadcast(
+            this,
+            STOP_REQUEST_CODE,
+            Intent(this, MonitoringActionReceiver::class.java).setAction(ACTION_STOP),
+            PendingIntent.FLAG_IMMUTABLE,
+        )
+    }
+
     private var samplingJob: Job? = null
 
     override fun onCreate() {
         super.onCreate()
-        MonitoringNotifications.createChannel(this)
-        startAsForeground()
+        MonitoringNotifications.createChannel(this, notificationManager)
         MonitoringStateHolder.publish(MonitoringState(running = true))
+        startAsForeground()
         samplingJob = scope.launch { sampleContinuously() }
     }
 
@@ -69,7 +95,7 @@ class MonitoringService : Service() {
         ServiceCompat.startForeground(
             this,
             MonitoringNotifications.MONITORING_NOTIFICATION_ID,
-            MonitoringNotifications.monitoringNotification(this),
+            buildNotification(MonitoringState(running = true)),
             // Before Android 14 the platform has no specialUse type, and passing it would not
             // match the manifest, so the type is only declared where it exists.
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
@@ -83,17 +109,40 @@ class MonitoringService : Service() {
     private suspend fun sampleContinuously() {
         while (currentCoroutineContext().isActive) {
             val snapshot = trafficSource.snapshot()
-            MonitoringStateHolder.publish(
-                MonitoringState(
-                    running = true,
-                    usage = snapshot?.let(accountant::record),
-                ),
+            val state = MonitoringState(
+                running = true,
+                usage = snapshot?.let(accountant::record),
             )
+            MonitoringStateHolder.publish(state)
+            refreshNotification(state)
             delay(SAMPLE_INTERVAL_MILLIS)
         }
     }
 
+    private fun refreshNotification(state: MonitoringState) {
+        // From Android 13 a denied notification permission hides the foreground notification;
+        // posting anyway would only throw, so the service keeps measuring without a banner.
+        val allowed = Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
+            ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.POST_NOTIFICATIONS,
+            ) == PackageManager.PERMISSION_GRANTED
+        if (allowed) {
+            notificationManager.notify(
+                MonitoringNotifications.MONITORING_NOTIFICATION_ID,
+                buildNotification(state),
+            )
+        }
+    }
+
+    private fun buildNotification(state: MonitoringState) = MonitoringNotifications
+        .monitoringNotification(this, state, openIntent, stopIntent)
+
     companion object {
         const val SAMPLE_INTERVAL_MILLIS = 1_000L
+        const val ACTION_STOP = "com.maknoon.mizan.action.STOP_MONITORING"
+
+        private const val OPEN_REQUEST_CODE = 10
+        private const val STOP_REQUEST_CODE = 11
     }
 }

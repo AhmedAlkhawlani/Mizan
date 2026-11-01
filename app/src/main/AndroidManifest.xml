@@ -9,6 +9,8 @@
 
     <application
         android:allowBackup="false"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
@@ -35,6 +37,11 @@
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="continuous_network_usage_monitoring" />
         </service>
+
+        <!-- Only reachable through the notification's own PendingIntent, never exported. -->
+        <receiver
+            android:name=".monitoring.MonitoringActionReceiver"
+            android:exported="false" />
     </application>
 
 </manifest>

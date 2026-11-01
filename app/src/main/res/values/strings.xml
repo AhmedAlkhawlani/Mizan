@@ -18,5 +18,10 @@
 
     <string name="notification_channel_monitoring">المراقبة الجارية</string>
     <string name="notification_channel_monitoring_description">إشعار دائم يعرض السرعة اللحظية واستهلاك اليوم أثناء المراقبة.</string>
-    <string name="notification_monitoring_starting">جارٍ بدء القياس…</string>
+    <string name="notification_speed_line">↓ %1$s · ↑ %2$s</string>
+    <string name="notification_speed_unknown">↓ — · ↑ —</string>
+    <string name="notification_today_line">اليوم %1$s</string>
+    <string name="notification_today_partial">اليوم %1$s (جزئي)</string>
+    <string name="notification_today_unknown">اليوم —</string>
+    <string name="notification_action_pause">إيقاف مؤقت</string>
 </resources>

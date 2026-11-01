@@ -32,4 +32,8 @@
     <string name="notification_today_partial">اليوم %1$s (جزئي)</string>
     <string name="notification_today_unknown">اليوم —</string>
     <string name="notification_action_pause">إيقاف مؤقت</string>
+
+    <string name="tile_stopped">متوقف</string>
+    <string name="tile_unavailable">غير متاح</string>
+    <string name="tile_speed">↓ %1$s</string>
 </resources>

@@ -30,4 +30,8 @@
     <string name="notification_today_partial">Today %1$s (partial)</string>
     <string name="notification_today_unknown">Today —</string>
     <string name="notification_action_pause">Pause</string>
+
+    <string name="tile_stopped">Stopped</string>
+    <string name="tile_unavailable">Unavailable</string>
+    <string name="tile_speed">↓ %1$s</string>
 </resources>

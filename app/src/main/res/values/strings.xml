@@ -1,3 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Arabic is Mizan's default language (ADR-008), so these strings are the source of truth
+     and values-en/ carries the English translation. Numbers stay LTR inside the RTL layout. -->
 <resources>
-    <string name="app_name">Mizan</string>
+    <string name="app_name">ميزان</string>
+
+    <string name="nav_dashboard">الرئيسية</string>
+    <string name="nav_apps">التطبيقات</string>
+    <string name="nav_saver">الحماية</string>
+    <string name="nav_history">السجل</string>
+
+    <string name="dashboard_body">تُعرض هنا السرعة اللحظية وإجمالي اليوم وميزانيته.</string>
+    <string name="apps_body">تُعرض هنا قائمة التطبيقات واستهلاك كل تطبيق خلال الفترة المختارة.</string>
+    <string name="saver_body">تُضبط هنا الميزانيات وحماية التطبيقات من استهلاك البيانات.</string>
+    <string name="history_body">تُعرض هنا رسوم الاستهلاك اليومي والشهري ومقارنة الشبكات.</string>
+
+    <string name="section_in_progress">قيد الإنشاء — المرحلة 0</string>
 </resources>

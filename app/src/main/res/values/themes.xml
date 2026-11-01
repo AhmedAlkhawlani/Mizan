@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
+    <!-- Compose owns every in-app colour; this theme only covers the window chrome that is
+         visible before the first Compose frame. values-night/ provides the dark variant so the
+         window does not flash white when the device is in dark mode. -->
     <style name="Theme.Mizan" parent="android:Theme.Material.Light.NoActionBar" />
 </resources>

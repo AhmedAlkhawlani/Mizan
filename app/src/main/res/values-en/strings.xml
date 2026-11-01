@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Mizan</string>
+
+    <string name="nav_dashboard">Home</string>
+    <string name="nav_apps">Apps</string>
+    <string name="nav_saver">Guard</string>
+    <string name="nav_history">History</string>
+
+    <string name="dashboard_body">Live speed, today usage and its budget will appear here.</string>
+    <string name="apps_body">The app list and per-app usage for the selected period will appear here.</string>
+    <string name="saver_body">Budgets and data protection for individual apps will be managed here.</string>
+    <string name="history_body">Daily and monthly usage charts and network comparisons will appear here.</string>
+
+    <string name="section_in_progress">In progress — phase 0</string>
+</resources>

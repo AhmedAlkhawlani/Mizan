@@ -1,0 +1,286 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 4,
+    "identityHash": "229eb6acaa163b419dbf6d525c852e3f",
+    "entities": [
+      {
+        "tableName": "device_daily",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`epochDay` INTEGER NOT NULL, `rxBytes` INTEGER NOT NULL, `txBytes` INTEGER NOT NULL, `partial` INTEGER NOT NULL, `updatedAtMillis` INTEGER NOT NULL, `mobileRxBytes` INTEGER, `mobileTxBytes` INTEGER, `wifiRxBytes` INTEGER, `wifiTxBytes` INTEGER, PRIMARY KEY(`epochDay`))",
+        "fields": [
+          {
+            "fieldPath": "epochDay",
+            "columnName": "epochDay",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "rxBytes",
+            "columnName": "rxBytes",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "txBytes",
+            "columnName": "txBytes",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "partial",
+            "columnName": "partial",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAtMillis",
+            "columnName": "updatedAtMillis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "mobileRxBytes",
+            "columnName": "mobileRxBytes",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "mobileTxBytes",
+            "columnName": "mobileTxBytes",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "wifiRxBytes",
+            "columnName": "wifiRxBytes",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "wifiTxBytes",
+            "columnName": "wifiTxBytes",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "epochDay"
+          ]
+        }
+      },
+      {
+        "tableName": "device_hourly",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`epochDay` INTEGER NOT NULL, `hour` INTEGER NOT NULL, `rxBytes` INTEGER NOT NULL, `txBytes` INTEGER NOT NULL, PRIMARY KEY(`epochDay`, `hour`))",
+        "fields": [
+          {
+            "fieldPath": "epochDay",
+            "columnName": "epochDay",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "hour",
+            "columnName": "hour",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "rxBytes",
+            "columnName": "rxBytes",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "txBytes",
+            "columnName": "txBytes",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "epochDay",
+            "hour"
+          ]
+        }
+      },
+      {
+        "tableName": "device_state",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `epochDay` INTEGER NOT NULL, `bootEpochMillis` INTEGER NOT NULL, `lastRxBytes` INTEGER NOT NULL, `lastTxBytes` INTEGER NOT NULL, `todayRxBytes` INTEGER NOT NULL, `todayTxBytes` INTEGER NOT NULL, `updatedAtMillis` INTEGER NOT NULL, `startedAtMillis` INTEGER NOT NULL, `partial` INTEGER NOT NULL, `lastMobileRxBytes` INTEGER, `lastMobileTxBytes` INTEGER, `todayMobileRxBytes` INTEGER, `todayMobileTxBytes` INTEGER, `lastLoopbackRxBytes` INTEGER, `lastLoopbackTxBytes` INTEGER, `todayLoopbackRxBytes` INTEGER, `todayLoopbackTxBytes` INTEGER, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "epochDay",
+            "columnName": "epochDay",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "bootEpochMillis",
+            "columnName": "bootEpochMillis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastRxBytes",
+            "columnName": "lastRxBytes",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastTxBytes",
+            "columnName": "lastTxBytes",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "todayRxBytes",
+            "columnName": "todayRxBytes",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "todayTxBytes",
+            "columnName": "todayTxBytes",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAtMillis",
+            "columnName": "updatedAtMillis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "startedAtMillis",
+            "columnName": "startedAtMillis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "partial",
+            "columnName": "partial",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastMobileRxBytes",
+            "columnName": "lastMobileRxBytes",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "lastMobileTxBytes",
+            "columnName": "lastMobileTxBytes",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "todayMobileRxBytes",
+            "columnName": "todayMobileRxBytes",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "todayMobileTxBytes",
+            "columnName": "todayMobileTxBytes",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "lastLoopbackRxBytes",
+            "columnName": "lastLoopbackRxBytes",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "lastLoopbackTxBytes",
+            "columnName": "lastLoopbackTxBytes",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "todayLoopbackRxBytes",
+            "columnName": "todayLoopbackRxBytes",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "todayLoopbackTxBytes",
+            "columnName": "todayLoopbackTxBytes",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "app_daily",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`epochDay` INTEGER NOT NULL, `uid` INTEGER NOT NULL, `packageName` TEXT NOT NULL, `label` TEXT NOT NULL, `networkType` INTEGER NOT NULL, `rxBytes` INTEGER NOT NULL, `txBytes` INTEGER NOT NULL, `lastSyncedAt` INTEGER NOT NULL, PRIMARY KEY(`epochDay`, `uid`, `networkType`))",
+        "fields": [
+          {
+            "fieldPath": "epochDay",
+            "columnName": "epochDay",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "uid",
+            "columnName": "uid",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "packageName",
+            "columnName": "packageName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "label",
+            "columnName": "label",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "networkType",
+            "columnName": "networkType",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "rxBytes",
+            "columnName": "rxBytes",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "txBytes",
+            "columnName": "txBytes",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastSyncedAt",
+            "columnName": "lastSyncedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "epochDay",
+            "uid",
+            "networkType"
+          ]
+        }
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '229eb6acaa163b419dbf6d525c852e3f')"
+    ]
+  }
+}

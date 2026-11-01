@@ -15,6 +15,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,6 +33,7 @@ import com.maknoon.mizan.R
 import com.maknoon.mizan.core.designsystem.theme.MizanTheme
 import com.maknoon.mizan.core.designsystem.theme.statusColors
 import com.maknoon.mizan.core.platform.usage.UsageAccess
+import com.maknoon.mizan.sync.AppUsageSyncScheduler
 
 /**
  * The Apps section.
@@ -48,6 +50,12 @@ fun AppsScreen(modifier: Modifier = Modifier) {
     LifecycleResumeEffect(Unit) {
         granted = UsageAccess.isGranted(context)
         onPauseOrDispose { }
+    }
+
+    // Arriving here with the grant on — including straight back from Settings — should fill
+    // the list now rather than at the next periodic run.
+    LaunchedEffect(granted) {
+        if (granted) AppUsageSyncScheduler.syncNow(context)
     }
 
     AppsContent(

@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import com.maknoon.mizan.core.data.settings.MizanSettings
 import com.maknoon.mizan.monitoring.MonitoringControl
+import com.maknoon.mizan.sync.AppUsageSyncScheduler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -23,6 +24,7 @@ class BootReceiver : BroadcastReceiver() {
         if (intent.action != Intent.ACTION_BOOT_COMPLETED) return
 
         val appContext = context.applicationContext
+        AppUsageSyncScheduler.schedule(appContext)
         val pendingResult = goAsync()
         CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
             try {

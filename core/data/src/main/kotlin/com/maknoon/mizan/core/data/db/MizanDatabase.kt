@@ -6,13 +6,20 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
 @Database(
-    entities = [DeviceDailyEntity::class, DeviceHourlyEntity::class, DeviceStateEntity::class],
-    version = 3,
+    entities = [
+        DeviceDailyEntity::class,
+        DeviceHourlyEntity::class,
+        DeviceStateEntity::class,
+        AppDailyEntity::class,
+    ],
+    version = 4,
     exportSchema = true,
 )
 abstract class MizanDatabase : RoomDatabase() {
 
     abstract fun deviceUsageDao(): DeviceUsageDao
+
+    abstract fun appUsageDao(): AppUsageDao
 
     companion object {
         const val NAME = "mizan.db"
@@ -59,6 +66,30 @@ abstract class MizanDatabase : RoomDatabase() {
                 db.execSQL("ALTER TABLE `device_state` ADD COLUMN `lastLoopbackTxBytes` INTEGER")
                 db.execSQL("ALTER TABLE `device_state` ADD COLUMN `todayLoopbackRxBytes` INTEGER")
                 db.execSQL("ALTER TABLE `device_state` ADD COLUMN `todayLoopbackTxBytes` INTEGER")
+            }
+        }
+
+        /**
+         * Adds the per-app table. No backfill is possible: the platform only answers for ranges
+         * the app asks about, and rows start with the first sync after the upgrade.
+         */
+        val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS `app_daily` (
+                        `epochDay` INTEGER NOT NULL,
+                        `uid` INTEGER NOT NULL,
+                        `packageName` TEXT NOT NULL,
+                        `label` TEXT NOT NULL,
+                        `networkType` INTEGER NOT NULL,
+                        `rxBytes` INTEGER NOT NULL,
+                        `txBytes` INTEGER NOT NULL,
+                        `lastSyncedAt` INTEGER NOT NULL,
+                        PRIMARY KEY(`epochDay`, `uid`, `networkType`)
+                    )
+                    """.trimIndent(),
+                )
             }
         }
     }

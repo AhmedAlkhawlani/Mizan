@@ -1,6 +1,7 @@
 package com.maknoon.mizan.core.platform.usage
 
 import com.google.common.truth.Truth.assertThat
+import com.maknoon.mizan.core.domain.usage.AppUsageBytes
 import org.junit.Test
 
 class AndroidNetworkStatsSourceTest {
@@ -37,5 +38,44 @@ class AndroidNetworkStatsSourceTest {
         )!!
 
         assertThat(usage).isEqualTo(AppUsageBytes(100, 20, 300, 40))
+    }
+
+    @Test
+    fun `no summary at all means the usage is unknown`() {
+        assertThat(mergeSummaries(mobile = null, wifi = null)).isNull()
+    }
+
+    @Test
+    fun `a uid missing from a successful summary is a measured zero`() {
+        val merged = mergeSummaries(
+            mobile = mapOf(10 to BucketTotals(1_000, 200)),
+            wifi = mapOf(20 to BucketTotals(3_000, 400)),
+        )!!
+
+        assertThat(merged[10]).isEqualTo(AppUsageBytes(1_000, 200, 0, 0))
+        assertThat(merged[20]).isEqualTo(AppUsageBytes(0, 0, 3_000, 400))
+    }
+
+    @Test
+    fun `a failed summary leaves that network unknown for every uid`() {
+        val merged = mergeSummaries(
+            mobile = mapOf(10 to BucketTotals(1_000, 200)),
+            wifi = null,
+        )!!
+
+        assertThat(merged.getValue(10))
+            .isEqualTo(AppUsageBytes(1_000, 200, null, null))
+    }
+
+    @Test
+    fun `repeated buckets of one uid are summed`() {
+        // querySummary can emit more than one bucket per UID (for example foreground and
+        // background tags); the source folds them into one total.
+        val merged = mergeSummaries(
+            mobile = mapOf(10 to BucketTotals(700, 300)),
+            wifi = mapOf(10 to BucketTotals(5, 5)),
+        )!!
+
+        assertThat(merged.getValue(10)).isEqualTo(AppUsageBytes(700, 300, 5, 5))
     }
 }

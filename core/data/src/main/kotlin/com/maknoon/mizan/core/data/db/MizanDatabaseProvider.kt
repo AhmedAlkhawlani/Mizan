@@ -20,8 +20,18 @@ object MizanDatabaseProvider {
             MizanDatabase::class.java,
             MizanDatabase.NAME,
         )
-            .addMigrations(MizanDatabase.MIGRATION_1_2, MizanDatabase.MIGRATION_2_3)
+            .addMigrations(
+                MizanDatabase.MIGRATION_1_2,
+                MizanDatabase.MIGRATION_2_3,
+                MizanDatabase.MIGRATION_3_4,
+            )
             .build()
             .also { instance = it }
     }
+
+    /**
+     * Keeps Room out of callers' classpaths: a caller that only needs a DAO should not have to
+     * depend on the database's supertypes.
+     */
+    fun appUsageDao(context: Context): AppUsageDao = get(context).appUsageDao()
 }

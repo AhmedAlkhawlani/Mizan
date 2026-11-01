@@ -12,6 +12,7 @@ import com.maknoon.mizan.core.data.settings.MizanSettings
 import com.maknoon.mizan.core.designsystem.theme.MizanTheme
 import com.maknoon.mizan.monitoring.MonitoringControl
 import com.maknoon.mizan.monitoring.MonitoringStateHolder
+import com.maknoon.mizan.sync.AppUsageSyncScheduler
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
@@ -32,6 +33,10 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         if (savedInstanceState == null) {
             resumeMonitoringIfRequested()
+            // The periodic registration is idempotent; the one-time run makes opening the app
+            // refresh the per-app figures instead of waiting up to a quarter of an hour.
+            AppUsageSyncScheduler.schedule(applicationContext)
+            AppUsageSyncScheduler.syncNow(applicationContext)
         }
         setContent {
             MizanTheme {

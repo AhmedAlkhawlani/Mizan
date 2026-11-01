@@ -63,6 +63,8 @@ class DeviceUsageRepository(
     fun observeHourly(epochDay: Long): Flow<List<DeviceHourlyEntity>> =
         dao.observeHourly(epochDay)
 
+    suspend fun allDaily(): List<DeviceDailyEntity> = dao.allDaily()
+
     private suspend fun accumulateHourly(usage: DailyUsage, atMillis: Long) {
         val previous = lastRecordedUsage
         lastRecordedUsage = usage

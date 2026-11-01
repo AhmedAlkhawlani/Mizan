@@ -20,6 +20,10 @@ interface DeviceUsageDao {
     )
     fun observeDailyRange(fromEpochDay: Long, toEpochDay: Long): Flow<List<DeviceDailyEntity>>
 
+    /** Every stored day, for the export; the rows are the user's data, so none are dropped. */
+    @Query("SELECT * FROM device_daily ORDER BY epochDay")
+    suspend fun allDaily(): List<DeviceDailyEntity>
+
     @Upsert
     suspend fun upsertDaily(entity: DeviceDailyEntity)
 

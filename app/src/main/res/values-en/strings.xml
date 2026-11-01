@@ -43,6 +43,12 @@
     <string name="history_cycle_start_increase">Later cycle start day</string>
     <string name="history_cycle_partial">Not every elapsed day of the cycle was observed; the total covers recorded days only.</string>
 
+    <string name="history_export_title">Export data</string>
+    <string name="history_export_body">A CSV of every recorded day. The system picks where it is saved, so the app needs no storage permission.</string>
+    <string name="history_export_action">Save CSV file</string>
+    <string name="history_export_saved">CSV file saved</string>
+    <string name="history_export_failed">Could not save the file</string>
+
     <string name="section_in_progress">In progress</string>
 
     <string name="notification_channel_monitoring">Live monitoring</string>

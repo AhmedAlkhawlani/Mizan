@@ -45,6 +45,12 @@
     <string name="history_cycle_start_increase">تأخير بداية الدورة يوماً واحداً</string>
     <string name="history_cycle_partial">لم تُراقَب كل أيام الدورة المنقضية؛ الإجمالي يغطي الأيام المسجَّلة فقط.</string>
 
+    <string name="history_export_title">تصدير البيانات</string>
+    <string name="history_export_body">ملف CSV بكل الأيام المسجّلة. يختار النظام مكان الحفظ، فلا يحتاج التطبيق إلى صلاحية تخزين.</string>
+    <string name="history_export_action">حفظ ملف CSV</string>
+    <string name="history_export_saved">تم حفظ ملف CSV</string>
+    <string name="history_export_failed">تعذّر حفظ الملف</string>
+
     <string name="section_in_progress">قيد الإنشاء</string>
 
     <string name="notification_channel_monitoring">المراقبة الجارية</string>

@@ -1,5 +1,8 @@
 package com.maknoon.mizan.ui.history
 
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -19,9 +22,11 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -34,6 +39,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -66,9 +72,29 @@ fun HistoryScreen(
     viewModel: HistoryViewModel = viewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    val savedMessage = stringResource(R.string.history_export_saved)
+    val failedMessage = stringResource(R.string.history_export_failed)
+
+    // ACTION_CREATE_DOCUMENT beneath the contract's hood: the system picker creates the file
+    // and grants this app write access to it alone, so the manifest needs no storage permission.
+    val exportLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("text/csv"),
+    ) { uri -> if (uri != null) viewModel.exportCsv(uri) }
+
+    LaunchedEffect(viewModel, savedMessage, failedMessage) {
+        viewModel.exportResult.collect { result ->
+            val message = if (result == ExportResult.SAVED) savedMessage else failedMessage
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+        }
+    }
+
     HistoryContent(
         uiState = uiState,
         onCycleStartDayChange = viewModel::setCycleStartDay,
+        onExportRequest = {
+            exportLauncher.launch("mizan-usage-${LocalDate.now()}.csv")
+        },
         modifier = modifier,
     )
 }
@@ -77,6 +103,7 @@ fun HistoryScreen(
 internal fun HistoryContent(
     uiState: HistoryUiState,
     onCycleStartDayChange: (Int) -> Unit,
+    onExportRequest: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(
@@ -94,6 +121,37 @@ internal fun HistoryContent(
             item(key = "hours") { HourlyChartCard(uiState) }
             if (uiState.anyPartial) item(key = "partial") { PartialLegend() }
             item(key = "note") { ObservationNote() }
+            item(key = "export") { ExportCard(onExportRequest = onExportRequest) }
+        }
+    }
+}
+
+/**
+ * Hands the stored days to the system file picker. Nothing is uploaded and nothing is shared:
+ * the operator chooses a folder, and the file belongs to them.
+ */
+@Composable
+private fun ExportCard(onExportRequest: () -> Unit, modifier: Modifier = Modifier) {
+    Card(modifier = modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier.padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text(
+                text = stringResource(R.string.history_export_title),
+                style = MaterialTheme.typography.titleMedium,
+            )
+            Text(
+                text = stringResource(R.string.history_export_body),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            OutlinedButton(
+                onClick = onExportRequest,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(text = stringResource(R.string.history_export_action))
+            }
         }
     }
 }
@@ -535,6 +593,6 @@ private fun HistoryPreview() {
         hasData = true,
     )
     MizanTheme(dynamicColor = false) {
-        HistoryContent(uiState = preview, onCycleStartDayChange = {})
+        HistoryContent(uiState = preview, onCycleStartDayChange = {}, onExportRequest = {})
     }
 }

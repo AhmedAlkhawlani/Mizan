@@ -291,6 +291,8 @@ class DeviceUsageRepositoryTest {
             dailyRows.values.filter { it.epochDay in fromEpochDay..toEpochDay },
         )
 
+        override suspend fun allDaily(): List<DeviceDailyEntity> = dailyRows.values.toList()
+
         override suspend fun upsertDaily(entity: DeviceDailyEntity) {
             dailyRows[entity.epochDay] = entity
             dailyWrites++

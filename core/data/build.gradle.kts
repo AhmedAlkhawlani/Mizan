@@ -27,6 +27,8 @@ kotlin {
 
 dependencies {
     implementation(project(":core:domain"))
+    implementation(libs.androidx.datastore.preferences)
+    implementation(libs.kotlinx.coroutines.android)
 
     testImplementation(libs.junit)
     testImplementation(libs.truth)

@@ -12,7 +12,8 @@
 | `TrafficStats.getUidRxBytes(uid)` | **غير موثوق** لأي UID غير تطبيقك | منذ Android 7 يعيد `UNSUPPORTED` |
 
 **القرار:** السرعة اللحظية تُحسب من فرق العدّادات الكلية على مستوى الجهاز/الواجهة كل ثانية.
-لا نحاول نسبة السرعة اللحظية لتطبيق معيّن إلا في مرحلة `VpnService`.
+لا نحاول نسبة السرعة اللحظية لتطبيق معيّن في v1. `VpnService` في المرحلة 6 يقيس محاولات
+المحظور فقط ولا يمرّر ترافيك المسموح (انظر §7).
 
 ## 2) استهلاك كل تطبيق — ممكن مع Usage Access
 
@@ -21,11 +22,11 @@
 | `NetworkStatsManager.queryDetailsForUid(...)` | صلاحية `PACKAGE_USAGE_STATS` عبر إعدادات النظام | بايتات لكل UID/Hash داخل نطاق زمني | بكت (bucket) وليس لحظياً؛ قد يتأخر دقائق |
 | `NetworkStatsManager.querySummaryForDevice(...)` | نفس الصلاحية | ملخص الجهاز حسب نوع الشبكة | للتحقق والمقارنة |
 | `UsageStatsManager` | نفس الصلاحية | التطبيق في المقدمة | اختياري لتصنيف «خلفية/أمامية» |
-| `VpnService` + TUN | موافقة VPN | بايتات لحظية لكل تطبيق + إمكانية الحظر | VPN نشط واحد فقط؛ أيقونة VPN؛ استهلاك بطارية |
+| `VpnService` + TUN | موافقة VPN | حظر حقيقي وعدّ محاولات المحظور | VPN نشط واحد فقط؛ أيقونة VPN؛ استهلاك بطارية؛ لا يمرّر ترافيك المسموح بلا `INTERNET` |
 
 **القرار:**
 - v1: `NetworkStatsManager` للاستهلاك التاريخي لكل تطبيق، مع مزامنة كل 15 دقيقة وعند فتح التطبيق.
-- مرحلة 6: `VpnService` للقياس اللحظي والحظر الحقيقي.
+- مرحلة 6: `VpnService` لحظر التطبيقات المحظورة محلياً وعدّ محاولاتها، بلا إذن `INTERNET`.
 
 **كيف تُطلب الصلاحية؟**
 ```kotlin
@@ -100,16 +101,20 @@ val granted = mode == AppOpsManager.MODE_ALLOWED
 
 ## 7) `VpnService` للحظر الحقيقي (مرحلة 6)
 
+**قرار 2026-11-02: حجب فقط، بلا إذن `INTERNET`.**
+
 - `VpnService.prepare()` → موافقة المستخدم.
-- `Builder.addAllowedApplication` / `addDisallowedApplication` لكل تطبيق.
-- TUN يعيد توجيه الحزم؛ نستطيع عدّها لكل تطبيق وإسقاط حزم المحظور.
+- `Builder.addAllowedApplication` للتطبيقات **المحظورة فقط**؛ بقية التطبيقات تبقى خارج النفق.
+- TUN يستقبل حزم المحظور فقط وتُسقط فوراً؛ لا يُفتح أي مقبس خارجي ولا يُمرَّر ترافيك.
+- الفائدة: يبقى التطبيق بلا إذن `INTERNET`، فلا يستطيع الاتصال بأي سيرفر حتى لو أراد.
+- الأثر: عدّاد VPN يغطي **محاولات المحظور** فقط؛ استهلاك المسموح يبقى من `NetworkStatsManager`،
+  والسرعة اللحظية لكل تطبيق تبقى خارج النطاق (بخلاف الافتراض الأولي في §1).
 - قيود: VPN واحد فقط؛ لا يعمل مع VPN آخر؛ أيقونة في شريط الحالة؛ استهلاك بطارية؛ سياسات Play صارمة.
 - **القرار:** مرحلة منفصلة اختيارية، مع شاشة شرح صريحة، وبدون أي إرسال بيانات خارج الجهاز.
 
 ## 8) الصلاحيات المطلوبة (القائمة النهائية لـ v1)
 
 ```xml
-<uses-permission android:name="android.permission.INTERNET" />
 <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
@@ -120,6 +125,10 @@ val granted = mode == AppOpsManager.MODE_ALLOWED
 <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"
     tools:ignore="QueryAllPackagesPermission" />
 ```
+- **لا `INTERNET`**: أُزيل بقرار 2026-11-02. الحجب لا يمرّر ترافيكاً ولا يفتح مقبساً خارجياً،
+  فلا يحتاجه التطبيق؛ وبقاؤه غائباً هو أقوى ضمانة أن ميزان لا يتصل بأي سيرفر.
+- خدمة VPN ستعلن `android:permission="android.permission.BIND_VPN_SERVICE"` في المرحلة 6.2،
+  وهي صلاحية على مستوى المكوّن لا إذن مستخدم، ولا تُضاف إلى القائمة أعلاه.
 - `QUERY_ALL_PACKAGES` لأجل عرض أسماء التطبيقات؛ بديله `<queries>` إن أمكن لتقليل سياسة Play.
 - لا `READ_PHONE_STATE`، ولا `ACCESS_FINE_LOCATION` في v1.
 

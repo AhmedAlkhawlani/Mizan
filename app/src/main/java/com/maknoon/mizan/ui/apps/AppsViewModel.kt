@@ -58,15 +58,7 @@ class AppsViewModel(application: Application) : AndroidViewModel(application) {
 
     private val period = MutableStateFlow(AppsPeriod.WEEK)
 
-    private val todayFlow: Flow<Long> = flow {
-        while (true) {
-            val now = ZonedDateTime.now(zone)
-            emit(now.toLocalDate().toEpochDay())
-            val nextMidnight = now.toLocalDate().plusDays(1).atStartOfDay(zone)
-            val waitMillis = Duration.between(now, nextMidnight).toMillis().coerceAtLeast(1_000L)
-            delay(waitMillis)
-        }
-    }.distinctUntilChanged()
+    private val todayFlow: Flow<Long> = localTodayFlow(zone)
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val uiState: StateFlow<AppsUiState> = combine(
@@ -102,6 +94,20 @@ class AppsViewModel(application: Application) : AndroidViewModel(application) {
         const val STOP_TIMEOUT_MILLIS = 5_000L
     }
 }
+
+/**
+ * Emits today's local epoch day, then waits for the next midnight and emits again, so a screen
+ * left open overnight moves to the new day instead of showing yesterday's window.
+ */
+internal fun localTodayFlow(zone: ZoneId): Flow<Long> = flow {
+    while (true) {
+        val now = ZonedDateTime.now(zone)
+        emit(now.toLocalDate().toEpochDay())
+        val nextMidnight = now.toLocalDate().plusDays(1).atStartOfDay(zone)
+        val waitMillis = Duration.between(now, nextMidnight).toMillis().coerceAtLeast(1_000L)
+        delay(waitMillis)
+    }
+}.distinctUntilChanged()
 
 /**
  * Turns stored totals into rows with each app's share of the listed total.

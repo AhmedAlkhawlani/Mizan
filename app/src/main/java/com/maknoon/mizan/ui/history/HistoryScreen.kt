@@ -3,7 +3,6 @@ package com.maknoon.mizan.ui.history
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -31,13 +30,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.RoundRect
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -47,12 +40,13 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.maknoon.mizan.R
+import com.maknoon.mizan.core.designsystem.component.UsageBar
+import com.maknoon.mizan.core.designsystem.component.UsageBarChart
 import com.maknoon.mizan.core.designsystem.theme.MizanTheme
 import com.maknoon.mizan.core.designsystem.theme.statusColors
 import com.maknoon.mizan.core.domain.cycle.BillingCycleCalculator
@@ -306,8 +300,8 @@ private fun DailyChartCard(uiState: HistoryUiState, modifier: Modifier = Modifie
             // reads oldest-to-newest, like the figures, which stay Western digits per docs/04.
             CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    UsageChart(
-                        bars = uiState.days.map { ChartBar(it.rxBytes, it.txBytes, it.fraction) },
+                    UsageBarChart(
+                        bars = uiState.days.map { UsageBar(it.rxBytes, it.txBytes, it.fraction) },
                         height = 140.dp,
                         contentDescription = description,
                     )
@@ -345,8 +339,8 @@ private fun HourlyChartCard(uiState: HistoryUiState, modifier: Modifier = Modifi
             Legend()
             CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    UsageChart(
-                        bars = uiState.hours.map { ChartBar(it.rxBytes, it.txBytes, it.fraction) },
+                    UsageBarChart(
+                        bars = uiState.hours.map { UsageBar(it.rxBytes, it.txBytes, it.fraction) },
                         height = 120.dp,
                         contentDescription = description,
                     )
@@ -487,72 +481,6 @@ private fun EmptyHistoryCard(modifier: Modifier = Modifier) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
             )
-        }
-    }
-}
-
-private data class ChartBar(val rxBytes: Long, val txBytes: Long, val fraction: Float)
-
-/**
- * Stacked bars: uploads on top, downloads below, both clipped to one rounded column so a
- * partially filled bar still reads as a single day.
- */
-@Composable
-private fun UsageChart(
-    bars: List<ChartBar>,
-    height: Dp,
-    contentDescription: String,
-    modifier: Modifier = Modifier,
-) {
-    val downColor = MaterialTheme.statusColors.dataDown
-    val upColor = MaterialTheme.statusColors.dataUp
-    val trackColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
-
-    Canvas(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(height)
-            .semantics { this.contentDescription = contentDescription },
-    ) {
-        if (bars.isEmpty()) return@Canvas
-
-        val gap = 4.dp.toPx()
-        val slot = (size.width - gap * (bars.size - 1)) / bars.size
-        if (slot <= 0f) return@Canvas
-        val corner = CornerRadius(minOf(slot / 2f, 6.dp.toPx()))
-
-        bars.forEachIndexed { index, bar ->
-            val left = index * (slot + gap)
-            drawRoundRect(
-                color = trackColor,
-                topLeft = Offset(left, 0f),
-                size = Size(slot, size.height),
-                cornerRadius = corner,
-            )
-
-            val barHeight = size.height * bar.fraction.coerceIn(0f, 1f)
-            if (barHeight <= 0f) return@forEachIndexed
-
-            val top = size.height - barHeight
-            val total = bar.rxBytes + bar.txBytes
-            val downHeight = if (total > 0L) barHeight * (bar.rxBytes.toFloat() / total) else barHeight
-            val upHeight = barHeight - downHeight
-
-            val column = Path().apply {
-                addRoundRect(RoundRect(left, top, left + slot, size.height, corner))
-            }
-            clipPath(column) {
-                if (upHeight > 0f) {
-                    drawRect(upColor, topLeft = Offset(left, top), size = Size(slot, upHeight))
-                }
-                if (downHeight > 0f) {
-                    drawRect(
-                        downColor,
-                        topLeft = Offset(left, top + upHeight),
-                        size = Size(slot, downHeight),
-                    )
-                }
-            }
         }
     }
 }

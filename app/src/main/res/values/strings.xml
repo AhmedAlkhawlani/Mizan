@@ -31,6 +31,14 @@
     <string name="apps_sync_note">الأرقام من عدّادات أندرويد كما كانت عند آخر مزامنة، وقد تتأخر دقائق عن اللحظة الحالية.</string>
     <string name="apps_empty_title">لا توجد بيانات بعد</string>
     <string name="apps_empty_body">تُملأ القائمة تلقائياً بعد أول مزامنة، وقد تستغرق دقائق. أعد فتح التطبيق لاحقاً.</string>
+
+    <string name="app_detail_back">رجوع</string>
+    <string name="app_detail_total">آخر 7 أيام %1$s</string>
+    <string name="app_detail_chart_description">مخطط استهلاك التطبيق في آخر 7 أيام. الإجمالي %1$s.</string>
+    <string name="app_detail_split_title">حسب الشبكة</string>
+    <string name="app_detail_split_line">↓ %1$s · ↑ %2$s</string>
+    <string name="app_detail_note">الأيام التي لم تغطها المزامنة تظهر بلا أعمدة.</string>
+    <string name="app_detail_empty_body">لا يوجد استهلاك مسجّل لهذا التطبيق في آخر 7 أيام. ستظهر أرقامه بعد المزامنة القادمة.</string>
     <string name="saver_body">تُضبط هنا الميزانيات وحماية التطبيقات من استهلاك البيانات.</string>
 
     <string name="history_last_7_days">آخر 7 أيام</string>

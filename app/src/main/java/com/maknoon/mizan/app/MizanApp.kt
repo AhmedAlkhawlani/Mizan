@@ -1,5 +1,6 @@
 package com.maknoon.mizan.app
 
+import android.net.Uri
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
@@ -26,13 +27,16 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.maknoon.mizan.R
 import com.maknoon.mizan.core.designsystem.theme.MizanTheme
 import com.maknoon.mizan.core.designsystem.theme.statusColors
+import com.maknoon.mizan.ui.apps.AppDetailScreen
 import com.maknoon.mizan.ui.apps.AppsScreen
 import com.maknoon.mizan.ui.dashboard.DashboardScreen
 import com.maknoon.mizan.ui.history.HistoryScreen
@@ -54,6 +58,12 @@ enum class MizanDestination(
     Saver("saver", R.string.nav_saver, R.drawable.ic_shield, R.string.saver_body),
     History("history", R.string.nav_history, R.drawable.ic_history),
 }
+
+/** Per-app detail, reached from a row in the Apps list. */
+private const val APP_DETAIL_ROUTE = "apps/detail/{packageName}"
+
+private fun appDetailRoute(packageName: String): String =
+    "apps/detail/${Uri.encode(packageName)}"
 
 /**
  * The application shell: a bottom navigation bar over the four sections.
@@ -78,7 +88,8 @@ fun MizanApp(modifier: Modifier = Modifier) {
             NavigationBar {
                 MizanDestination.entries.forEach { destination ->
                     NavigationBarItem(
-                        selected = currentRoute == destination.route,
+                        selected = currentRoute == destination.route ||
+                            (destination == MizanDestination.Apps && currentRoute == APP_DETAIL_ROUTE),
                         onClick = { navController.navigateToTab(destination) },
                         icon = {
                             Icon(
@@ -98,7 +109,20 @@ fun MizanApp(modifier: Modifier = Modifier) {
             modifier = Modifier.padding(innerPadding),
         ) {
             composable(MizanDestination.Dashboard.route) { DashboardScreen() }
-            composable(MizanDestination.Apps.route) { AppsScreen() }
+            composable(MizanDestination.Apps.route) {
+                AppsScreen(onAppClick = { packageName ->
+                    navController.navigate(appDetailRoute(packageName))
+                })
+            }
+            composable(
+                route = APP_DETAIL_ROUTE,
+                arguments = listOf(navArgument("packageName") { type = NavType.StringType }),
+            ) { entry ->
+                AppDetailScreen(
+                    packageName = entry.arguments?.getString("packageName").orEmpty(),
+                    onBack = { navController.popBackStack() },
+                )
+            }
             composable(MizanDestination.History.route) { HistoryScreen() }
             MizanDestination.entries
                 .filter { it.bodyRes != null }

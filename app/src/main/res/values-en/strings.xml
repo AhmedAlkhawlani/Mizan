@@ -29,6 +29,14 @@
     <string name="apps_sync_note">Figures come from Android\u2019s counters as of the last sync and can trail the current moment by minutes.</string>
     <string name="apps_empty_title">No data yet</string>
     <string name="apps_empty_body">The list fills automatically after the first sync, which can take a few minutes. Reopen the app later.</string>
+
+    <string name="app_detail_back">Back</string>
+    <string name="app_detail_total">Last 7 days %1$s</string>
+    <string name="app_detail_chart_description">Chart of this app over the last 7 days. Total %1$s.</string>
+    <string name="app_detail_split_title">By network</string>
+    <string name="app_detail_split_line">↓ %1$s · ↑ %2$s</string>
+    <string name="app_detail_note">Days the sync did not cover have no bars.</string>
+    <string name="app_detail_empty_body">This app has no recorded traffic in the last 7 days. Its figures appear after the next sync.</string>
     <string name="saver_body">Budgets and data protection for individual apps will be managed here.</string>
 
     <string name="history_last_7_days">Last 7 days</string>

@@ -71,6 +71,7 @@ import kotlinx.coroutines.withContext
 @Composable
 fun AppsScreen(
     modifier: Modifier = Modifier,
+    onAppClick: (String) -> Unit,
     viewModel: AppsViewModel = viewModel(),
 ) {
     val context = LocalContext.current
@@ -93,6 +94,7 @@ fun AppsScreen(
         granted = granted,
         onPeriodChange = viewModel::setPeriod,
         onOpenSettings = { context.startActivity(UsageAccess.settingsIntent()) },
+        onAppClick = onAppClick,
         modifier = modifier,
     )
 }
@@ -103,6 +105,7 @@ internal fun AppsContent(
     granted: Boolean,
     onPeriodChange: (AppsPeriod) -> Unit,
     onOpenSettings: () -> Unit,
+    onAppClick: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(
@@ -121,7 +124,7 @@ internal fun AppsContent(
             item(key = "empty") { EmptyCard() }
         } else {
             items(items = uiState.rows, key = { it.packageName }) { row ->
-                AppUsageRow(row)
+                AppUsageRow(row = row, onClick = { onAppClick(row.packageName) })
             }
         }
     }
@@ -184,8 +187,12 @@ private fun SummaryCard(uiState: AppsUiState, modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun AppUsageRow(row: AppUsageRowUi, modifier: Modifier = Modifier) {
-    Card(modifier = modifier.fillMaxWidth()) {
+private fun AppUsageRow(
+    row: AppUsageRowUi,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Card(onClick = onClick, modifier = modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier.padding(16.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -237,7 +244,7 @@ private fun AppUsageRow(row: AppUsageRowUi, modifier: Modifier = Modifier) {
  * that vanished between the sync and the render cannot crash the list.
  */
 @Composable
-private fun AppIcon(packageName: String, modifier: Modifier = Modifier) {
+internal fun AppIcon(packageName: String, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val icon by produceState<ImageBitmap?>(initialValue = null, packageName) {
         value = withContext(Dispatchers.IO) {
@@ -337,6 +344,7 @@ private fun AppsAccessPreview() {
             granted = false,
             onPeriodChange = {},
             onOpenSettings = {},
+            onAppClick = {},
         )
     }
 }
@@ -372,6 +380,7 @@ private fun AppsListPreview() {
             granted = true,
             onPeriodChange = {},
             onOpenSettings = {},
+            onAppClick = {},
         )
     }
 }

@@ -1,6 +1,7 @@
 package com.maknoon.mizan.core.data.usage
 
 import android.content.Context
+import com.maknoon.mizan.core.data.db.AppDailyRow
 import com.maknoon.mizan.core.data.db.AppUsageDao
 import com.maknoon.mizan.core.data.db.AppUsageTotal
 import com.maknoon.mizan.core.data.db.MizanDatabaseProvider
@@ -18,6 +19,13 @@ class AppUsageQueries(
 
     fun observeTotals(fromEpochDay: Long, toEpochDay: Long): Flow<List<AppUsageTotal>> =
         dao.observeTotals(fromEpochDay, toEpochDay)
+
+    fun observePackageDaily(
+        packageName: String,
+        fromEpochDay: Long,
+        toEpochDay: Long,
+    ): Flow<List<AppDailyRow>> =
+        dao.observePackageDaily(packageName, fromEpochDay, toEpochDay)
 
     companion object {
         fun create(context: Context) = AppUsageQueries(MizanDatabaseProvider.appUsageDao(context))

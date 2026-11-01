@@ -14,6 +14,16 @@ data class AppUsageTotal(
     val lastSyncedAt: Long?,
 )
 
+/** One package's bytes on one day and one network. */
+data class AppDailyRow(
+    val epochDay: Long,
+    val networkType: Int,
+    val rxBytes: Long,
+    val txBytes: Long,
+    val label: String?,
+    val lastSyncedAt: Long?,
+)
+
 @Dao
 interface AppUsageDao {
 
@@ -47,4 +57,27 @@ interface AppUsageDao {
         """,
     )
     fun observeTotals(fromEpochDay: Long, toEpochDay: Long): Flow<List<AppUsageTotal>>
+
+    /** The same package day by day and network by network, oldest first. */
+    @Query(
+        """
+        SELECT epochDay,
+               networkType,
+               SUM(rxBytes) AS rxBytes,
+               SUM(txBytes) AS txBytes,
+               MAX(label) AS label,
+               MAX(lastSyncedAt) AS lastSyncedAt
+        FROM app_daily
+        WHERE packageName = :packageName
+          AND epochDay BETWEEN :fromEpochDay AND :toEpochDay
+          AND uid >= 10000
+        GROUP BY epochDay, networkType
+        ORDER BY epochDay, networkType
+        """,
+    )
+    fun observePackageDaily(
+        packageName: String,
+        fromEpochDay: Long,
+        toEpochDay: Long,
+    ): Flow<List<AppDailyRow>>
 }

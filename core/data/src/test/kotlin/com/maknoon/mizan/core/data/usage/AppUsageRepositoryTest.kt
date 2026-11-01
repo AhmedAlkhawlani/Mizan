@@ -3,6 +3,7 @@ package com.maknoon.mizan.core.data.usage
 import com.google.common.truth.Truth.assertThat
 import com.maknoon.mizan.core.data.db.AppDailyEntity
 import com.maknoon.mizan.core.data.db.AppDailyNetwork
+import com.maknoon.mizan.core.data.db.AppDailyRow
 import com.maknoon.mizan.core.data.db.AppUsageDao
 import com.maknoon.mizan.core.data.db.AppUsageTotal
 import com.maknoon.mizan.core.domain.usage.AppUsageBytes
@@ -171,6 +172,12 @@ class AppUsageRepositoryTest {
             fromEpochDay: Long,
             toEpochDay: Long,
         ): Flow<List<AppUsageTotal>> = flowOf(emptyList())
+
+        override fun observePackageDaily(
+            packageName: String,
+            fromEpochDay: Long,
+            toEpochDay: Long,
+        ): Flow<List<AppDailyRow>> = flowOf(emptyList())
     }
 
     private class FakePerAppUsageSource : PerAppUsageSource {

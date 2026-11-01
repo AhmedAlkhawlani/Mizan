@@ -9,8 +9,14 @@ import java.time.ZoneId
  *
  * [rxBytes] and [txBytes] are monotonic since boot, exactly as `TrafficStats` reports them,
  * so they must never be treated as "usage today" on their own.
- * [bootEpochMillis] identifies the boot the counters belong to; [atMillis] is wall-clock
- * time, passed in so this class stays free of ambient clocks.
+ * [bootEpochMillis] identifies the boot the counters belong to for day attribution;
+ * [atMillis] is wall-clock time, passed in so this class stays free of ambient clocks.
+ *
+ * [sinceBootMillis] is the device's monotonic uptime. It is the only reliable way to tell one
+ * boot from another: [bootEpochMillis] is derived as wall clock minus uptime, and the two
+ * clocks drift by milliseconds, so the derived instant moves between samples even though no
+ * reboot happened. Its default keeps the two readings consistent for callers that only model
+ * a boot instant and a sample time.
  *
  * The optional counters split the total by network path. They are `null` when the platform
  * returns `UNSUPPORTED` for that counter: a missing split is reported as unknown rather than
@@ -21,6 +27,7 @@ data class TrafficSnapshot(
     val txBytes: Long,
     val bootEpochMillis: Long,
     val atMillis: Long,
+    val sinceBootMillis: Long = atMillis - bootEpochMillis,
     val mobileRxBytes: Long? = null,
     val mobileTxBytes: Long? = null,
     val loopbackRxBytes: Long? = null,
@@ -88,9 +95,10 @@ interface UsageStateStore {
  *
  * Four events make naive subtraction wrong, and each is handled explicitly: a new local day,
  * a reboot, a counter that appears to go backwards, and a gap between two samples that is
- * either too short or too long to express a meaningful rate. Only real observed traffic is
- * ever added; when the device cannot tell us, the accountant reports `partial` instead of
- * inventing numbers.
+ * either too short or too long to express a meaningful rate. A reboot is recognized by the
+ * monotonic uptime resetting, never by the derived boot instant changing. Only real observed
+ * traffic is ever added; when the device cannot tell us, the accountant reports `partial`
+ * instead of inventing numbers.
  *
  * This module runs on Android from API 26 while its tests run on a modern desktop JDK, so only
  * `java.time` entry points that exist on API 26 may be used here. A JDK-only method would pass
@@ -112,10 +120,28 @@ class TrafficAccountant(
         if (current == null || day > current.epochDay) {
             return startDay(snapshot, day, dayStartMillis, bootedToday)
         }
-        if (current.bootEpochMillis != snapshot.bootEpochMillis) {
+        if (isNewBoot(current, snapshot)) {
             return handleReboot(current, snapshot, bootedToday)
         }
         return accumulate(current, snapshot)
+    }
+
+    /**
+     * Detects the counter reset that a boot causes.
+     *
+     * Uptime is monotonic and only goes backwards at a boot. The boot instant must not be
+     * compared between samples: it is derived from the wall clock minus uptime, and on a real
+     * device the two clocks drift by a few milliseconds, so equality fails on most samples.
+     * Treating that as a reboot discards the traffic of the sample, and when the boot falls
+     * after midnight it would instead add the whole counter again. Falling counters are the
+     * second signal, and they also catch a boot that happened while the process was not
+     * running.
+     */
+    private fun isNewBoot(current: UsageState, snapshot: TrafficSnapshot): Boolean {
+        val lastUptimeMillis = current.updatedAtMillis - current.bootEpochMillis
+        return snapshot.sinceBootMillis < lastUptimeMillis ||
+            snapshot.rxBytes < current.lastRxBytes ||
+            snapshot.txBytes < current.lastTxBytes
     }
 
     /** Usage from the very first sample, which cannot have a rate attached to it. */
@@ -229,6 +255,9 @@ class TrafficAccountant(
             todayRxBytes = current.todayRxBytes + deltaRx,
             todayTxBytes = current.todayTxBytes + deltaTx,
             updatedAtMillis = snapshot.atMillis,
+            // Kept aligned with the sample time so the persisted pair still yields this
+            // sample's uptime after the process restarts.
+            bootEpochMillis = snapshot.bootEpochMillis,
             lastMobileRxBytes = snapshot.mobileRxBytes,
             lastMobileTxBytes = snapshot.mobileTxBytes,
             todayMobileRxBytes = mobileRx,

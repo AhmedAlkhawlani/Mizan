@@ -33,6 +33,19 @@ class TrafficSnapshotsTest {
     }
 
     @Test
+    fun `the uptime reading is carried separately from the derived boot instant`() {
+        val snapshot = TrafficSnapshots.of(
+            rxBytes = 0,
+            txBytes = 0,
+            atMillis = 1_000_000L,
+            elapsedRealtimeMillis = 400_000L,
+        )
+
+        assertThat(snapshot!!.sinceBootMillis).isEqualTo(400_000L)
+        assertThat(snapshot.atMillis - snapshot.bootEpochMillis).isEqualTo(snapshot.sinceBootMillis)
+    }
+
+    @Test
     fun `zero counters are a valid measurement, not an unsupported one`() {
         val snapshot = TrafficSnapshots.of(
             rxBytes = 0,

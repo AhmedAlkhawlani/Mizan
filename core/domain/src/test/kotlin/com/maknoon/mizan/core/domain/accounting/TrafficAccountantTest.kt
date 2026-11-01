@@ -32,6 +32,7 @@ class TrafficAccountantTest {
         tx: Long = 0,
         bootEpochMillis: Long = millisAt(hour = 0, minute = 1),
         atMillis: Long,
+        sinceBootMillis: Long = atMillis - bootEpochMillis,
         mobileRx: Long? = null,
         mobileTx: Long? = null,
         loopbackRx: Long? = null,
@@ -41,6 +42,7 @@ class TrafficAccountantTest {
         txBytes = tx,
         bootEpochMillis = bootEpochMillis,
         atMillis = atMillis,
+        sinceBootMillis = sinceBootMillis,
         mobileRxBytes = mobileRx,
         mobileTxBytes = mobileTx,
         loopbackRxBytes = loopbackRx,
@@ -124,8 +126,63 @@ class TrafficAccountantTest {
             snapshot(rx = 1_000, bootEpochMillis = boot, atMillis = millisAt(hour = 8, second = 1)),
         )
 
-        assertThat(usage.rxBytes).isEqualTo(50_000)
+        // The reset counter starts a new accounting epoch, so its 1,000 bytes are added
+        // instead of being subtracted or discarded.
+        assertThat(usage.rxBytes).isEqualTo(51_000)
         assertThat(usage.downBytesPerSecond).isEqualTo(0.0)
+    }
+
+    @Test
+    fun `boot instant jitter between samples is not a reboot`() {
+        val accountant = accountant()
+        // Counters from a boot before midnight, so a false reboot would silently drop the
+        // delta instead of re-adding the whole counter.
+        val boot = millisAt(date = day1.minusDays(1), hour = 21)
+        accountant.record(
+            snapshot(
+                rx = 1_000,
+                bootEpochMillis = boot,
+                atMillis = millisAt(hour = 9, second = 0),
+            ),
+        )
+
+        // Same boot, five milliseconds of clock drift: the derived instant moves but the
+        // uptime (sample time minus that instant) still advances.
+        val usage = accountant.record(
+            snapshot(
+                rx = 51_000,
+                bootEpochMillis = boot + 5,
+                atMillis = millisAt(hour = 9, second = 1),
+            ),
+        )
+
+        // The first sample of a day that began before its boot counts nothing, so today holds
+        // only the observed delta — which the false reboot used to discard.
+        assertThat(usage.rxBytes).isEqualTo(50_000)
+        assertThat(usage.downBytesPerSecond).isWithin(0.001).of(50_000.0)
+    }
+
+    @Test
+    fun `boot instant jitter after midnight never re-adds the whole counter`() {
+        val accountant = accountant()
+        val boot = millisAt(hour = 0, minute = 1)
+        accountant.record(
+            snapshot(
+                rx = 1_000,
+                bootEpochMillis = boot,
+                atMillis = millisAt(hour = 8, second = 0),
+            ),
+        )
+
+        val usage = accountant.record(
+            snapshot(
+                rx = 51_000,
+                bootEpochMillis = boot + 5,
+                atMillis = millisAt(hour = 8, second = 1),
+            ),
+        )
+
+        assertThat(usage.rxBytes).isEqualTo(51_000)
     }
 
     @Test
@@ -182,16 +239,26 @@ class TrafficAccountantTest {
     }
 
     @Test
-    fun `a reboot into a boot that predates today keeps totals and marks the day partial`() {
+    fun `a reboot whose boot instant predates today keeps totals and marks the day partial`() {
         val accountant = accountant()
         val firstBoot = millisAt(hour = 0, minute = 1)
-        accountant.record(snapshot(rx = 1_500, bootEpochMillis = firstBoot, atMillis = millisAt(hour = 10)))
+        accountant.record(
+            snapshot(
+                rx = 1_500,
+                bootEpochMillis = firstBoot,
+                atMillis = millisAt(hour = 10),
+                sinceBootMillis = 10 * 60 * 60 * 1_000L,
+            ),
+        )
 
+        // A reboot with a short uptime but a boot instant that reads as yesterday: the day
+        // cannot claim any of the new counter, so the total stands and the day stays partial.
         val usage = accountant.record(
             snapshot(
                 rx = 9_000,
                 bootEpochMillis = millisAt(date = day1.minusDays(1), hour = 22),
                 atMillis = millisAt(hour = 11),
+                sinceBootMillis = 5 * 60 * 1_000L,
             ),
         )
 
@@ -217,10 +284,16 @@ class TrafficAccountantTest {
     fun `a clock that moves backwards never yields a negative rate`() {
         val accountant = accountant()
         val boot = millisAt(hour = 0, minute = 1)
-        accountant.record(snapshot(rx = 1_000, bootEpochMillis = boot, atMillis = millisAt(hour = 10, second = 0)))
+        val atFirst = millisAt(hour = 10, second = 0)
+        val uptime = atFirst - boot
+        accountant.record(snapshot(rx = 1_000, bootEpochMillis = boot, atMillis = atFirst))
 
+        // The wall clock steps back and the derived boot instant moves with it, so uptime keeps
+        // advancing as the monotonic clock does on a device; only the rate must refuse the
+        // negative interval.
+        val atSecond = millisAt(hour = 9, second = 0)
         val usage = accountant.record(
-            snapshot(rx = 3_000, bootEpochMillis = boot, atMillis = millisAt(hour = 9, second = 0)),
+            snapshot(rx = 3_000, bootEpochMillis = atSecond - (uptime + 1_000), atMillis = atSecond),
         )
 
         assertThat(usage.rxBytes).isEqualTo(3_000)

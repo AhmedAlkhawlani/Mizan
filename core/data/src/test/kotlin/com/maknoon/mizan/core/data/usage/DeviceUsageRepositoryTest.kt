@@ -39,6 +39,7 @@ class DeviceUsageRepositoryTest {
         tx: Long = 0,
         bootEpochMillis: Long = millisAt(hour = 0, minute = 1),
         atMillis: Long,
+        sinceBootMillis: Long = atMillis - bootEpochMillis,
         mobileRx: Long? = null,
         mobileTx: Long? = null,
         loopbackRx: Long? = null,
@@ -48,6 +49,7 @@ class DeviceUsageRepositoryTest {
         txBytes = tx,
         bootEpochMillis = bootEpochMillis,
         atMillis = atMillis,
+        sinceBootMillis = sinceBootMillis,
         mobileRxBytes = mobileRx,
         mobileTxBytes = mobileTx,
         loopbackRxBytes = loopbackRx,
@@ -142,8 +144,19 @@ class DeviceUsageRepositoryTest {
 
     @Test
     fun `a clock that jumps backwards still writes the row`() = runTest {
-        repository.record(snapshot(rx = 1_000, atMillis = millisAt(hour = 8, second = 30)))
-        repository.record(snapshot(rx = 2_000, atMillis = millisAt(hour = 8, second = 1)))
+        val atFirst = millisAt(hour = 8, second = 30)
+        val uptime = atFirst - millisAt(hour = 0, minute = 1)
+        repository.record(snapshot(rx = 1_000, atMillis = atFirst))
+        // The wall clock steps back and the derived boot instant moves with it, so uptime keeps
+        // advancing; a device does not reboot because its clock was corrected.
+        val atSecond = millisAt(hour = 8, second = 1)
+        repository.record(
+            snapshot(
+                rx = 2_000,
+                atMillis = atSecond,
+                bootEpochMillis = atSecond - (uptime + 1_000),
+            ),
+        )
 
         assertThat(dao.dailyWrites).isEqualTo(2)
         assertThat(dao.dailyRows[day1.toEpochDay()]!!.rxBytes).isEqualTo(2_000)

@@ -33,6 +33,9 @@ internal object TrafficSnapshots {
             // the accountant uses to decide whether today's counters are complete.
             bootEpochMillis = atMillis - elapsedRealtimeMillis,
             atMillis = atMillis,
+            // The uptime itself is what detects a boot: the derived instant above moves with
+            // wall-clock drift and must not be compared between samples.
+            sinceBootMillis = elapsedRealtimeMillis,
             mobileRxBytes = mobileRxBytes?.takeIf { it >= 0L },
             mobileTxBytes = mobileTxBytes?.takeIf { it >= 0L },
             loopbackRxBytes = loopbackRxBytes?.takeIf { it >= 0L },

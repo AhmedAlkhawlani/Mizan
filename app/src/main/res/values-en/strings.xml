@@ -100,6 +100,16 @@
     <string name="notification_today_unknown">Today —</string>
     <string name="notification_action_pause">Pause</string>
 
+    <string name="budget_channel_name">Budget alerts</string>
+    <string name="budget_channel_description">Sounds when usage nears or exceeds a budget; the alert stays until you tap “OK”.</string>
+    <string name="budget_alert_title_warning">You are nearing the %1$s budget</string>
+    <string name="budget_alert_title_exceeded">You exceeded the %1$s budget</string>
+    <string name="budget_alert_body">%1$s of %2$s used</string>
+    <string name="budget_alert_period_daily">Daily budget</string>
+    <string name="budget_alert_period_monthly">Monthly budget</string>
+    <string name="budget_alert_target_device">device</string>
+    <string name="budget_alert_action_done">OK</string>
+
     <string name="tile_stopped">Stopped</string>
     <string name="tile_unavailable">Unavailable</string>
     <string name="tile_speed">↓ %1$s</string>

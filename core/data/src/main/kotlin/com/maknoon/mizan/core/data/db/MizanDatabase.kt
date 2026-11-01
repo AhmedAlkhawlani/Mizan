@@ -12,8 +12,9 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         DeviceStateEntity::class,
         AppDailyEntity::class,
         BudgetEntity::class,
+        AlertEventEntity::class,
     ],
-    version = 5,
+    version = 6,
     exportSchema = true,
 )
 abstract class MizanDatabase : RoomDatabase() {
@@ -23,6 +24,8 @@ abstract class MizanDatabase : RoomDatabase() {
     abstract fun appUsageDao(): AppUsageDao
 
     abstract fun budgetDao(): BudgetDao
+
+    abstract fun alertEventDao(): AlertEventDao
 
     companion object {
         const val NAME = "mizan.db"
@@ -113,6 +116,39 @@ abstract class MizanDatabase : RoomDatabase() {
                         `enabled` INTEGER NOT NULL,
                         `createdAt` INTEGER NOT NULL
                     )
+                    """.trimIndent(),
+                )
+            }
+        }
+
+        /**
+         * Adds the delivered-alert ledger. The unique index makes the "once per level per
+         * cycle" rule survive the two independent evaluators (service and worker): a second
+         * insert for the same threshold is ignored instead of notifying again.
+         */
+        val MIGRATION_5_6 = object : Migration(5, 6) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS `alert_events` (
+                        `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        `at` INTEGER NOT NULL,
+                        `type` TEXT NOT NULL,
+                        `scope` TEXT NOT NULL,
+                        `targetId` TEXT NOT NULL,
+                        `period` TEXT NOT NULL,
+                        `periodStartEpochDay` INTEGER NOT NULL,
+                        `measuredBytes` INTEGER NOT NULL,
+                        `limitBytes` INTEGER NOT NULL,
+                        `acknowledged` INTEGER NOT NULL
+                    )
+                    """.trimIndent(),
+                )
+                db.execSQL(
+                    """
+                    CREATE UNIQUE INDEX IF NOT EXISTS
+                    `index_alert_events_type_scope_targetId_period_periodStartEpochDay`
+                    ON `alert_events` (`type`, `scope`, `targetId`, `period`, `periodStartEpochDay`)
                     """.trimIndent(),
                 )
             }

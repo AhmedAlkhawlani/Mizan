@@ -306,6 +306,11 @@ class DeviceUsageRepositoryTest {
 
         override suspend fun allDaily(): List<DeviceDailyEntity> = dailyRows.values.toList()
 
+        override suspend fun totalBytes(fromEpochDay: Long, toEpochDay: Long): Long =
+            dailyRows.values
+                .filter { it.epochDay in fromEpochDay..toEpochDay }
+                .sumOf { it.rxBytes + it.txBytes }
+
         override suspend fun upsertDaily(entity: DeviceDailyEntity) {
             dailyRows[entity.epochDay] = entity
             dailyWrites++

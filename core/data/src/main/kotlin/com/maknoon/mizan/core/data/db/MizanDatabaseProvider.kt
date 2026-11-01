@@ -25,6 +25,7 @@ object MizanDatabaseProvider {
                 MizanDatabase.MIGRATION_2_3,
                 MizanDatabase.MIGRATION_3_4,
                 MizanDatabase.MIGRATION_4_5,
+                MizanDatabase.MIGRATION_5_6,
             )
             .build()
             .also { instance = it }

@@ -75,6 +75,11 @@
         <receiver
             android:name=".monitoring.MonitoringActionReceiver"
             android:exported="false" />
+
+        <!-- The «حسناً» action that removes a budget alert; also never exported. -->
+        <receiver
+            android:name=".alerts.BudgetAlertActionReceiver"
+            android:exported="false" />
     </application>
 
 </manifest>

@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import com.maknoon.mizan.alerts.BudgetAlerts
 import com.maknoon.mizan.core.data.db.MizanDatabaseProvider
 import com.maknoon.mizan.core.data.usage.AppUsageRepository
 import com.maknoon.mizan.core.platform.usage.AndroidInstalledAppsSource
@@ -34,6 +35,8 @@ class AppUsageSyncWorker(
             val apps = AndroidInstalledAppsSource(context).appsWithInternetAccess()
             val result = repository.sync(System.currentTimeMillis(), apps)
             Log.i(TAG, "synced ${result.rowsWritten} rows for ${apps.size} apps")
+            // Per-app caps only move when this sync writes new totals, so evaluate here too.
+            BudgetAlerts.check(context)
             Result.success()
         } catch (e: CancellationException) {
             throw e

@@ -29,6 +29,10 @@ interface BudgetDao {
     )
     suspend fun appBudget(packageName: String, period: BudgetPeriod): BudgetEntity?
 
+    /** Caps the alert engine has to evaluate; a disabled or zero limit is not a budget. */
+    @Query("SELECT * FROM budgets WHERE enabled = 1 AND limitBytes > 0")
+    suspend fun enabledBudgets(): List<BudgetEntity>
+
     @Upsert
     suspend fun upsert(entity: BudgetEntity)
 }

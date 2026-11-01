@@ -14,6 +14,12 @@ data class AppUsageTotal(
     val lastSyncedAt: Long?,
 )
 
+/** One package's total over a range, for the budget alerts. */
+data class PackageBytes(
+    val packageName: String,
+    val bytes: Long,
+)
+
 /** One package's bytes on one day and one network. */
 data class AppDailyRow(
     val epochDay: Long,
@@ -80,4 +86,20 @@ interface AppUsageDao {
         fromEpochDay: Long,
         toEpochDay: Long,
     ): Flow<List<AppDailyRow>>
+
+    /**
+     * Both directions per package over an inclusive range. The same `uid >= 10000` filter as
+     * the list keeps framework rows out of a budget comparison.
+     */
+    @Query(
+        """
+        SELECT packageName,
+               SUM(rxBytes + txBytes) AS bytes
+        FROM app_daily
+        WHERE epochDay BETWEEN :fromEpochDay AND :toEpochDay
+          AND uid >= 10000
+        GROUP BY packageName
+        """,
+    )
+    suspend fun totalsByPackage(fromEpochDay: Long, toEpochDay: Long): List<PackageBytes>
 }

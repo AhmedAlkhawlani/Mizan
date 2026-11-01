@@ -24,6 +24,15 @@ interface DeviceUsageDao {
     @Query("SELECT * FROM device_daily ORDER BY epochDay")
     suspend fun allDaily(): List<DeviceDailyEntity>
 
+    /** Both directions over an inclusive range, for the budget alerts. */
+    @Query(
+        """
+        SELECT COALESCE(SUM(rxBytes + txBytes), 0) FROM device_daily
+        WHERE epochDay BETWEEN :fromEpochDay AND :toEpochDay
+        """,
+    )
+    suspend fun totalBytes(fromEpochDay: Long, toEpochDay: Long): Long
+
     @Upsert
     suspend fun upsertDaily(entity: DeviceDailyEntity)
 

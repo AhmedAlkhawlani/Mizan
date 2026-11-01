@@ -6,6 +6,7 @@ import com.maknoon.mizan.core.data.db.AppDailyNetwork
 import com.maknoon.mizan.core.data.db.AppDailyRow
 import com.maknoon.mizan.core.data.db.AppUsageDao
 import com.maknoon.mizan.core.data.db.AppUsageTotal
+import com.maknoon.mizan.core.data.db.PackageBytes
 import com.maknoon.mizan.core.domain.usage.AppUsageBytes
 import com.maknoon.mizan.core.domain.usage.InstalledApp
 import com.maknoon.mizan.core.domain.usage.PerAppUsageSource
@@ -178,6 +179,16 @@ class AppUsageRepositoryTest {
             fromEpochDay: Long,
             toEpochDay: Long,
         ): Flow<List<AppDailyRow>> = flowOf(emptyList())
+
+        override suspend fun totalsByPackage(
+            fromEpochDay: Long,
+            toEpochDay: Long,
+        ): List<PackageBytes> = rows.values
+            .filter { it.epochDay in fromEpochDay..toEpochDay }
+            .groupBy { it.packageName }
+            .map { (packageName, appRows) ->
+                PackageBytes(packageName, appRows.sumOf { it.rxBytes + it.txBytes })
+            }
     }
 
     private class FakePerAppUsageSource : PerAppUsageSource {

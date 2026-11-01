@@ -102,6 +102,16 @@
     <string name="notification_today_unknown">اليوم —</string>
     <string name="notification_action_pause">إيقاف مؤقت</string>
 
+    <string name="budget_channel_name">تنبيهات الميزانية</string>
+    <string name="budget_channel_description">صوت عند اقتراب الاستهلاك من الميزانية أو تجاوزها؛ يبقى التنبيه حتى تضغط «حسناً».</string>
+    <string name="budget_alert_title_warning">اقتربت من ميزانية %1$s</string>
+    <string name="budget_alert_title_exceeded">تجاوزت ميزانية %1$s</string>
+    <string name="budget_alert_body">استُخدم %1$s من %2$s</string>
+    <string name="budget_alert_period_daily">ميزانية يومية</string>
+    <string name="budget_alert_period_monthly">ميزانية شهرية</string>
+    <string name="budget_alert_target_device">الجهاز</string>
+    <string name="budget_alert_action_done">حسناً</string>
+
     <string name="tile_stopped">متوقف</string>
     <string name="tile_unavailable">غير متاح</string>
     <string name="tile_speed">↓ %1$s</string>

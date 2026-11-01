@@ -9,12 +9,15 @@ import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
+import android.util.Log
 import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
 import com.maknoon.mizan.MainActivity
+import com.maknoon.mizan.alerts.BudgetAlerts
 import com.maknoon.mizan.core.data.usage.DeviceUsageRepository
 import com.maknoon.mizan.core.platform.traffic.AndroidTrafficSource
 import com.maknoon.mizan.core.platform.traffic.TrafficSource
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -64,6 +67,9 @@ class MonitoringService : Service() {
 
     private var samplingJob: Job? = null
 
+    /** Budget evaluation reads several tables, so it runs once a minute, not once a second. */
+    private var lastBudgetCheckAtMillis: Long? = null
+
     override fun onCreate() {
         super.onCreate()
         MonitoringNotifications.createChannel(this, notificationManager)
@@ -112,7 +118,24 @@ class MonitoringService : Service() {
             )
             MonitoringStateHolder.publish(state)
             refreshNotification(state)
+            checkBudgets()
             delay(SAMPLE_INTERVAL_MILLIS)
+        }
+    }
+
+    private suspend fun checkBudgets() {
+        val now = System.currentTimeMillis()
+        val last = lastBudgetCheckAtMillis
+        // A clock that moved backwards must not stall the check until it catches up.
+        if (last != null && now >= last && now - last < BUDGET_CHECK_INTERVAL_MILLIS) return
+        lastBudgetCheckAtMillis = now
+        try {
+            BudgetAlerts.check(this)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            // A failed check must never stop measurement; the next minute tries again.
+            Log.w(TAG, "budget check failed", e)
         }
     }
 
@@ -139,7 +162,9 @@ class MonitoringService : Service() {
         const val SAMPLE_INTERVAL_MILLIS = 1_000L
         const val ACTION_STOP = "com.maknoon.mizan.action.STOP_MONITORING"
 
+        private const val BUDGET_CHECK_INTERVAL_MILLIS = 60_000L
         private const val OPEN_REQUEST_CODE = 10
         private const val STOP_REQUEST_CODE = 11
+        private const val TAG = "MizanMonitor"
     }
 }

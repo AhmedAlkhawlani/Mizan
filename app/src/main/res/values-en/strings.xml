@@ -13,4 +13,8 @@
     <string name="history_body">Daily and monthly usage charts and network comparisons will appear here.</string>
 
     <string name="section_in_progress">In progress — phase 0</string>
+
+    <string name="notification_channel_monitoring">Live monitoring</string>
+    <string name="notification_channel_monitoring_description">Shows live speed and today usage while monitoring runs.</string>
+    <string name="notification_monitoring_starting">Starting measurement…</string>
 </resources>

@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- No permissions yet: phase 1 adds only what docs/02 §8 lists, and only when
-         the feature that needs it is implemented. -->
+    <!-- No INTERNET permission: Mizan never talks to a network, and not being able to is
+         the strongest privacy statement the app can make (docs/00, docs/02 §9). -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:allowBackup="false"
@@ -21,6 +24,17 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- specialUse is the honest type for continuous local measurement; the property below
+             is the justification Android 14 requires. -->
+        <service
+            android:name=".monitoring.MonitoringService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="continuous_network_usage_monitoring" />
+        </service>
     </application>
 
 </manifest>

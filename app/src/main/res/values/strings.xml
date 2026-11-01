@@ -20,11 +20,17 @@
     <string name="dashboard_status_unavailable">تعذّر قراءة عدّادات الشبكة على هذا الجهاز.</string>
     <string name="dashboard_start">بدء القياس</string>
     <string name="dashboard_stop">إيقاف القياس</string>
-    <string name="apps_body">تُعرض هنا قائمة التطبيقات واستهلاك كل تطبيق خلال الفترة المختارة.</string>
     <string name="apps_access_title">الوصول إلى بيانات الاستخدام</string>
     <string name="apps_access_body">ليعرف ميزان استهلاك كل تطبيق، يحتاج إذن «الوصول إلى بيانات الاستخدام» من إعدادات النظام. يمنح هذا الإذن أندرويد صلاحية أوسع (معرفة التطبيقات التي تستخدمها)، لكن ميزان لا يقرأ إلا عدّادات البايتات، ولا يرسل شيئاً خارج الجهاز.</string>
     <string name="apps_access_action">فتح إعدادات الوصول</string>
-    <string name="apps_access_granted">الوصول إلى بيانات الاستخدام ممنوح</string>
+    <string name="apps_period_today">اليوم</string>
+    <string name="apps_period_week">7 أيام</string>
+    <string name="apps_period_cycle">الدورة</string>
+    <string name="apps_recorded_total">مجموع التطبيقات المدرجة %1$s</string>
+    <string name="apps_last_sync">آخر مزامنة %1$s</string>
+    <string name="apps_sync_note">الأرقام من عدّادات أندرويد كما كانت عند آخر مزامنة، وقد تتأخر دقائق عن اللحظة الحالية.</string>
+    <string name="apps_empty_title">لا توجد بيانات بعد</string>
+    <string name="apps_empty_body">تُملأ القائمة تلقائياً بعد أول مزامنة، وقد تستغرق دقائق. أعد فتح التطبيق لاحقاً.</string>
     <string name="saver_body">تُضبط هنا الميزانيات وحماية التطبيقات من استهلاك البيانات.</string>
 
     <string name="history_last_7_days">آخر 7 أيام</string>

@@ -18,11 +18,17 @@
     <string name="dashboard_status_unavailable">This device does not report network counters.</string>
     <string name="dashboard_start">Start measuring</string>
     <string name="dashboard_stop">Stop measuring</string>
-    <string name="apps_body">The app list and per-app usage for the selected period will appear here.</string>
     <string name="apps_access_title">Usage access</string>
     <string name="apps_access_body">To measure each app\u2019s data use, Mizan needs the Usage access permission from system settings. Android grants broader access than that (which apps you use), but Mizan reads byte counters only and never sends anything off the device.</string>
     <string name="apps_access_action">Open access settings</string>
-    <string name="apps_access_granted">Usage access is granted</string>
+    <string name="apps_period_today">Today</string>
+    <string name="apps_period_week">7 days</string>
+    <string name="apps_period_cycle">Cycle</string>
+    <string name="apps_recorded_total">Total for listed apps %1$s</string>
+    <string name="apps_last_sync">Last sync %1$s</string>
+    <string name="apps_sync_note">Figures come from Android\u2019s counters as of the last sync and can trail the current moment by minutes.</string>
+    <string name="apps_empty_title">No data yet</string>
+    <string name="apps_empty_body">The list fills automatically after the first sync, which can take a few minutes. Reopen the app later.</string>
     <string name="saver_body">Budgets and data protection for individual apps will be managed here.</string>
 
     <string name="history_last_7_days">Last 7 days</string>

@@ -4,12 +4,15 @@ import com.google.common.truth.Truth.assertThat
 import com.maknoon.mizan.core.data.db.AppDailyEntity
 import com.maknoon.mizan.core.data.db.AppDailyNetwork
 import com.maknoon.mizan.core.data.db.AppUsageDao
+import com.maknoon.mizan.core.data.db.AppUsageTotal
 import com.maknoon.mizan.core.domain.usage.AppUsageBytes
 import com.maknoon.mizan.core.domain.usage.InstalledApp
 import com.maknoon.mizan.core.domain.usage.PerAppUsageSource
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 
@@ -163,6 +166,11 @@ class AppUsageRepositoryTest {
                 this.rows[Key(row.epochDay, row.uid, row.networkType)] = row
             }
         }
+
+        override fun observeTotals(
+            fromEpochDay: Long,
+            toEpochDay: Long,
+        ): Flow<List<AppUsageTotal>> = flowOf(emptyList())
     }
 
     private class FakePerAppUsageSource : PerAppUsageSource {

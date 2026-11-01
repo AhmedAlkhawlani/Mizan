@@ -61,6 +61,10 @@ interface UsageStateStore {
  * either too short or too long to express a meaningful rate. Only real observed traffic is
  * ever added; when the device cannot tell us, the accountant reports `partial` instead of
  * inventing numbers.
+ *
+ * This module runs on Android from API 26 while its tests run on a modern desktop JDK, so only
+ * `java.time` entry points that exist on API 26 may be used here. A JDK-only method would pass
+ * every test and fail on a real device.
  */
 class TrafficAccountant(
     private val store: UsageStateStore,
@@ -161,8 +165,11 @@ class TrafficAccountant(
         )
     }
 
+    // Instant.atZone is the API 26-safe route to a local date. LocalDate.ofInstant looks
+    // tidier but only exists from API 34, and this module is tested on a desktop JDK, so using
+    // it here would pass every JVM test and crash on an Android 8-13 device.
     private fun dayOf(atMillis: Long): Long =
-        LocalDate.ofInstant(Instant.ofEpochMilli(atMillis), zone).toEpochDay()
+        Instant.ofEpochMilli(atMillis).atZone(zone).toLocalDate().toEpochDay()
 
     private fun startOfDay(epochDay: Long): Long =
         LocalDate.ofEpochDay(epochDay).atStartOfDay(zone).toInstant().toEpochMilli()

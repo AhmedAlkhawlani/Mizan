@@ -1,6 +1,6 @@
 # 12 — سجل التقدّم: ما بُني فعلاً حتى الآن
 
-> آخر تحديث: 2026-11-02 · الفرع: `main` · آخر كومت: `32e3625`
+> آخر تحديث: 2026-11-02 · الفرع: `main` · آخر كومت: `34c303c`
 > المرجع: `docs/05-roadmap.md`. القاعدة المتّبعة: **خطوة = كومت واحد**، وقبل كل كومت تُشغَّل البوابة
 > `./gradlew testDebugUnitTest test lintDebug assembleDebug`.
 
@@ -15,7 +15,7 @@
 | 2 — المحاسبة والسجل | ✅ **مُثبتة** (2.1–2.5)؛ دقة ≤1% مقابل `NetworkStatsManager` مُثبتة على دلو مغلق — §9.1 |
 | 3 — استهلاك التطبيقات | ✅ مكتملة (3.1–3.5) ومُتحقَّقة على جهاز حقيقي (كلفة البطارية لم تُقس بعد — §9) |
 | 4 — الميزانيات والتنبيهات | ✅ مكتملة (4.1–4.6)؛ القبول (تنبيه واحد لكل مستوى بصوت ويبقى) مُتحقَّق في 4.4، و4.6 طبقة بيانات بلا واجهة بعد — §9/12–13 |
-| 5 — الودجات والتكامل | ⏳ لم تبدأ (البلاطة أُنجزت داخل المرحلة 1) |
+| 5 — الودجات والتكامل | 🟡 بدأت — 5.1 منجزة (ودجة سرعة 2×1)، وبقيت 5.2–5.4؛ التحقق البصري على الجهاز مؤجل بعد نافذة القياس — §9/14 |
 | 6 — Data Saver (VpnService) | ⏳ لم تبدأ |
 | 7 — الصقل والنشر | ⏳ لم تبدأ |
 
@@ -60,7 +60,10 @@
 | 29 | `19f3e09` | `feat(core): add budget alert engine` |
 | 30 | `b6dc00b` | `feat(notification): add persistent budget alerts` |
 | 31 | `cc7694c` | `feat(core): add anomaly detector` |
-| 32 | `32e3625` | `feat(data): add network profiles` |
+| 32 | `6de6f2d` | `docs: record phase 4.5 completion` |
+| 33 | `32e3625` | `feat(data): add network profiles` |
+| 34 | `750090c` | `docs: record phase 4.6 completion` |
+| 35 | `34c303c` | `feat(widget): add speed widget` |
 
 > ⚠️ **لم يُدفع أي شيء إلى GitHub**: كل الكومتات محلية. `git push origin main` يفشل بـ
 > `could not read Username for 'https://github.com'` — لا بيانات اعتماد HTTPS على الجهاز.
@@ -85,6 +88,7 @@
 | Lifecycle / Activity | 2.10.0 / 1.12.2 | |
 | Coroutines | 1.10.2 | |
 | WorkManager | 2.10.5 | `work-runtime-ktx` لمزامنة التطبيقات |
+| Glance | 1.2.0 | `glance-appwidget` للودجة 2×1 |
 | اختبارات | JUnit 4.13.2 + Truth 1.4.4 + coroutines-test | لا Robolectric ولا اختبارات instrumentation |
 
 ---
@@ -93,10 +97,10 @@
 
 ```text
 :app                 com.maknoon.mizan            MainActivity · app/ (shell, locale) · ui/dashboard · ui/apps · ui/history · ui/budget · ui/component
-                                                   · monitoring · alerts · sync (WorkManager) · tile · boot
-:core:domain  (JVM)  com.maknoon.mizan.core.domain    format · accounting · budget · cycle · usage (أنواع نقية)
-:core:data           com.maknoon.mizan.core.data      db (Room) · settings (DataStore) · usage (repository/queries) · alert · export (CSV)
-:core:platform       com.maknoon.mizan.core.platform  traffic (TrafficSource) · usage (NetworkStats + Usage Access + apps)
+                                                   · monitoring · alerts · sync (WorkManager) · tile · boot · widget (Glance)
+:core:domain  (JVM)  com.maknoon.mizan.core.domain    format · accounting · budget · cycle · usage (أنواع نقية) · anomaly · network
+:core:data           com.maknoon.mizan.core.data      db (Room) · settings (DataStore) · usage (repository/queries) · alert · export (CSV) · network (profiles)
+:core:platform       com.maknoon.mizan.core.platform  traffic (TrafficSource) · usage (NetworkStats + Usage Access + apps) · network (ConnectivityManager)
 :core:designsystem   com.maknoon.mizan.core.designsystem  theme · component (UsageBarChart)
 ```
 
@@ -213,6 +217,12 @@
     تُستدعى الواجهة (وهي مدرجة أصلاً في docs/02 §8)، فلا صلاحية جديدة على المستخدم. لا واجهة
     لإنشاء الملفات في هذه الخطوة (docs/05 يحدد الكومت `feat(data)`)، ولا وصل بإشعار أو حاجز.
 
+26. **ودجة السرعة 2×1 (5.1)**: `SpeedWidget` (Glance) تعرض سرعتي التنزيل والرفع وإجمالي اليوم
+    على بطاقة داكنة بزوايا 20dp، والضغط عليها يفتح التطبيق. الودجة لا تبثّ بنفسها، فالخدمة تدفع
+    إعادة رسم كل 15 ثانية عبر `updateAll` (لا 30 دقيقة التي يفرضها `updatePeriodMillis` كحد أدنى)،
+    وعند توقّف الخدمة تُنشر حالة «المراقبة متوقفة» فوراً بدل تجميد آخر سرعة. فشل التحديث يُسجَّل
+    ولا يوقف القياس. لا صلاحيات جديدة، ولا اتصال شبكي. التحقق البصري على الجهاز مؤجل — §9/14.
+
 ---
 
 ## 6) الاختبارات (238 اختباراً)
@@ -306,6 +316,12 @@
     فالفهرس الفريد على العمودين يمنع ملفين متعارضين ويجعل المطابقة حتمية. «غير مقنّن مؤقتاً» يسبق
     الملف لأنه اختيار المستخدم لهذه الشبكة الآن، والملف يسبق راية النظام لأنه قرار صريح داخل
     التطبيق. إعادة الربط تستخدم `INSERT OR REPLACE` فيتغيّر المعرّف، ولا شيء يعتمد عليه بعد.
+21. **الودجة ليست نسخة حرفية من اللوحة**: `design/concept-board` يرسم ودجة 2×2، وdocs/04 يوزّع
+    المحتوى على ثلاث ودجات (1×1 سرعة، 2×1 سرعة + إجمالي اليوم، 2×2 حلقة ميزانية + أكثر تطبيق).
+    نفّذت 5.1 حسب الجدول: بطاقة 2×1 تعرض ↓/↑ وإجمالي اليوم بالهوية نفسها (داكن، سماوي/وردي)،
+    وحلقة 2×2 تأتي في 5.2. الودجة تستخدم ألواناً ثابتة لا Dynamic Color لأن سطحها الداكن جزء من
+    هوية اللوحة ويجب أن يبقى مقروءاً فوق أي خلفية. `updatePeriodMillis` بقي 30 دقيقة كحد أدنى
+    للنظام، والتحديث الحيّ يدفعه ناقل الخدمة كل 15 ثانية؛ لا `AlarmManager` ولا WakeLock إضافي.
 
 ---
 
@@ -362,6 +378,10 @@
 13. **لا واجهة لملفات الشبكات بعد**: نُفِّذت الطبقة الخلفية فقط. إنشاء الملفات وتعديلها وربطها
     بالشبكة الحالية وشارة «مقنّن» على الرئيسية تحتاج شاشة إعدادات لم تُنفَّذ، و`AndroidNetworkStateSource`
     ليس له مستدعٍ بعد. لا نصوص واجهة جديدة في هذه الخطوة.
+14. **ودجة السرعة لم تُشاهد على شاشة حقيقية بعد**: الكود يجتاز البوابة، لكن تثبيت اليوم سيوقف
+    خدمة المراقبة في يوم قياس الدقة الكامل (2026-11-02). تُثبَّت الودجة وتُسحب إلى الشاشة الرئيسية
+    بعد مقارنة اليوم (2026-11-03)، وتُلتقط صورة للتحقق من اتجاه RTL والخطوط والقصّ عند أضيق عرض
+    2×1. لا يوجد اختبار Glance آلي في المشروع (يشبه غياب اختبار Compose).
 
 ### 9.1 قياس دقة المرحلة 2: مُثبت على دلو مغلق (2026-11-01)
 
@@ -465,7 +485,8 @@ tunnels يُحتسب مرتين (على tunnel وعلى الواجهة تحته)
 | شاشة الحماية | ❌ المرحلة 6 |
 | إشعار: يفتقد زرّي «فتح» و«حسناً» ومن/إلى الميزانية | 🟡 الإشعار الدائم LOW بلا «فتح» وبلا «من/إلى»؛ تنبيه الميزانية (4.4) ✅ له «حسناً» ويفتح التطبيق بالضغط |
 | بلاطة الإعدادات السريعة | ✅ منفّذ |
-| دجت 2×2 | ❌ المرحلة 5 |
+| ودجة 2×1 (سرعة + إجمالي اليوم) | ✅ منفّذة (5.1) — بلا تحقق بصري على الجهاز بعد |
+| ودجة 2×2 (حلقة ميزانية) | ❌ 5.2 |
 | الوضع الفاتح (غير موجود في اللوحة) | ✅ أضفناه مع تباين 4.5:1 |
 
 ---

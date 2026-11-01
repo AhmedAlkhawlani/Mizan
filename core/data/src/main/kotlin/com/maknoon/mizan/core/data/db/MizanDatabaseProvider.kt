@@ -19,6 +19,9 @@ object MizanDatabaseProvider {
             context.applicationContext,
             MizanDatabase::class.java,
             MizanDatabase.NAME,
-        ).build().also { instance = it }
+        )
+            .addMigrations(MizanDatabase.MIGRATION_1_2)
+            .build()
+            .also { instance = it }
     }
 }

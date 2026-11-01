@@ -34,6 +34,7 @@ import com.maknoon.mizan.R
 import com.maknoon.mizan.core.designsystem.theme.MizanTheme
 import com.maknoon.mizan.core.designsystem.theme.statusColors
 import com.maknoon.mizan.ui.dashboard.DashboardScreen
+import com.maknoon.mizan.ui.history.HistoryScreen
 
 /**
  * The four top-level destinations of the shell in docs/04.
@@ -50,7 +51,7 @@ enum class MizanDestination(
     Dashboard("dashboard", R.string.nav_dashboard, R.drawable.ic_dashboard),
     Apps("apps", R.string.nav_apps, R.drawable.ic_apps, R.string.apps_body),
     Saver("saver", R.string.nav_saver, R.drawable.ic_shield, R.string.saver_body),
-    History("history", R.string.nav_history, R.drawable.ic_history, R.string.history_body),
+    History("history", R.string.nav_history, R.drawable.ic_history),
 }
 
 /**
@@ -96,8 +97,11 @@ fun MizanApp(modifier: Modifier = Modifier) {
             modifier = Modifier.padding(innerPadding),
         ) {
             composable(MizanDestination.Dashboard.route) { DashboardScreen() }
+            composable(MizanDestination.History.route) { HistoryScreen() }
             MizanDestination.entries
-                .filterNot { it == MizanDestination.Dashboard }
+                .filterNot {
+                    it == MizanDestination.Dashboard || it == MizanDestination.History
+                }
                 .forEach { destination ->
                     composable(destination.route) {
                         val bodyRes = destination.bodyRes ?: return@composable

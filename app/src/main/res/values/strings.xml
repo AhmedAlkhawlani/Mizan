@@ -20,7 +20,20 @@
     <string name="dashboard_stop">إيقاف القياس</string>
     <string name="apps_body">تُعرض هنا قائمة التطبيقات واستهلاك كل تطبيق خلال الفترة المختارة.</string>
     <string name="saver_body">تُضبط هنا الميزانيات وحماية التطبيقات من استهلاك البيانات.</string>
-    <string name="history_body">تُعرض هنا رسوم الاستهلاك اليومي والشهري ومقارنة الشبكات.</string>
+
+    <string name="history_last_7_days">آخر 7 أيام</string>
+    <string name="history_today_hours">ساعات اليوم</string>
+    <string name="history_legend_down">تنزيل</string>
+    <string name="history_legend_up">رفع</string>
+    <string name="history_total">الإجمالي %1$s</string>
+    <string name="history_today_total">إجمالي اليوم %1$s</string>
+    <string name="history_daily_chart_description">مخطط آخر 7 أيام. الإجمالي %1$s.</string>
+    <string name="history_hourly_chart_description">مخطط ساعات اليوم. إجمالي اليوم %1$s.</string>
+    <string name="history_partial_content_description">تشمل الأيام المعلَّمة بنقطة كهرمانية يوماً لم تُراقبه المراقبة كاملاً.</string>
+    <string name="history_partial_legend">• النقطة الكهرمانية تعني يوماً لم تُراقبه المراقبة كاملاً.</string>
+    <string name="history_observed_note">تُحتسب الساعات من الترافيك الذي رصدته المراقبة أثناء عملها فقط.</string>
+    <string name="history_empty_title">لا توجد بيانات بعد</string>
+    <string name="history_empty_body">ابدأ القياس من الشاشة الرئيسية، وستظهر أول الأرقام خلال ثوانٍ.</string>
 
     <string name="section_in_progress">قيد الإنشاء</string>
 

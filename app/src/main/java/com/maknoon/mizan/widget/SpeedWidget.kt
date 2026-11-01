@@ -1,6 +1,7 @@
 package com.maknoon.mizan.widget
 
 import android.content.Context
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -11,6 +12,7 @@ import androidx.glance.LocalContext
 import androidx.glance.action.actionStartActivity
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
+import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
 import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.provideContent
@@ -27,10 +29,13 @@ import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
 import com.maknoon.mizan.MainActivity
 import com.maknoon.mizan.R
+import com.maknoon.mizan.core.data.widget.SpeedWidgetConfig
+import com.maknoon.mizan.core.data.widget.WidgetConfigStore
 import com.maknoon.mizan.core.designsystem.theme.MizanPalette
 import com.maknoon.mizan.monitoring.MonitoringStateHolder
 import com.maknoon.mizan.ui.dashboard.DashboardUiState
 import com.maknoon.mizan.ui.dashboard.toDashboardUiState
+import kotlinx.coroutines.CancellationException
 
 /**
  * The 2×1 home-screen widget: Mizan's live speeds and today's total, updated by the monitor.
@@ -43,12 +48,24 @@ class SpeedWidget : GlanceAppWidget() {
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         val state = MonitoringStateHolder.state.value.toDashboardUiState()
-        provideContent { SpeedWidgetContent(state) }
+        val config = loadConfig(context, id)
+        provideContent { SpeedWidgetContent(state, config) }
+    }
+
+    private suspend fun loadConfig(context: Context, id: GlanceId): SpeedWidgetConfig = try {
+        val appWidgetId = GlanceAppWidgetManager(context).getAppWidgetId(id)
+        WidgetConfigStore(context).speed(appWidgetId)
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: Exception) {
+        Log.w(TAG, "speed widget config read failed, using defaults", e)
+        SpeedWidgetConfig()
     }
 
     companion object {
         /** Redraw cadence for widgets only; the 1-second sampling stays in the service. */
         const val REFRESH_INTERVAL_SECONDS = 15L
+        private const val TAG = "MizanWidget"
 
         suspend fun refresh(context: Context) {
             SpeedWidget().updateAll(context)
@@ -57,7 +74,7 @@ class SpeedWidget : GlanceAppWidget() {
 }
 
 @Composable
-private fun SpeedWidgetContent(state: DashboardUiState) {
+private fun SpeedWidgetContent(state: DashboardUiState, config: SpeedWidgetConfig) {
     val context = LocalContext.current
 
     Row(
@@ -90,14 +107,16 @@ private fun SpeedWidgetContent(state: DashboardUiState) {
                         ),
                         maxLines = 1,
                     )
-                    Text(
-                        text = context.getString(R.string.widget_speed_up, state.upSpeed),
-                        style = TextStyle(
-                            color = ColorProvider(MizanPalette.DataUp),
-                            fontSize = 9.sp,
-                        ),
-                        maxLines = 1,
-                    )
+                    if (config.showUpload) {
+                        Text(
+                            text = context.getString(R.string.widget_speed_up, state.upSpeed),
+                            style = TextStyle(
+                                color = ColorProvider(MizanPalette.DataUp),
+                                fontSize = 9.sp,
+                            ),
+                            maxLines = 1,
+                        )
+                    }
                 }
 
                 else -> Text(
@@ -111,31 +130,38 @@ private fun SpeedWidgetContent(state: DashboardUiState) {
                 )
             }
         }
-        Column(
-            modifier = GlanceModifier.padding(start = 8.dp),
-            horizontalAlignment = Alignment.Horizontal.End,
-        ) {
-            Text(
-                text = context.getString(R.string.widget_today),
-                style = TextStyle(
-                    color = ColorProvider(Color(0xFF8A94A6)),
-                    fontSize = 9.sp,
-                ),
-                maxLines = 1,
-            )
-            Text(
-                text = state.todayTotal,
-                style = TextStyle(
-                    color = ColorProvider(Color(0xFFE5E7EB)),
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold,
-                ),
-                maxLines = 1,
-            )
+        if (config.showToday) {
+            Column(
+                modifier = GlanceModifier.padding(start = 8.dp),
+                horizontalAlignment = Alignment.Horizontal.End,
+            ) {
+                Text(
+                    text = context.getString(R.string.widget_today),
+                    style = TextStyle(
+                        color = ColorProvider(Color(0xFF8A94A6)),
+                        fontSize = 9.sp,
+                    ),
+                    maxLines = 1,
+                )
+                Text(
+                    text = state.todayTotal,
+                    style = TextStyle(
+                        color = ColorProvider(Color(0xFFE5E7EB)),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                    ),
+                    maxLines = 1,
+                )
+            }
         }
     }
 }
 
 class SpeedWidgetReceiver : GlanceAppWidgetReceiver() {
     override val glanceAppWidget: GlanceAppWidget = SpeedWidget()
+
+    override fun onDeleted(context: Context, appWidgetIds: IntArray) {
+        super.onDeleted(context, appWidgetIds)
+        WidgetConfigStore.deleteInBackground(context, appWidgetIds)
+    }
 }

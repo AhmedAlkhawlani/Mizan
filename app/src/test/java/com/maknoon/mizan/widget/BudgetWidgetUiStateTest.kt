@@ -118,6 +118,45 @@ class BudgetWidgetUiStateTest {
         assertThat(state.topAppBytes).isNull()
     }
 
+    @Test
+    fun `remaining mode shows what is left of the limit`() {
+        val state = budgetWidgetUiState(usedBytes = 620, limitBytes = 1_000, topApp = null)
+
+        assertThat(state.centerBytes(showRemaining = true)).isEqualTo(380L)
+        assertThat(state.centerBytes(showRemaining = false)).isEqualTo(620L)
+        assertThat(state.percent).isEqualTo(62)
+    }
+
+    @Test
+    fun `remaining mode with no usage returns the whole limit`() {
+        val state = budgetWidgetUiState(usedBytes = 0, limitBytes = 1_000, topApp = null)
+
+        assertThat(state.centerBytes(showRemaining = true)).isEqualTo(1_000L)
+    }
+
+    @Test
+    fun `remaining mode clamps an overrun to zero`() {
+        val state = budgetWidgetUiState(usedBytes = 1_500, limitBytes = 1_000, topApp = null)
+
+        assertThat(state.centerBytes(showRemaining = true)).isEqualTo(0L)
+        assertThat(state.percent).isEqualTo(150)
+    }
+
+    @Test
+    fun `remaining mode without a limit falls back to usage`() {
+        val state = budgetWidgetUiState(usedBytes = 500, limitBytes = null, topApp = null)
+
+        assertThat(state.centerBytes(showRemaining = true)).isEqualTo(500L)
+    }
+
+    @Test
+    fun `remaining mode with unknown usage stays unknown`() {
+        val state = budgetWidgetUiState(usedBytes = null, limitBytes = 1_000, topApp = null)
+
+        assertThat(state.centerBytes(showRemaining = true)).isNull()
+        assertThat(state.centerBytes(showRemaining = false)).isNull()
+    }
+
     private companion object {
         const val TOLERANCE = 0.000_001f
     }

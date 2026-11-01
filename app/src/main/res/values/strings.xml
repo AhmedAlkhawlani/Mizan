@@ -132,4 +132,21 @@
     <string name="widget_budget_no_limit">بدون ميزانية</string>
     <string name="widget_top_app">الأكثر استهلاكاً</string>
     <string name="widget_top_app_none">لا بيانات تطبيقات بعد</string>
+    <string name="widget_budget_remaining_of_limit">المتبقي من %1$s</string>
+
+    <string name="widget_config_speed_title">إعدادات ودجة السرعة</string>
+    <string name="widget_config_speed_subtitle">اختر ما تعرضه البطاقة. تبقى السرعة اللحظية هي الأساس، وتُحدَّث الأرقام من خدمة المراقبة أثناء عملها.</string>
+    <string name="widget_config_show_today">إجمالي اليوم</string>
+    <string name="widget_config_show_today_hint">الرقم إلى جانب السرعة.</string>
+    <string name="widget_config_show_upload">سرعة الرفع</string>
+    <string name="widget_config_show_upload_hint">السطر الثاني تحت سرعة التنزيل.</string>
+    <string name="widget_config_budget_title">إعدادات ودجة الميزانية</string>
+    <string name="widget_config_budget_subtitle">الحلقة تبقى دائماً؛ اختر ما يرافقها. تُقرأ الميزانية اليومية من محرر الميزانية.</string>
+    <string name="widget_config_show_top_app">أكثر تطبيق استهلاكاً</string>
+    <string name="widget_config_show_top_app_hint">أيقونة التطبيق واسمه وحجمه أسفل الحلقة.</string>
+    <string name="widget_config_show_remaining">عرض المتبقي</string>
+    <string name="widget_config_show_remaining_hint">يعرض ما تبقّى من الميزانية بدل المستهلك.</string>
+    <string name="widget_config_cancel">إلغاء</string>
+    <string name="widget_config_save">تم</string>
+    <string name="widget_config_save_failed">تعذّر حفظ الإعدادات، حاول مرة أخرى.</string>
 </resources>

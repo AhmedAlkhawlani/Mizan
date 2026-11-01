@@ -130,4 +130,21 @@
     <string name="widget_budget_no_limit">No budget</string>
     <string name="widget_top_app">Top app</string>
     <string name="widget_top_app_none">No app data yet</string>
+    <string name="widget_budget_remaining_of_limit">%1$s left</string>
+
+    <string name="widget_config_speed_title">Speed widget settings</string>
+    <string name="widget_config_speed_subtitle">Choose what this card shows. Live speed stays the core, and figures refresh while monitoring runs.</string>
+    <string name="widget_config_show_today">Today\'s total</string>
+    <string name="widget_config_show_today_hint">The figure beside the speed.</string>
+    <string name="widget_config_show_upload">Upload speed</string>
+    <string name="widget_config_show_upload_hint">The second line under download.</string>
+    <string name="widget_config_budget_title">Budget widget settings</string>
+    <string name="widget_config_budget_subtitle">The ring is always there; choose what accompanies it. The daily budget comes from the budget editor.</string>
+    <string name="widget_config_show_top_app">Top app</string>
+    <string name="widget_config_show_top_app_hint">The app icon, name and size below the ring.</string>
+    <string name="widget_config_show_remaining">Show remaining</string>
+    <string name="widget_config_show_remaining_hint">Shows what is left of the budget instead of usage.</string>
+    <string name="widget_config_cancel">Cancel</string>
+    <string name="widget_config_save">Done</string>
+    <string name="widget_config_save_failed">Couldn\'t save settings. Try again.</string>
 </resources>

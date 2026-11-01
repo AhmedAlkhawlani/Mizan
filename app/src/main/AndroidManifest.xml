@@ -83,6 +83,18 @@
             android:name=".alerts.BudgetAlertActionReceiver"
             android:exported="false" />
 
+        <!-- Configuration sheets are launched by the launcher, so they must be visible to it.
+             Each one only writes choices for the appWidgetId it was given. -->
+        <activity
+            android:name=".widget.SpeedWidgetConfigActivity"
+            android:exported="true"
+            android:theme="@style/Theme.Mizan" />
+
+        <activity
+            android:name=".widget.BudgetWidgetConfigActivity"
+            android:exported="true"
+            android:theme="@style/Theme.Mizan" />
+
         <!-- Home-screen widget providers must be exported so the launcher can bind them. -->
         <receiver
             android:name=".widget.SpeedWidgetReceiver"

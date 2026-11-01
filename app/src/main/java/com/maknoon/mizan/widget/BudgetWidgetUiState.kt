@@ -20,6 +20,18 @@ internal data class BudgetWidgetUiState(
     val topAppBytes: Long?,
 )
 
+/**
+ * The number in the ring's centre. Remaining is only meaningful next to a cap, so without one
+ * the widget keeps showing the usage it does know. An overrun shows zero remaining, not a
+ * negative number; the percentage and the danger colour already say how far past the cap it is.
+ */
+internal fun BudgetWidgetUiState.centerBytes(showRemaining: Boolean): Long? =
+    if (showRemaining && limitBytes != null) {
+        usedBytes?.let { (limitBytes - it).coerceAtLeast(0L) }
+    } else {
+        usedBytes
+    }
+
 internal fun budgetWidgetUiState(
     usedBytes: Long?,
     limitBytes: Long?,

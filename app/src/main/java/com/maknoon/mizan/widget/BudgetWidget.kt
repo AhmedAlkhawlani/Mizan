@@ -23,6 +23,7 @@ import androidx.glance.LocalSize
 import androidx.glance.action.actionStartActivity
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
+import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
 import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.provideContent
@@ -45,8 +46,10 @@ import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
 import com.maknoon.mizan.MainActivity
 import com.maknoon.mizan.R
+import com.maknoon.mizan.core.data.widget.BudgetWidgetConfig
 import com.maknoon.mizan.core.data.widget.BudgetWidgetRepository
 import com.maknoon.mizan.core.data.widget.BudgetWidgetSnapshot
+import com.maknoon.mizan.core.data.widget.WidgetConfigStore
 import com.maknoon.mizan.core.designsystem.theme.MizanPalette
 import com.maknoon.mizan.core.domain.format.ByteFormatter
 import com.maknoon.mizan.monitoring.MonitoringStateHolder
@@ -82,14 +85,29 @@ class BudgetWidget : GlanceAppWidget() {
                 BudgetWidgetSnapshot(null, null, null)
             }
         }
+        val config = loadConfig(context, id)
         val liveTotal = MonitoringStateHolder.state.value.usage?.totalBytes
         val state = budgetWidgetUiState(
             usedBytes = liveTotal ?: snapshot.storedTodayBytes,
             limitBytes = snapshot.dailyLimitBytes,
             topApp = snapshot.topApp,
         )
-        val icon = snapshot.topApp?.let { loadAppIcon(context, it.packageName) }
-        provideContent { BudgetWidgetContent(state, icon) }
+        val icon = if (config.showTopApp) {
+            snapshot.topApp?.let { loadAppIcon(context, it.packageName) }
+        } else {
+            null
+        }
+        provideContent { BudgetWidgetContent(state, config, icon) }
+    }
+
+    private suspend fun loadConfig(context: Context, id: GlanceId): BudgetWidgetConfig = try {
+        val appWidgetId = GlanceAppWidgetManager(context).getAppWidgetId(id)
+        WidgetConfigStore(context).budget(appWidgetId)
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: Exception) {
+        Log.w(TAG, "budget widget config read failed, using defaults", e)
+        BudgetWidgetConfig()
     }
 
     companion object {
@@ -105,7 +123,11 @@ class BudgetWidget : GlanceAppWidget() {
 }
 
 @Composable
-private fun BudgetWidgetContent(state: BudgetWidgetUiState, topAppIcon: Bitmap?) {
+private fun BudgetWidgetContent(
+    state: BudgetWidgetUiState,
+    config: BudgetWidgetConfig,
+    topAppIcon: Bitmap?,
+) {
     val context = LocalContext.current
     val compact = LocalSize.current.height < COMPACT_HEIGHT
     val ringSize = if (compact) COMPACT_RING_SIZE else RING_SIZE
@@ -163,7 +185,9 @@ private fun BudgetWidgetContent(state: BudgetWidgetUiState, topAppIcon: Bitmap?)
                 )
                 Column(horizontalAlignment = Alignment.Horizontal.CenterHorizontally) {
                     Text(
-                        text = state.usedBytes?.let { ByteFormatter.data(it) } ?: DashboardUiState.UNKNOWN,
+                        text = state.centerBytes(config.showRemaining)
+                            ?.let { ByteFormatter.data(it) }
+                            ?: DashboardUiState.UNKNOWN,
                         style = TextStyle(
                             color = ColorProvider(Color(0xFFE5E7EB)),
                             fontSize = if (compact) 11.sp else 14.sp,
@@ -171,10 +195,20 @@ private fun BudgetWidgetContent(state: BudgetWidgetUiState, topAppIcon: Bitmap?)
                         ),
                         maxLines = 1,
                     )
+                    val limit = state.limitBytes
                     Text(
-                        text = state.limitBytes?.let {
-                            context.getString(R.string.widget_budget_of_limit, ByteFormatter.data(it))
-                        } ?: context.getString(R.string.widget_budget_no_limit),
+                        text = when {
+                            limit == null -> context.getString(R.string.widget_budget_no_limit)
+                            config.showRemaining -> context.getString(
+                                R.string.widget_budget_remaining_of_limit,
+                                ByteFormatter.data(limit),
+                            )
+
+                            else -> context.getString(
+                                R.string.widget_budget_of_limit,
+                                ByteFormatter.data(limit),
+                            )
+                        },
                         style = TextStyle(
                             color = ColorProvider(Color(0xFF8A94A6)),
                             fontSize = if (compact) 7.sp else 8.sp,
@@ -185,48 +219,52 @@ private fun BudgetWidgetContent(state: BudgetWidgetUiState, topAppIcon: Bitmap?)
             }
         }
 
-        Text(
-            text = context.getString(R.string.widget_top_app),
-            style = TextStyle(color = ColorProvider(Color(0xFF8A94A6)), fontSize = 7.sp),
-            maxLines = 1,
-        )
-        if (state.topAppLabel != null) {
-            Row(
-                modifier = GlanceModifier.fillMaxWidth(),
-                verticalAlignment = Alignment.Vertical.CenterVertically,
-            ) {
-                if (topAppIcon != null) {
-                    Image(
-                        provider = ImageProvider(topAppIcon),
-                        contentDescription = null,
-                        modifier = GlanceModifier.size(12.dp),
+        if (config.showTopApp) {
+            Text(
+                text = context.getString(R.string.widget_top_app),
+                style = TextStyle(color = ColorProvider(Color(0xFF8A94A6)), fontSize = 7.sp),
+                maxLines = 1,
+            )
+            if (state.topAppLabel != null) {
+                Row(
+                    modifier = GlanceModifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.Vertical.CenterVertically,
+                ) {
+                    if (topAppIcon != null) {
+                        Image(
+                            provider = ImageProvider(topAppIcon),
+                            contentDescription = null,
+                            modifier = GlanceModifier.size(12.dp),
+                        )
+                        Spacer(modifier = GlanceModifier.width(4.dp))
+                    }
+                    Text(
+                        text = state.topAppLabel,
+                        style = TextStyle(
+                            color = ColorProvider(Color(0xFFE5E7EB)),
+                            fontSize = 10.sp,
+                        ),
+                        modifier = GlanceModifier.defaultWeight(),
+                        maxLines = 1,
                     )
-                    Spacer(modifier = GlanceModifier.width(4.dp))
+                    Text(
+                        text = state.topAppBytes
+                            ?.let { ByteFormatter.data(it) }
+                            ?: DashboardUiState.UNKNOWN,
+                        style = TextStyle(
+                            color = ColorProvider(Color(0xFF8A94A6)),
+                            fontSize = 9.sp,
+                        ),
+                        maxLines = 1,
+                    )
                 }
+            } else {
                 Text(
-                    text = state.topAppLabel,
-                    style = TextStyle(
-                        color = ColorProvider(Color(0xFFE5E7EB)),
-                        fontSize = 10.sp,
-                    ),
-                    modifier = GlanceModifier.defaultWeight(),
-                    maxLines = 1,
-                )
-                Text(
-                    text = state.topAppBytes?.let { ByteFormatter.data(it) } ?: DashboardUiState.UNKNOWN,
-                    style = TextStyle(
-                        color = ColorProvider(Color(0xFF8A94A6)),
-                        fontSize = 9.sp,
-                    ),
+                    text = context.getString(R.string.widget_top_app_none),
+                    style = TextStyle(color = ColorProvider(Color(0xFF8A94A6)), fontSize = 9.sp),
                     maxLines = 1,
                 )
             }
-        } else {
-            Text(
-                text = context.getString(R.string.widget_top_app_none),
-                style = TextStyle(color = ColorProvider(Color(0xFF8A94A6)), fontSize = 9.sp),
-                maxLines = 1,
-            )
         }
     }
 }
@@ -290,6 +328,11 @@ private fun loadAppIcon(context: Context, packageName: String): Bitmap? = runCat
 
 class BudgetWidgetReceiver : GlanceAppWidgetReceiver() {
     override val glanceAppWidget: GlanceAppWidget = BudgetWidget()
+
+    override fun onDeleted(context: Context, appWidgetIds: IntArray) {
+        super.onDeleted(context, appWidgetIds)
+        WidgetConfigStore.deleteInBackground(context, appWidgetIds)
+    }
 }
 
 private val RING_MUTED = 0xFF64748B.toInt()

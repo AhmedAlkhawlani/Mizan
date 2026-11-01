@@ -7,12 +7,20 @@
     <string name="nav_saver">Guard</string>
     <string name="nav_history">History</string>
 
-    <string name="dashboard_body">Live speed, today usage and its budget will appear here.</string>
+    <string name="dashboard_speed_down">Download</string>
+    <string name="dashboard_speed_up">Upload</string>
+    <string name="dashboard_today">Today usage</string>
+    <string name="dashboard_partial">Partial day</string>
+    <string name="dashboard_status_running">Monitoring is running</string>
+    <string name="dashboard_status_stopped">Monitoring is stopped — tap start.</string>
+    <string name="dashboard_status_unavailable">This device does not report network counters.</string>
+    <string name="dashboard_start">Start measuring</string>
+    <string name="dashboard_stop">Stop measuring</string>
     <string name="apps_body">The app list and per-app usage for the selected period will appear here.</string>
     <string name="saver_body">Budgets and data protection for individual apps will be managed here.</string>
     <string name="history_body">Daily and monthly usage charts and network comparisons will appear here.</string>
 
-    <string name="section_in_progress">In progress — phase 0</string>
+    <string name="section_in_progress">In progress</string>
 
     <string name="notification_channel_monitoring">Live monitoring</string>
     <string name="notification_channel_monitoring_description">Shows live speed and today usage while monitoring runs.</string>

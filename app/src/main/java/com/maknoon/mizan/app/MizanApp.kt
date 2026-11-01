@@ -33,18 +33,24 @@ import androidx.navigation.compose.rememberNavController
 import com.maknoon.mizan.R
 import com.maknoon.mizan.core.designsystem.theme.MizanTheme
 import com.maknoon.mizan.core.designsystem.theme.statusColors
+import com.maknoon.mizan.ui.dashboard.DashboardScreen
 
-/** The four top-level destinations of the shell in docs/04. */
+/**
+ * The four top-level destinations of the shell in docs/04.
+ *
+ * [bodyRes] describes a section that still shows a placeholder; the dashboard is fully built
+ * from phase 1, so it has none.
+ */
 enum class MizanDestination(
     val route: String,
     @param:StringRes val labelRes: Int,
-    @param:StringRes val bodyRes: Int,
     @param:DrawableRes val iconRes: Int,
+    @param:StringRes val bodyRes: Int? = null,
 ) {
-    Dashboard("dashboard", R.string.nav_dashboard, R.string.dashboard_body, R.drawable.ic_dashboard),
-    Apps("apps", R.string.nav_apps, R.string.apps_body, R.drawable.ic_apps),
-    Saver("saver", R.string.nav_saver, R.string.saver_body, R.drawable.ic_shield),
-    History("history", R.string.nav_history, R.string.history_body, R.drawable.ic_history),
+    Dashboard("dashboard", R.string.nav_dashboard, R.drawable.ic_dashboard),
+    Apps("apps", R.string.nav_apps, R.drawable.ic_apps, R.string.apps_body),
+    Saver("saver", R.string.nav_saver, R.drawable.ic_shield, R.string.saver_body),
+    History("history", R.string.nav_history, R.drawable.ic_history, R.string.history_body),
 }
 
 /**
@@ -89,9 +95,15 @@ fun MizanApp(modifier: Modifier = Modifier) {
             startDestination = MizanDestination.Dashboard.route,
             modifier = Modifier.padding(innerPadding),
         ) {
-            MizanDestination.entries.forEach { destination ->
-                composable(destination.route) { SectionPlaceholder(destination) }
-            }
+            composable(MizanDestination.Dashboard.route) { DashboardScreen() }
+            MizanDestination.entries
+                .filterNot { it == MizanDestination.Dashboard }
+                .forEach { destination ->
+                    composable(destination.route) {
+                        val bodyRes = destination.bodyRes ?: return@composable
+                        SectionPlaceholder(destination, bodyRes)
+                    }
+                }
         }
     }
 }
@@ -109,7 +121,11 @@ private fun NavHostController.navigateToTab(destination: MizanDestination) {
 }
 
 @Composable
-private fun SectionPlaceholder(destination: MizanDestination, modifier: Modifier = Modifier) {
+private fun SectionPlaceholder(
+    destination: MizanDestination,
+    @StringRes bodyRes: Int,
+    modifier: Modifier = Modifier,
+) {
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -129,7 +145,7 @@ private fun SectionPlaceholder(destination: MizanDestination, modifier: Modifier
             textAlign = TextAlign.Center,
         )
         Text(
-            text = stringResource(destination.bodyRes),
+            text = stringResource(bodyRes),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,

@@ -9,12 +9,20 @@
     <string name="nav_saver">الحماية</string>
     <string name="nav_history">السجل</string>
 
-    <string name="dashboard_body">تُعرض هنا السرعة اللحظية وإجمالي اليوم وميزانيته.</string>
+    <string name="dashboard_speed_down">تنزيل</string>
+    <string name="dashboard_speed_up">رفع</string>
+    <string name="dashboard_today">استهلاك اليوم</string>
+    <string name="dashboard_partial">يوم جزئي</string>
+    <string name="dashboard_status_running">المراقبة تعمل</string>
+    <string name="dashboard_status_stopped">المراقبة متوقفة — اضغط بدء القياس.</string>
+    <string name="dashboard_status_unavailable">تعذّر قراءة عدّادات الشبكة على هذا الجهاز.</string>
+    <string name="dashboard_start">بدء القياس</string>
+    <string name="dashboard_stop">إيقاف القياس</string>
     <string name="apps_body">تُعرض هنا قائمة التطبيقات واستهلاك كل تطبيق خلال الفترة المختارة.</string>
     <string name="saver_body">تُضبط هنا الميزانيات وحماية التطبيقات من استهلاك البيانات.</string>
     <string name="history_body">تُعرض هنا رسوم الاستهلاك اليومي والشهري ومقارنة الشبكات.</string>
 
-    <string name="section_in_progress">قيد الإنشاء — المرحلة 0</string>
+    <string name="section_in_progress">قيد الإنشاء</string>
 
     <string name="notification_channel_monitoring">المراقبة الجارية</string>
     <string name="notification_channel_monitoring_description">إشعار دائم يعرض السرعة اللحظية واستهلاك اليوم أثناء المراقبة.</string>

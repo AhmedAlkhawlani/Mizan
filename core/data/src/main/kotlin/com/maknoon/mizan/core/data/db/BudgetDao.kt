@@ -19,6 +19,16 @@ interface BudgetDao {
     )
     suspend fun deviceBudget(period: BudgetPeriod): BudgetEntity?
 
+    /** Every app cap, so the Apps list can mark the rows that have one. */
+    @Query("SELECT * FROM budgets WHERE scope = 'APP'")
+    fun observeAppBudgets(): Flow<List<BudgetEntity>>
+
+    /** The stored cap for one app and period, so an edit updates it instead of inserting. */
+    @Query(
+        "SELECT * FROM budgets WHERE scope = 'APP' AND targetId = :packageName AND period = :period LIMIT 1",
+    )
+    suspend fun appBudget(packageName: String, period: BudgetPeriod): BudgetEntity?
+
     @Upsert
     suspend fun upsert(entity: BudgetEntity)
 }

@@ -2,6 +2,7 @@ package com.maknoon.mizan.ui.apps
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -13,13 +14,18 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -50,6 +56,7 @@ import com.maknoon.mizan.core.designsystem.theme.statusColors
 import com.maknoon.mizan.core.domain.format.ByteFormatter
 import com.maknoon.mizan.core.platform.usage.UsageAccess
 import com.maknoon.mizan.sync.AppUsageSyncScheduler
+import com.maknoon.mizan.ui.component.BudgetLimitField
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -77,6 +84,7 @@ fun AppsScreen(
     val context = LocalContext.current
     var granted by remember { mutableStateOf(UsageAccess.isGranted(context)) }
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val editorState by viewModel.editorState.collectAsStateWithLifecycle()
 
     LifecycleResumeEffect(Unit) {
         granted = UsageAccess.isGranted(context)
@@ -95,8 +103,20 @@ fun AppsScreen(
         onPeriodChange = viewModel::setPeriod,
         onOpenSettings = { context.startActivity(UsageAccess.settingsIntent()) },
         onAppClick = onAppClick,
+        onBudgetClick = { row -> viewModel.openBudgetEditor(row.packageName, row.label) },
         modifier = modifier,
     )
+
+    editorState?.let { editor ->
+        AppBudgetDialog(
+            uiState = editor,
+            onDailyLimitChange = viewModel::onEditorDailyLimitChange,
+            onDailyEnabledChange = viewModel::onEditorDailyEnabledChange,
+            onMonthlyLimitChange = viewModel::onEditorMonthlyLimitChange,
+            onMonthlyEnabledChange = viewModel::onEditorMonthlyEnabledChange,
+            onDismiss = viewModel::closeBudgetEditor,
+        )
+    }
 }
 
 @Composable
@@ -106,6 +126,7 @@ internal fun AppsContent(
     onPeriodChange: (AppsPeriod) -> Unit,
     onOpenSettings: () -> Unit,
     onAppClick: (String) -> Unit,
+    onBudgetClick: (AppUsageRowUi) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(
@@ -124,7 +145,11 @@ internal fun AppsContent(
             item(key = "empty") { EmptyCard() }
         } else {
             items(items = uiState.rows, key = { it.packageName }) { row ->
-                AppUsageRow(row = row, onClick = { onAppClick(row.packageName) })
+                AppUsageRow(
+                    row = row,
+                    onClick = { onAppClick(row.packageName) },
+                    onBudgetClick = { onBudgetClick(row) },
+                )
             }
         }
     }
@@ -190,6 +215,7 @@ private fun SummaryCard(uiState: AppsUiState, modifier: Modifier = Modifier) {
 private fun AppUsageRow(
     row: AppUsageRowUi,
     onClick: () -> Unit,
+    onBudgetClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Card(onClick = onClick, modifier = modifier.fillMaxWidth()) {
@@ -226,6 +252,16 @@ private fun AppUsageRow(
                     ),
                     color = MaterialTheme.statusColors.dataDown,
                 )
+                if (row.dailyLimitBytes != null || row.monthlyLimitBytes != null) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        row.dailyLimitBytes?.let {
+                            BudgetHint(label = stringResource(R.string.apps_budget_daily), bytes = it)
+                        }
+                        row.monthlyLimitBytes?.let {
+                            BudgetHint(label = stringResource(R.string.apps_budget_monthly), bytes = it)
+                        }
+                    }
+                }
                 LinearProgressIndicator(
                     progress = { row.share },
                     modifier = Modifier
@@ -235,8 +271,111 @@ private fun AppUsageRow(
                     trackColor = MaterialTheme.colorScheme.surfaceVariant,
                 )
             }
+            AppRowMenu(onBudgetClick = onBudgetClick)
         }
     }
+}
+
+@Composable
+private fun BudgetHint(label: String, bytes: Long) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Text(
+            text = ByteFormatter.data(bytes),
+            style = MaterialTheme.typography.labelMedium.copy(textDirection = TextDirection.Ltr),
+            color = MaterialTheme.colorScheme.primary,
+        )
+    }
+}
+
+@Composable
+private fun AppRowMenu(onBudgetClick: () -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+    Box {
+        IconButton(onClick = { expanded = true }) {
+            Icon(
+                painter = painterResource(R.drawable.ic_more_vert),
+                contentDescription = stringResource(R.string.apps_row_menu),
+            )
+        }
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            DropdownMenuItem(
+                text = { Text(text = stringResource(R.string.app_budget_action)) },
+                onClick = {
+                    expanded = false
+                    onBudgetClick()
+                },
+            )
+        }
+    }
+}
+
+/**
+ * The per-app budget dialog (docs/04: ⋯ → set a budget).
+ *
+ * It edits both caps at once, like the device editor, and persists each valid keystroke through
+ * the view model, so dismissing the dialog never discards an entry the operator already typed.
+ */
+@Composable
+internal fun AppBudgetDialog(
+    uiState: AppBudgetUiState,
+    onDailyLimitChange: (String) -> Unit,
+    onDailyEnabledChange: (Boolean) -> Unit,
+    onMonthlyLimitChange: (String) -> Unit,
+    onMonthlyEnabledChange: (Boolean) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(text = stringResource(R.string.app_budget_title, uiState.label))
+                Text(
+                    text = uiState.packageName,
+                    style = MaterialTheme.typography.bodySmall.copy(textDirection = TextDirection.Ltr),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                Text(
+                    text = stringResource(R.string.app_budget_daily_title),
+                    style = MaterialTheme.typography.titleSmall,
+                )
+                BudgetLimitField(
+                    text = uiState.daily.text,
+                    enabled = uiState.daily.enabled,
+                    error = uiState.daily.error,
+                    onTextChange = onDailyLimitChange,
+                    onEnabledChange = onDailyEnabledChange,
+                )
+                Text(
+                    text = stringResource(R.string.app_budget_monthly_title),
+                    style = MaterialTheme.typography.titleSmall,
+                )
+                BudgetLimitField(
+                    text = uiState.monthly.text,
+                    enabled = uiState.monthly.enabled,
+                    error = uiState.monthly.error,
+                    onTextChange = onMonthlyLimitChange,
+                    onEnabledChange = onMonthlyEnabledChange,
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text(text = stringResource(R.string.app_budget_done))
+            }
+        },
+    )
 }
 
 /**
@@ -345,6 +484,7 @@ private fun AppsAccessPreview() {
             onPeriodChange = {},
             onOpenSettings = {},
             onAppClick = {},
+            onBudgetClick = {},
         )
     }
 }
@@ -366,6 +506,7 @@ private fun AppsListPreview() {
                         txBytes = 2_000_000,
                         bytes = 20_000_000,
                         share = 0.66f,
+                        monthlyLimitBytes = 5_000_000_000,
                     ),
                     AppUsageRowUi(
                         packageName = "com.whatsapp.w4b",
@@ -374,6 +515,7 @@ private fun AppsListPreview() {
                         txBytes = 3_000_000,
                         bytes = 10_000_000,
                         share = 0.34f,
+                        dailyLimitBytes = 2_000_000_000,
                     ),
                 ),
             ),
@@ -381,6 +523,27 @@ private fun AppsListPreview() {
             onPeriodChange = {},
             onOpenSettings = {},
             onAppClick = {},
+            onBudgetClick = {},
+        )
+    }
+}
+
+@Preview(name = "App budget — Arabic RTL", locale = "ar", showBackground = true)
+@Composable
+private fun AppBudgetPreview() {
+    MizanTheme(dynamicColor = false) {
+        AppBudgetDialog(
+            uiState = AppBudgetUiState(
+                packageName = "com.google.android.youtube",
+                label = "YouTube",
+                daily = AppBudgetFieldUi(text = "2", enabled = true),
+                monthly = AppBudgetFieldUi(text = "30", enabled = true),
+            ),
+            onDailyLimitChange = {},
+            onDailyEnabledChange = {},
+            onMonthlyLimitChange = {},
+            onMonthlyEnabledChange = {},
+            onDismiss = {},
         )
     }
 }

@@ -2,6 +2,9 @@ package com.maknoon.mizan.ui.apps
 
 import com.google.common.truth.Truth.assertThat
 import com.maknoon.mizan.core.data.db.AppUsageTotal
+import com.maknoon.mizan.core.data.db.BudgetEntity
+import com.maknoon.mizan.core.domain.budget.BudgetPeriod
+import com.maknoon.mizan.core.domain.budget.BudgetScope
 import org.junit.Test
 
 class AppsUiStateTest {
@@ -67,6 +70,58 @@ class AppsUiStateTest {
 
         assertThat(state.lastSyncedAtMillis).isEqualTo(9_000)
     }
+
+    @Test
+    fun `enabled caps decorate the matching row only`() {
+        val state = appsUiState(
+            listOf(
+                total("com.example.a"),
+                total("com.example.b"),
+                total("com.example.c"),
+            ),
+            AppsPeriod.WEEK,
+            budgets = listOf(
+                budget("com.example.a", BudgetPeriod.DAILY, 2_000_000_000),
+                budget("com.example.a", BudgetPeriod.MONTHLY, 30_000_000_000),
+                budget("com.example.other", BudgetPeriod.DAILY, 1_000_000_000),
+            ),
+        )
+
+        val a = state.rows.first { it.packageName == "com.example.a" }
+        assertThat(a.dailyLimitBytes).isEqualTo(2_000_000_000)
+        assertThat(a.monthlyLimitBytes).isEqualTo(30_000_000_000)
+        assertThat(state.rows.first { it.packageName == "com.example.b" }.dailyLimitBytes).isNull()
+        assertThat(state.rows.first { it.packageName == "com.example.b" }.monthlyLimitBytes).isNull()
+    }
+
+    @Test
+    fun `a disabled or zero cap is not shown`() {
+        val state = appsUiState(
+            listOf(total("com.example.a")),
+            AppsPeriod.WEEK,
+            budgets = listOf(
+                budget("com.example.a", BudgetPeriod.DAILY, 2_000_000_000, enabled = false),
+                budget("com.example.a", BudgetPeriod.MONTHLY, 0),
+            ),
+        )
+
+        assertThat(state.rows.single().dailyLimitBytes).isNull()
+        assertThat(state.rows.single().monthlyLimitBytes).isNull()
+    }
+
+    private fun budget(
+        packageName: String,
+        period: BudgetPeriod,
+        limitBytes: Long,
+        enabled: Boolean = true,
+    ) = BudgetEntity(
+        scope = BudgetScope.APP,
+        targetId = packageName,
+        period = period,
+        limitBytes = limitBytes,
+        enabled = enabled,
+        createdAt = 0L,
+    )
 
     private fun total(
         packageName: String,

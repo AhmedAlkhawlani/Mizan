@@ -29,6 +29,14 @@
     <string name="apps_sync_note">Figures come from Android\u2019s counters as of the last sync and can trail the current moment by minutes.</string>
     <string name="apps_empty_title">No data yet</string>
     <string name="apps_empty_body">The list fills automatically after the first sync, which can take a few minutes. Reopen the app later.</string>
+    <string name="apps_row_menu">App options</string>
+    <string name="apps_budget_daily">Daily</string>
+    <string name="apps_budget_monthly">Monthly</string>
+    <string name="app_budget_action">Set a budget</string>
+    <string name="app_budget_title">Budget for %1$s</string>
+    <string name="app_budget_daily_title">Daily budget</string>
+    <string name="app_budget_monthly_title">Monthly budget</string>
+    <string name="app_budget_done">Done</string>
 
     <string name="app_detail_back">Back</string>
     <string name="app_detail_total">Last 7 days %1$s</string>

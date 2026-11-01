@@ -21,6 +21,10 @@
     <string name="dashboard_start">بدء القياس</string>
     <string name="dashboard_stop">إيقاف القياس</string>
     <string name="apps_body">تُعرض هنا قائمة التطبيقات واستهلاك كل تطبيق خلال الفترة المختارة.</string>
+    <string name="apps_access_title">الوصول إلى بيانات الاستخدام</string>
+    <string name="apps_access_body">ليعرف ميزان استهلاك كل تطبيق، يحتاج إذن «الوصول إلى بيانات الاستخدام» من إعدادات النظام. يمنح هذا الإذن أندرويد صلاحية أوسع (معرفة التطبيقات التي تستخدمها)، لكن ميزان لا يقرأ إلا عدّادات البايتات، ولا يرسل شيئاً خارج الجهاز.</string>
+    <string name="apps_access_action">فتح إعدادات الوصول</string>
+    <string name="apps_access_granted">الوصول إلى بيانات الاستخدام ممنوح</string>
     <string name="saver_body">تُضبط هنا الميزانيات وحماية التطبيقات من استهلاك البيانات.</string>
 
     <string name="history_last_7_days">آخر 7 أيام</string>

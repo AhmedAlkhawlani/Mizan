@@ -33,14 +33,15 @@ import androidx.navigation.compose.rememberNavController
 import com.maknoon.mizan.R
 import com.maknoon.mizan.core.designsystem.theme.MizanTheme
 import com.maknoon.mizan.core.designsystem.theme.statusColors
+import com.maknoon.mizan.ui.apps.AppsScreen
 import com.maknoon.mizan.ui.dashboard.DashboardScreen
 import com.maknoon.mizan.ui.history.HistoryScreen
 
 /**
  * The four top-level destinations of the shell in docs/04.
  *
- * [bodyRes] describes a section that still shows a placeholder; the dashboard is fully built
- * from phase 1, so it has none.
+ * [bodyRes] describes a section that still shows a placeholder; the dashboard, apps and
+ * history screens are built, so only the saver has one.
  */
 enum class MizanDestination(
     val route: String,
@@ -49,7 +50,7 @@ enum class MizanDestination(
     @param:StringRes val bodyRes: Int? = null,
 ) {
     Dashboard("dashboard", R.string.nav_dashboard, R.drawable.ic_dashboard),
-    Apps("apps", R.string.nav_apps, R.drawable.ic_apps, R.string.apps_body),
+    Apps("apps", R.string.nav_apps, R.drawable.ic_apps),
     Saver("saver", R.string.nav_saver, R.drawable.ic_shield, R.string.saver_body),
     History("history", R.string.nav_history, R.drawable.ic_history),
 }
@@ -97,11 +98,10 @@ fun MizanApp(modifier: Modifier = Modifier) {
             modifier = Modifier.padding(innerPadding),
         ) {
             composable(MizanDestination.Dashboard.route) { DashboardScreen() }
+            composable(MizanDestination.Apps.route) { AppsScreen() }
             composable(MizanDestination.History.route) { HistoryScreen() }
             MizanDestination.entries
-                .filterNot {
-                    it == MizanDestination.Dashboard || it == MizanDestination.History
-                }
+                .filter { it.bodyRes != null }
                 .forEach { destination ->
                     composable(destination.route) {
                         val bodyRes = destination.bodyRes ?: return@composable

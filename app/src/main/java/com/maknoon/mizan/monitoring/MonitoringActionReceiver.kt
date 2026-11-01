@@ -14,7 +14,7 @@ class MonitoringActionReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action == MonitoringService.ACTION_STOP) {
-            context.stopService(Intent(context, MonitoringService::class.java))
+            MonitoringControl.stop(context)
         }
     }
 }

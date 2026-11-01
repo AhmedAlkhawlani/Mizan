@@ -12,8 +12,7 @@ import android.os.IBinder
 import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
 import com.maknoon.mizan.MainActivity
-import com.maknoon.mizan.core.data.usage.InMemoryUsageStateStore
-import com.maknoon.mizan.core.domain.accounting.TrafficAccountant
+import com.maknoon.mizan.core.data.usage.DeviceUsageRepository
 import com.maknoon.mizan.core.platform.traffic.AndroidTrafficSource
 import com.maknoon.mizan.core.platform.traffic.TrafficSource
 import kotlinx.coroutines.CoroutineScope
@@ -39,11 +38,9 @@ class MonitoringService : Service() {
 
     private val trafficSource: TrafficSource = AndroidTrafficSource()
 
-    /**
-     * In memory for now: the counters themselves are cumulative since boot, so a process death
-     * costs at most the partial-day nuance, not the total. Room takes over in phase 2.
-     */
-    private val accountant = TrafficAccountant(InMemoryUsageStateStore())
+    /** Room-backed: the day's total and the accountant's state survive both a process death
+     * and a reboot, which restarts the device counters at zero. */
+    private val repository by lazy { DeviceUsageRepository.create(this) }
 
     private val notificationManager by lazy { getSystemService(NotificationManager::class.java) }
 
@@ -111,7 +108,7 @@ class MonitoringService : Service() {
             val snapshot = trafficSource.snapshot()
             val state = MonitoringState(
                 running = true,
-                usage = snapshot?.let(accountant::record),
+                usage = snapshot?.let { repository.record(it) },
             )
             MonitoringStateHolder.publish(state)
             refreshNotification(state)

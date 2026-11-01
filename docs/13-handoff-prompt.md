@@ -24,28 +24,34 @@
 
 ## ما هو منجز (لا تعده)
 
-المرحلة 0 والمرحلة 1 مكتملتان، والخطوة 2.1 منجزة — التفاصيل والكومتات في `docs/12-progress.md` §2.
+المراحل 0 و1 و2 مكتملة ومُتحقَّقة على الجهاز — التفاصيل والكومتات في `docs/12-progress.md` §2.
 باختصار: خمس وحدات Gradle (`:app`, `:core:domain` JVM نقي، `:core:data`, `:core:platform`,
-`:core:designsystem`)، `ByteFormatter` + `TrafficAccountant` + `BudgetPolicy` مع 44 اختباراً،
-مصدر `TrafficStats`، خدمة أمامية `specialUse`، إشعار دائم بالسرعات وإجراء إيقاف، شاشة رئيسية حيّة،
-بلاطة إعدادات سريعة، حفظ التفضيل واستئناف المراقبة بعد الإقلاع وعند فتح التطبيق، وحفظ الأرقام في
-Room (`device_daily` + `device_state`) مع كتابة مخنوقة كل 5 ثوانٍ.
-**الإجمالي: 68 اختبار وحدة، 0 فشل، lint 0 أخطاء.**
+`:core:designsystem`)، `ByteFormatter` + `TrafficAccountant` + `BudgetPolicy` + `BillingCycleCalculator`،
+مصدر `TrafficStats`، خدمة أمامية `specialUse`، إشعار دائم، شاشة رئيسية حيّة، بلاطة إعدادات سريعة،
+استئناف بعد الإقلاع، Room (`device_daily` + `device_hourly` + `device_state` بمخطط الإصدار 3 وهجرات
+1→2 و2→3)، شاشة سجل بمخططي 7 أيام و24 ساعة، دورة فاتورة بيوم بداية، انقسام خلوي/Wi‑Fi،
+وتصدير CSV عبر منتقي النظام.
+**الإجمالي: 122 اختبار وحدة، 0 فشل، lint 0 أخطاء.**
 
 ## من أين تبدأ (بالترتيب)
 
-1. **2.3 رسوم 7 أيام و24 ساعة** — كومت `feat(ui): add history charts`.
-   تحتاج جدول `device_hourly` (docs/03) + كتابة الدلاء الزمنية داخل المستودع + شاشة «السجل» التي
-   لا تزال `SectionPlaceholder` في `MizanApp.kt`. المخطط مُصدَّر في `core/data/schemas/…/1.json`
-   فارفع إصدار قاعدة البيانات وأضف هجرة عند إضافة الجدول.
-2. **2.4 دورة الفاتورة + عدّادات الواجهات** — كومتات `feat(core): support billing cycle start day`
-   و`feat(data): add network profile/interface counters`. هنا يُحلّ أمران مؤجّلان بقرار:
-   عمودا «خلوي/Wi‑Fi» الغائبان عن `device_daily`، وأن `TrafficStats.getTotal*` **يشمل loopback**
-   (انظر §10 في `docs/12-progress.md`).
-3. **2.5 تصدير CSV** — كومت `feat(export): export usage as CSV` عبر `ACTION_CREATE_DOCUMENT` بلا
-   صلاحيات تخزين.
-4. ثم المرحلة 3 (Usage Access + `NetworkStatsManager` + شاشة التطبيقات)، وتُقاس عندها دقة ≤1%
-   المطلوبة في `docs/05` — لا يمكن قياسها قبلها.
+المرحلة 3 خطوة بخطوة، كل خطوة كومت كما في `docs/05`:
+
+1. **3.1 تدفّق طلب Usage Access** — `feat(onboarding): request usage access with rationale`.
+   `PACKAGE_USAGE_STATS` في المانيفست مع `tools:ignore="ProtectedPermissions"`، وفحص المنح عبر
+   `AppOpsManager` (‏`unsafeCheckOpNoThrow(OPSTR_GET_USAGE_STATS, ...)` على API 29+ و`checkOpNoThrow`
+   قبلها)، وشرح عربي قبل فتح `Settings.ACTION_USAGE_ACCESS_SETTINGS`، وإعادة الفحص عند العودة
+   إلى المقدمة. لا تُجبر المستخدم ولا تُظهر «—» كأنها صفر.
+2. **3.2 قراءة استهلاك التطبيقات** — `feat(platform): read per-app usage via NetworkStatsManager`.
+   `queryDetailsForUid` للـUID التطبيقي (خلوي/Wi‑Fi) مع `NetworkStats.Bucket`؛ البيانات متأخرة
+   دقائق فاعرض «حتى آخر مزامنة». تحقّق أولاً على الجهاز أن الاستدعاء يعمل بعد منح الصلاحية يدوياً.
+3. **3.3 مزامنة دورية** — `feat(worker): sync per-app usage` (WorkManager كل 15 دقيقة + عند فتح
+   التطبيق)، مع جدول `app_daily` كما في docs/03.
+4. **3.4 شاشة التطبيقات** — `feat(ui): add apps usage screen` بدل `SectionPlaceholder` في
+   `MizanApp.kt`، مع اختيار الفترة وترتيب بحسب الاستهلاك.
+5. **3.5 تفصيل تطبيق** — `feat(ui): add per-app detail chart` (7 أيام).
+6. **بعدها فقط** تُقاس دقة ≤1% مقابل `NetworkStatsManager` (معيار docs/05 للمرحلة 2) — لا يمكن
+   قياسها قبل 3.1–3.2.
 
 ## مزالق لا تكتشفها الاختبارات
 
@@ -58,6 +64,8 @@ Room (`device_daily` + `device_state`) مع كتابة مخنوقة كل 5 ثو�
 - **`git push` يفشل** (`could not read Username`) — لا بيانات اعتماد. لا تفترض أن الكومتات مرفوعة.
 - **قاعدة البيانات بوضع WAL**: سحب `mizan.db` وحده لا يعطي آخر البيانات؛ اسحب `-wal` و`-shm` معه،
   أو أوقف العملية قبل السحب حتى تكون الملفات ساكنة.
+- **قراءات الواجهات محميّة بـAPI 31+**: `TrafficStats.getRxBytes(String)` غير متاح على `minSdk 26`،
+  وlint يُفشل البوابة إن نُسي الحارس. تحته يبقى انقسام Wi‑Fi مجهولاً (`null`) لا صفراً.
 - **لوحة التصميم** في `design/concept-board.png` هي المرجع البصري (سرعات سماوية/وردية، شريط ميزانية،
   حلقة ميزانية، تنبيه كهرماني 80%). الفجوة الحالية بينها وبين المنفَّذ موثّقة في
   `docs/12-progress.md` §11 — اجعلها مرجعك عند بناء الشاشات القادمة.

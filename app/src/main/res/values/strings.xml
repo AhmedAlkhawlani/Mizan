@@ -115,4 +115,12 @@
     <string name="tile_stopped">متوقف</string>
     <string name="tile_unavailable">غير متاح</string>
     <string name="tile_speed">↓ %1$s</string>
+
+    <string name="widget_speed_name">سرعة ميزان</string>
+    <string name="widget_speed_description">السرعة اللحظية للتنزيل؛ اضغط لفتح ميزان.</string>
+    <string name="widget_speed_down">↓ %1$s</string>
+    <string name="widget_speed_up">↑ %1$s</string>
+    <string name="widget_speed_unknown">↓ —</string>
+    <string name="widget_speed_stopped">المراقبة متوقفة</string>
+    <string name="widget_today">اليوم</string>
 </resources>

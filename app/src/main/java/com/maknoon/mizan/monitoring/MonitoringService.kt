@@ -9,6 +9,7 @@ import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
+import android.os.SystemClock
 import android.util.Log
 import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
@@ -17,6 +18,7 @@ import com.maknoon.mizan.alerts.BudgetAlerts
 import com.maknoon.mizan.core.data.usage.DeviceUsageRepository
 import com.maknoon.mizan.core.platform.traffic.AndroidTrafficSource
 import com.maknoon.mizan.core.platform.traffic.TrafficSource
+import com.maknoon.mizan.widget.SpeedWidget
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -70,6 +72,9 @@ class MonitoringService : Service() {
     /** Budget evaluation reads several tables, so it runs once a minute, not once a second. */
     private var lastBudgetCheckAtMillis: Long? = null
 
+    /** Widgets redraw far less often than the notification; each redraw is a RemoteViews push. */
+    private var lastWidgetRefreshAtMillis: Long? = null
+
     override fun onCreate() {
         super.onCreate()
         MonitoringNotifications.createChannel(this, notificationManager)
@@ -90,6 +95,14 @@ class MonitoringService : Service() {
         samplingJob?.cancel()
         scope.cancel()
         MonitoringStateHolder.publish(MonitoringState(running = false))
+        // The service is already gone, so its own scope cannot carry this push.
+        CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
+            try {
+                SpeedWidget.refresh(this@MonitoringService)
+            } catch (e: Exception) {
+                Log.w(TAG, "widget refresh on stop failed", e)
+            }
+        }
         ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
         super.onDestroy()
     }
@@ -118,6 +131,7 @@ class MonitoringService : Service() {
             )
             MonitoringStateHolder.publish(state)
             refreshNotification(state)
+            refreshWidgetIfDue()
             checkBudgets()
             delay(SAMPLE_INTERVAL_MILLIS)
         }
@@ -136,6 +150,21 @@ class MonitoringService : Service() {
         } catch (e: Exception) {
             // A failed check must never stop measurement; the next minute tries again.
             Log.w(TAG, "budget check failed", e)
+        }
+    }
+
+    private suspend fun refreshWidgetIfDue() {
+        val now = SystemClock.elapsedRealtime()
+        val last = lastWidgetRefreshAtMillis
+        if (last != null && now >= last && now - last < WIDGET_REFRESH_INTERVAL_MILLIS) return
+        lastWidgetRefreshAtMillis = now
+        try {
+            SpeedWidget.refresh(this)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            // A launcher rejection must never stop measurement.
+            Log.w(TAG, "widget refresh failed", e)
         }
     }
 
@@ -163,6 +192,7 @@ class MonitoringService : Service() {
         const val ACTION_STOP = "com.maknoon.mizan.action.STOP_MONITORING"
 
         private const val BUDGET_CHECK_INTERVAL_MILLIS = 60_000L
+        private const val WIDGET_REFRESH_INTERVAL_MILLIS = SpeedWidget.REFRESH_INTERVAL_SECONDS * 1_000L
         private const val OPEN_REQUEST_CODE = 10
         private const val STOP_REQUEST_CODE = 11
         private const val TAG = "MizanMonitor"

@@ -113,4 +113,12 @@
     <string name="tile_stopped">Stopped</string>
     <string name="tile_unavailable">Unavailable</string>
     <string name="tile_speed">↓ %1$s</string>
+
+    <string name="widget_speed_name">Mizan speed</string>
+    <string name="widget_speed_description">Live download speed; tap to open Mizan.</string>
+    <string name="widget_speed_down">↓ %1$s</string>
+    <string name="widget_speed_up">↑ %1$s</string>
+    <string name="widget_speed_unknown">↓ —</string>
+    <string name="widget_speed_stopped">Monitoring is off</string>
+    <string name="widget_today">Today</string>
 </resources>

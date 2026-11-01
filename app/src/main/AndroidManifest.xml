@@ -82,6 +82,19 @@
         <receiver
             android:name=".alerts.BudgetAlertActionReceiver"
             android:exported="false" />
+
+        <!-- Home-screen widget providers must be exported so the launcher can bind them. -->
+        <receiver
+            android:name=".widget.SpeedWidgetReceiver"
+            android:exported="true"
+            android:label="@string/widget_speed_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/speed_widget_info" />
+        </receiver>
     </application>
 
 </manifest>

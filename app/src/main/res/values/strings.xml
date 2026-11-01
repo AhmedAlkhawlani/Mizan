@@ -59,9 +59,23 @@
     <string name="history_cycle_range">%1$s – %2$s</string>
     <string name="history_cycle_total">إجمالي الدورة</string>
     <string name="history_cycle_start_day">يوم بداية الدورة</string>
-    <string name="history_cycle_start_decrease">تقديم بداية الدورة يوماً واحداً</string>
-    <string name="history_cycle_start_increase">تأخير بداية الدورة يوماً واحداً</string>
+    <string name="cycle_start_decrease">تقديم بداية الدورة يوماً واحداً</string>
+    <string name="cycle_start_increase">تأخير بداية الدورة يوماً واحداً</string>
     <string name="history_cycle_partial">لم تُراقَب كل أيام الدورة المنقضية؛ الإجمالي يغطي الأيام المسجَّلة فقط.</string>
+
+    <string name="settings_open">الإعدادات</string>
+    <string name="budget_back">رجوع</string>
+    <string name="budget_title">الميزانية والدورة</string>
+    <string name="budget_subtitle">سقف لاستهلاك الجهاز يومياً وشهرياً، ويوم بداية دورة الفاتورة التي تتبعها الميزانية الشهرية.</string>
+    <string name="budget_daily_title">ميزانية اليوم</string>
+    <string name="budget_monthly_title">ميزانية الشهر</string>
+    <string name="budget_enabled">تفعيل الميزانية</string>
+    <string name="budget_limit_label">الحد الأقصى (GB)</string>
+    <string name="budget_limit_hint">مثال: 2.5</string>
+    <string name="budget_limit_invalid">أدخل رقماً أكبر من صفر</string>
+    <string name="budget_cycle_title">دورة الفاتورة</string>
+    <string name="budget_cycle_start_day">يوم بداية الدورة</string>
+    <string name="budget_cycle_note">تبدأ ميزانية الشهر مع دورة الفاتورة وتنتهي قبل بداية الدورة التالية.</string>
 
     <string name="history_export_title">تصدير البيانات</string>
     <string name="history_export_body">ملف CSV بكل الأيام المسجّلة. يختار النظام مكان الحفظ، فلا يحتاج التطبيق إلى صلاحية تخزين.</string>

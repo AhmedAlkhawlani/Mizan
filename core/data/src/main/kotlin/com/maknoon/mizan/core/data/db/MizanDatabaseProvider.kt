@@ -24,6 +24,7 @@ object MizanDatabaseProvider {
                 MizanDatabase.MIGRATION_1_2,
                 MizanDatabase.MIGRATION_2_3,
                 MizanDatabase.MIGRATION_3_4,
+                MizanDatabase.MIGRATION_4_5,
             )
             .build()
             .also { instance = it }
@@ -34,4 +35,6 @@ object MizanDatabaseProvider {
      * depend on the database's supertypes.
      */
     fun appUsageDao(context: Context): AppUsageDao = get(context).appUsageDao()
+
+    fun budgetDao(context: Context): BudgetDao = get(context).budgetDao()
 }

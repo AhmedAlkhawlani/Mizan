@@ -11,8 +11,9 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         DeviceHourlyEntity::class,
         DeviceStateEntity::class,
         AppDailyEntity::class,
+        BudgetEntity::class,
     ],
-    version = 4,
+    version = 5,
     exportSchema = true,
 )
 abstract class MizanDatabase : RoomDatabase() {
@@ -20,6 +21,8 @@ abstract class MizanDatabase : RoomDatabase() {
     abstract fun deviceUsageDao(): DeviceUsageDao
 
     abstract fun appUsageDao(): AppUsageDao
+
+    abstract fun budgetDao(): BudgetDao
 
     companion object {
         const val NAME = "mizan.db"
@@ -87,6 +90,28 @@ abstract class MizanDatabase : RoomDatabase() {
                         `txBytes` INTEGER NOT NULL,
                         `lastSyncedAt` INTEGER NOT NULL,
                         PRIMARY KEY(`epochDay`, `uid`, `networkType`)
+                    )
+                    """.trimIndent(),
+                )
+            }
+        }
+
+        /**
+         * Adds the budgets table. The scope and period enums are stored as their names, exactly
+         * as Room's built-in enum converter writes them.
+         */
+        val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS `budgets` (
+                        `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        `scope` TEXT NOT NULL,
+                        `targetId` TEXT NOT NULL,
+                        `period` TEXT NOT NULL,
+                        `limitBytes` INTEGER NOT NULL,
+                        `enabled` INTEGER NOT NULL,
+                        `createdAt` INTEGER NOT NULL
                     )
                     """.trimIndent(),
                 )

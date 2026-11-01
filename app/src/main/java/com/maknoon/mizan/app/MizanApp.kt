@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -38,6 +39,7 @@ import com.maknoon.mizan.core.designsystem.theme.MizanTheme
 import com.maknoon.mizan.core.designsystem.theme.statusColors
 import com.maknoon.mizan.ui.apps.AppDetailScreen
 import com.maknoon.mizan.ui.apps.AppsScreen
+import com.maknoon.mizan.ui.budget.BudgetScreen
 import com.maknoon.mizan.ui.dashboard.DashboardScreen
 import com.maknoon.mizan.ui.history.HistoryScreen
 
@@ -62,6 +64,9 @@ enum class MizanDestination(
 /** Per-app detail, reached from a row in the Apps list. */
 private const val APP_DETAIL_ROUTE = "apps/detail/{packageName}"
 
+/** The budget and cycle editor, reached from the top bar's settings action (docs/04). */
+private const val BUDGET_ROUTE = "budget"
+
 private fun appDetailRoute(packageName: String): String =
     "apps/detail/${Uri.encode(packageName)}"
 
@@ -82,7 +87,33 @@ fun MizanApp(modifier: Modifier = Modifier) {
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
-            TopAppBar(title = { Text(text = stringResource(R.string.app_name)) })
+            TopAppBar(
+                title = { Text(text = stringResource(R.string.app_name)) },
+                navigationIcon = {
+                    if (currentRoute == BUDGET_ROUTE) {
+                        IconButton(onClick = { navController.popBackStack() }) {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_arrow_back),
+                                contentDescription = stringResource(R.string.budget_back),
+                            )
+                        }
+                    }
+                },
+                actions = {
+                    if (currentRoute != BUDGET_ROUTE) {
+                        IconButton(
+                            onClick = {
+                                navController.navigate(BUDGET_ROUTE) { launchSingleTop = true }
+                            },
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_settings),
+                                contentDescription = stringResource(R.string.settings_open),
+                            )
+                        }
+                    }
+                },
+            )
         },
         bottomBar = {
             NavigationBar {
@@ -124,6 +155,7 @@ fun MizanApp(modifier: Modifier = Modifier) {
                 )
             }
             composable(MizanDestination.History.route) { HistoryScreen() }
+            composable(BUDGET_ROUTE) { BudgetScreen() }
             MizanDestination.entries
                 .filter { it.bodyRes != null }
                 .forEach { destination ->

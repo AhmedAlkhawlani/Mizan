@@ -9,6 +9,15 @@
     <string name="nav_saver">الحماية</string>
     <string name="nav_history">السجل</string>
 
+    <string name="shortcut_apps_short">التطبيقات</string>
+    <string name="shortcut_apps_long">فتح استهلاك التطبيقات</string>
+    <string name="shortcut_history_short">السجل</string>
+    <string name="shortcut_history_long">فتح سجل الاستهلاك</string>
+    <string name="shortcut_budget_short">الميزانية</string>
+    <string name="shortcut_budget_long">تعديل ميزانية اليوم والشهر</string>
+    <string name="shortcut_stop_short">إيقاف المراقبة</string>
+    <string name="shortcut_stop_long">إيقاف قياس الاستهلاك الآن</string>
+
     <string name="dashboard_speed_down">تنزيل</string>
     <string name="dashboard_speed_up">رفع</string>
     <string name="dashboard_today">استهلاك اليوم</string>

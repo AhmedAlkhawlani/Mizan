@@ -7,6 +7,15 @@
     <string name="nav_saver">Guard</string>
     <string name="nav_history">History</string>
 
+    <string name="shortcut_apps_short">Apps</string>
+    <string name="shortcut_apps_long">Open app usage</string>
+    <string name="shortcut_history_short">History</string>
+    <string name="shortcut_history_long">Open usage history</string>
+    <string name="shortcut_budget_short">Budget</string>
+    <string name="shortcut_budget_long">Edit daily and monthly budgets</string>
+    <string name="shortcut_stop_short">Stop monitoring</string>
+    <string name="shortcut_stop_long">Stop measuring usage now</string>
+
     <string name="dashboard_speed_down">Download</string>
     <string name="dashboard_speed_up">Upload</string>
     <string name="dashboard_today">Today usage</string>

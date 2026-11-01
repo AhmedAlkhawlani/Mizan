@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Static shortcuts. Extras are not part of this format, so each intent carries a mizan://
+     data URI; MainActivity reads its host and the activity is targeted explicitly. -->
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/ic_apps"
+        android:shortcutId="apps"
+        android:shortcutLongLabel="@string/shortcut_apps_long"
+        android:shortcutShortLabel="@string/shortcut_apps_short">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="mizan://apps"
+            android:targetClass="com.maknoon.mizan.MainActivity"
+            android:targetPackage="com.maknoon.mizan" />
+    </shortcut>
+
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/ic_history"
+        android:shortcutId="history"
+        android:shortcutLongLabel="@string/shortcut_history_long"
+        android:shortcutShortLabel="@string/shortcut_history_short">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="mizan://history"
+            android:targetClass="com.maknoon.mizan.MainActivity"
+            android:targetPackage="com.maknoon.mizan" />
+    </shortcut>
+
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/ic_settings"
+        android:shortcutId="budget"
+        android:shortcutLongLabel="@string/shortcut_budget_long"
+        android:shortcutShortLabel="@string/shortcut_budget_short">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="mizan://budget"
+            android:targetClass="com.maknoon.mizan.MainActivity"
+            android:targetPackage="com.maknoon.mizan" />
+    </shortcut>
+
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/ic_pause"
+        android:shortcutId="stop_monitoring"
+        android:shortcutLongLabel="@string/shortcut_stop_long"
+        android:shortcutShortLabel="@string/shortcut_stop_short">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="mizan://stop-monitoring"
+            android:targetClass="com.maknoon.mizan.MainActivity"
+            android:targetPackage="com.maknoon.mizan" />
+    </shortcut>
+</shortcuts>

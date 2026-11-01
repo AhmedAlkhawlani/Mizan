@@ -18,6 +18,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -65,7 +66,7 @@ enum class MizanDestination(
 private const val APP_DETAIL_ROUTE = "apps/detail/{packageName}"
 
 /** The budget and cycle editor, reached from the top bar's settings action (docs/04). */
-private const val BUDGET_ROUTE = "budget"
+internal const val BUDGET_ROUTE = "budget"
 
 private fun appDetailRoute(packageName: String): String =
     "apps/detail/${Uri.encode(packageName)}"
@@ -79,10 +80,27 @@ private fun appDetailRoute(packageName: String): String =
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MizanApp(modifier: Modifier = Modifier) {
+fun MizanApp(
+    modifier: Modifier = Modifier,
+    shortcutDestination: String? = null,
+    onShortcutDestinationHandled: () -> Unit = {},
+) {
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
+
+    // A shortcut arrives before the shell exists; navigate once the graph is in place, then
+    // clear the request so a recomposition does not jump again.
+    LaunchedEffect(shortcutDestination) {
+        val route = shortcutDestination ?: return@LaunchedEffect
+        val tab = MizanDestination.entries.firstOrNull { it.route == route }
+        if (tab != null) {
+            navController.navigateToTab(tab)
+        } else if (route == BUDGET_ROUTE) {
+            navController.navigate(BUDGET_ROUTE) { launchSingleTop = true }
+        }
+        onShortcutDestinationHandled()
+    }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),

@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Mizan — Concept Board</title>
+<style>
+  :root{
+    --bg:#07090d; --panel:#11151c; --line:rgba(255,255,255,.09);
+    --text:#f5f7fa; --muted:#8a93a6;
+    --cyan:#22d3ee; --pink:#f472b6; --amber:#f59e0b; --red:#ef4444; --green:#34d399;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:1600px;height:1000px;background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Arabic","Segoe UI",sans-serif;
+    -webkit-font-smoothing:antialiased;overflow:hidden}
+  .bg{position:fixed;inset:0;
+    background:
+      radial-gradient(800px 480px at 8% -10%, rgba(34,211,238,.16), transparent 60%),
+      radial-gradient(700px 480px at 96% 4%, rgba(244,114,182,.12), transparent 62%),
+      radial-gradient(900px 600px at 50% 112%, rgba(52,211,153,.06), transparent 70%);}
+  .board{position:relative;padding:34px 40px 24px;height:100%;display:flex;flex-direction:column;gap:22px}
+  header{display:flex;align-items:center;gap:18px}
+  .logo{width:58px;height:58px;border-radius:16px;background:linear-gradient(160deg,#18222e,#0b0f14);
+    border:1px solid rgba(255,255,255,.12);display:grid;place-items:center;
+    box-shadow:0 14px 34px rgba(0,0,0,.45)}
+  h1{font-size:34px;letter-spacing:-.03em;font-weight:800;line-height:1}
+  h1 span{color:var(--muted);font-weight:500;font-size:22px;margin-left:10px;letter-spacing:0}
+  header p{color:var(--muted);font-size:13px;margin-top:6px}
+  .chips{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;max-width:520px}
+  .chip{font-size:11px;font-weight:600;color:#cfd6e4;border:1px solid var(--line);
+    background:rgba(255,255,255,.03);border-radius:999px;padding:6px 10px}
+  .chip.hot{color:var(--cyan);border-color:rgba(34,211,238,.3);background:rgba(34,211,238,.08)}
+  main{display:grid;grid-template-columns:1fr 430px;gap:34px;flex:1;min-height:0}
+  .phones{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;align-items:start}
+  .phone{background:#05070a;border:1px solid rgba(255,255,255,.12);border-radius:38px;padding:10px;
+    box-shadow:0 30px 70px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.05)}
+  .screen{background:#0b0e13;border-radius:30px;height:620px;padding:14px;display:flex;flex-direction:column;
+    border:1px solid rgba(255,255,255,.05);overflow:hidden}
+  .status{display:flex;justify-content:space-between;color:#9aa3b5;font-size:10px;padding:2px 4px 10px}
+  .status .dots{letter-spacing:2px}
+  .app-head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+  .app-head .mini{width:22px;height:22px;border-radius:7px;background:linear-gradient(160deg,#1e293b,#0f172a);
+    border:1px solid rgba(255,255,255,.12);display:grid;place-items:center}
+  .app-head b{font-size:13px}
+  .pill{margin-left:auto;font-size:8px;font-weight:700;letter-spacing:.4px;border-radius:999px;padding:3px 7px}
+  .pill.wifi{color:var(--cyan);background:rgba(34,211,238,.1);border:1px solid rgba(34,211,238,.25)}
+  .pill.metered{color:var(--amber);background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3)}
+  .label{font-size:9px;letter-spacing:.9px;color:var(--muted);font-weight:700}
+  .big{font-size:40px;font-weight:800;letter-spacing:-.04em;line-height:1;margin-top:4px}
+  .big small{font-size:14px;color:var(--muted);font-weight:600;letter-spacing:0;margin-left:4px}
+  .up{color:var(--pink);font-size:15px;font-weight:700;margin-top:7px;font-variant-numeric:tabular-nums}
+  .down{color:var(--cyan)}
+  .chart{margin:12px 0 6px;background:rgba(255,255,255,.025);border-radius:10px;height:74px}
+  .budget-row{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:8px}
+  .bar{height:7px;border-radius:999px;background:rgba(255,255,255,.07);margin-top:6px;overflow:hidden}
+  .bar > i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--cyan),#67e8f9)}
+  .actions{display:flex;gap:7px;margin-top:12px}
+  .btn{flex:1;text-align:center;font-size:10px;font-weight:650;padding:8px 0;border-radius:9px;
+    border:1px solid var(--line);background:rgba(255,255,255,.04)}
+  .btn.on{color:var(--green);border-color:rgba(52,211,153,.3);background:rgba(52,211,153,.09)}
+  .nav{margin-top:auto;display:flex;justify-content:space-between;padding:10px 8px 2px;border-top:1px solid rgba(255,255,255,.05)}
+  .nav i{width:16px;height:16px;border-radius:5px;background:rgba(255,255,255,.12)}
+  .nav i.active{background:var(--cyan)}
+  .ring-wrap{display:flex;align-items:center;justify-content:space-between;margin-top:4px}
+  .ring{width:92px;height:92px;border-radius:50%;position:relative;flex:none;
+    background:conic-gradient(var(--cyan) 0 62%, rgba(255,255,255,.07) 62% 100%);
+    display:grid;place-items:center}
+  .ring:after{content:"";position:absolute;inset:9px;border-radius:50%;background:#0b0e13}
+  .ring b{position:relative;z-index:1;font-size:19px;letter-spacing:-.02em}
+  .ring b small{display:block;font-size:8px;color:var(--muted);font-weight:600;text-align:center;letter-spacing:.5px}
+  .applist{display:flex;flex-direction:column;gap:9px;margin-top:14px}
+  .approw{display:flex;align-items:center;gap:8px;font-size:10.5px}
+  .approw .av{width:18px;height:18px;border-radius:6px;background:rgba(255,255,255,.1);flex:none}
+  .approw .name{width:82px;color:#d7dce6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .approw .track{flex:1;height:5px;border-radius:999px;background:rgba(255,255,255,.06);overflow:hidden}
+  .approw .track i{display:block;height:100%;border-radius:999px}
+  .approw .val{width:46px;text-align:right;color:var(--muted);font-variant-numeric:tabular-nums}
+  .alert{margin-top:12px;font-size:9.5px;color:var(--amber);background:rgba(245,158,11,.09);
+    border:1px solid rgba(245,158,11,.25);border-radius:8px;padding:7px 9px;display:flex;gap:6px;align-items:center}
+  .switch{width:30px;height:17px;border-radius:999px;background:rgba(255,255,255,.12);position:relative;flex:none}
+  .switch:after{content:"";position:absolute;top:2px;left:2px;width:13px;height:13px;border-radius:50%;background:#98a2b3}
+  .switch.on{background:rgba(52,211,153,.35)}
+  .switch.on:after{left:15px;background:var(--green)}
+  .saver-head{display:flex;align-items:center;gap:9px;margin-top:6px}
+  .shield{width:34px;height:34px;border-radius:11px;background:rgba(52,211,153,.12);
+    border:1px solid rgba(52,211,153,.3);display:grid;place-items:center}
+  .saver-list{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+  .saver-row{display:flex;align-items:center;gap:8px;font-size:10.5px;background:rgba(255,255,255,.03);
+    border:1px solid rgba(255,255,255,.06);border-radius:9px;padding:7px 9px}
+  .saver-row .av{width:18px;height:18px;border-radius:6px;background:rgba(255,255,255,.1)}
+  .saver-row b{font-weight:600;flex:1}
+  .tag{font-size:8px;font-weight:700;padding:2px 6px;border-radius:999px}
+  .tag.block{color:var(--red);background:rgba(239,68,68,.1)}
+  .tag.allow{color:var(--muted);background:rgba(255,255,255,.06)}
+  .vpn{margin-top:10px;font-size:9px;color:var(--muted);display:flex;gap:6px;align-items:center}
+  aside{display:flex;flex-direction:column;gap:14px}
+  .card{background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.015));
+    border:1px solid var(--line);border-radius:16px;padding:15px}
+  .card h3{font-size:11px;letter-spacing:.7px;color:var(--muted);text-transform:uppercase;margin-bottom:10px}
+  .tile{width:74px;height:74px;border-radius:20px;background:linear-gradient(160deg,#1a2532,#0c1117);
+    border:1px solid rgba(255,255,255,.12);display:flex;flex-direction:column;align-items:center;justify-content:center;
+    box-shadow:0 14px 30px rgba(0,0,0,.4)}
+  .tile b{font-size:16px;color:var(--cyan);letter-spacing:-.02em}
+  .tile span{font-size:8px;color:var(--muted);margin-top:2px}
+  .tile-row{display:flex;align-items:center;gap:14px}
+  .tile-row p{font-size:10px;color:var(--muted);line-height:1.5}
+  .notif{background:#141a22;border:1px solid rgba(255,255,255,.09);border-radius:13px;padding:11px}
+  .notif .top{display:flex;align-items:center;gap:7px;font-size:9px;color:var(--muted)}
+  .notif .top b{color:#dfe5ee;font-size:9.5px}
+  .notif .main{font-size:10px;margin:7px 0 2px;color:#e9edf4}
+  .notif .sub{font-size:8.5px;color:var(--muted)}
+  .notif .acts{display:flex;gap:6px;margin-top:8px}
+  .notif .acts span{font-size:8.5px;color:var(--cyan);border:1px solid rgba(34,211,238,.25);
+    background:rgba(34,211,238,.07);border-radius:6px;padding:3px 7px}
+  .widget{width:150px;height:150px;border-radius:22px;background:linear-gradient(160deg,#121a24,#0a0e13);
+    border:1px solid rgba(255,255,255,.1);padding:13px;display:flex;flex-direction:column;justify-content:space-between}
+  .widget .wrow{display:flex;justify-content:space-between;align-items:flex-start}
+  .widget .wt{font-size:8px;color:var(--muted);letter-spacing:.5px}
+  .widget .wv{font-size:20px;font-weight:800;letter-spacing:-.03em;margin-top:2px}
+  .widget .wr{width:46px;height:46px;border-radius:50%;position:relative;
+    background:conic-gradient(var(--cyan) 0 62%, rgba(255,255,255,.08) 62% 100%);display:grid;place-items:center}
+  .widget .wr:after{content:"";position:absolute;inset:5px;border-radius:50%;background:#0d131a}
+  .widget .wr b{position:relative;z-index:1;font-size:9px}
+  .widget .ws{font-size:8px;color:var(--muted)}
+  .widget .wbar{height:5px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden}
+  .widget .wbar i{display:block;height:100%;width:62%;background:var(--cyan);border-radius:999px}
+  .reality{font-size:9.5px;color:var(--muted);line-height:1.6}
+  .reality b{color:#d9dfe9;font-weight:600}
+  .reality .r{display:flex;gap:7px;margin:5px 0}
+  .reality .r i{width:5px;height:5px;border-radius:50%;margin-top:5px;flex:none;background:var(--amber)}
+  .reality .r.ok i{background:var(--green)}
+  footer{display:flex;align-items:center;gap:10px;border-top:1px solid var(--line);padding-top:14px}
+  footer .principles{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--muted)}
+  footer .principles b{color:#dfe5ee;font-weight:600}
+  footer .tech{margin-left:auto;display:flex;gap:6px}
+  footer .tech span{font-size:9px;color:#aab3c4;border:1px solid var(--line);border-radius:999px;padding:4px 8px}
+  .ar{font-family:"SF Arabic","Geeza Pro",-apple-system,sans-serif}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="board">
+
+  <header>
+    <div class="logo">
+      <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#22d3ee" stroke-width="1.5" stroke-linecap="round">
+        <path d="M12 4v16M6 20h12"/>
+        <path d="M4 8h16"/>
+        <path d="M4 8l-2 5a3.5 3.5 0 007 0L7 8"/>
+        <path d="M20 8l-2 5a3.5 3.5 0 007 0l-2-5" transform="translate(-2 0)"/>
+      </svg>
+    </div>
+    <div>
+      <h1>Mizan<span class="ar">ميزان</span></h1>
+      <p>Android data meter &amp; saver — concept board v1</p>
+    </div>
+    <div class="chips">
+      <span class="chip hot">Kotlin</span><span class="chip">Compose</span><span class="chip">Room</span>
+      <span class="chip">No root</span><span class="chip">Local-only</span><span class="chip">RTL</span>
+    </div>
+  </header>
+
+  <main>
+    <section class="phones">
+
+      <!-- Phone 1: Live -->
+      <div class="phone"><div class="screen">
+        <div class="status"><span>9:41</span><span class="dots">●●●</span><span>▮▮▮</span></div>
+        <div class="app-head">
+          <div class="mini">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#22d3ee" stroke-width="2"><path d="M12 4v16M6 20h12M4 8h16"/></svg>
+          </div>
+          <b>Mizan</b>
+          <span class="pill metered">مقنّن</span>
+        </div>
+        <div class="label">السرعة الآن</div>
+        <div class="big down">12.4<small>MB/s</small></div>
+        <div class="up">↑ 1.2 MB/s</div>
+        <svg class="chart" viewBox="0 0 220 74" preserveAspectRatio="none">
+          <defs><linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#22d3ee" stop-opacity=".3"/><stop offset="1" stop-color="#22d3ee" stop-opacity="0"/>
+          </linearGradient></defs>
+          <path d="M0 54 C18 18,36 20,54 44 S90 60,108 30 S144 16,162 38 S198 56,220 26 L220 74 L0 74Z" fill="url(#g1)"/>
+          <path d="M0 54 C18 18,36 20,54 44 S90 60,108 30 S144 16,162 38 S198 56,220 26" fill="none" stroke="#22d3ee" stroke-width="1.6"/>
+          <path d="M0 62 C30 56,60 66,90 60 S150 54,180 62 S206 56,220 58" fill="none" stroke="#f472b6" stroke-width="1.4"/>
+        </svg>
+        <div class="budget-row"><span>اليوم</span><span>1.24 GB / 2.00 GB</span></div>
+        <div class="bar"><i style="width:62%"></i></div>
+        <div class="actions"><div class="btn">إيقاف مؤقت</div><div class="btn on">🛡 الحماية</div></div>
+        <div class="nav"><i class="active"></i><i></i><i></i><i></i></div>
+      </div></div>
+
+      <!-- Phone 2: Budget -->
+      <div class="phone"><div class="screen">
+        <div class="status"><span>9:41</span><span class="dots">●●●</span><span>▮▮▮</span></div>
+        <div class="app-head">
+          <div class="mini"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f472b6" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg></div>
+          <b>الميزانية</b><span class="pill wifi">دورة 30 يوم</span>
+        </div>
+        <div class="ring-wrap">
+          <div class="ring"><b>62%<small>من 2 GB</small></b></div>
+          <div style="text-align:right">
+            <div class="label">استهلاك اليوم</div>
+            <div style="font-size:22px;font-weight:800;letter-spacing:-.03em">1.24 GB</div>
+            <div style="font-size:9px;color:var(--muted);margin-top:3px">متبقٍ 760 MB</div>
+          </div>
+        </div>
+        <div class="label" style="margin-top:16px">أكثر التطبيقات</div>
+        <div class="applist">
+          <div class="approw"><span class="av" style="background:#3b82f6"></span><span class="name">Chrome</span><span class="track"><i style="width:86%;background:#22d3ee"></i></span><span class="val">420 MB</span></div>
+          <div class="approw"><span class="av" style="background:#a855f7"></span><span class="name">Instagram</span><span class="track"><i style="width:63%;background:#f472b6"></i></span><span class="val">310 MB</span></div>
+          <div class="approw"><span class="av" style="background:#f59e0b"></span><span class="name">Drive</span><span class="track"><i style="width:37%;background:#f59e0b"></i></span><span class="val">180 MB</span></div>
+          <div class="approw"><span class="av" style="background:#34d399"></span><span class="name">WhatsApp</span><span class="track"><i style="width:22%;background:#34d399"></i></span><span class="val">110 MB</span></div>
+        </div>
+        <div class="alert">⚠️ وصل Chrome إلى 80% من ميزانيته اليومية</div>
+        <div class="nav"><i></i><i></i><i class="active"></i><i></i></div>
+      </div></div>
+
+      <!-- Phone 3: Saver -->
+      <div class="phone"><div class="screen">
+        <div class="status"><span>9:41</span><span class="dots">●●●</span><span>▮▮▮</span></div>
+        <div class="app-head">
+          <div class="mini"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2"><path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6z"/></svg></div>
+          <b>الحماية</b><span class="pill wifi">VPN محلي</span>
+        </div>
+        <div class="saver-head">
+          <div class="shield"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="1.8"><path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6z"/><path d="M9 12l2 2 4-4"/></svg></div>
+          <div><div style="font-size:12px;font-weight:700">Data Saver</div><div style="font-size:9px;color:var(--muted)">منع الشبكة عن التطبيقات المحظورة</div></div>
+          <div class="switch on" style="margin-left:auto"></div>
+        </div>
+        <div class="label" style="margin-top:16px">التطبيقات</div>
+        <div class="saver-list">
+          <div class="saver-row"><span class="av" style="background:#34d399"></span><b>WhatsApp</b><span class="tag block">محظور</span></div>
+          <div class="saver-row"><span class="av" style="background:#f59e0b"></span><b>Drive</b><span class="tag block">محظور</span></div>
+          <div class="saver-row"><span class="av" style="background:#3b82f6"></span><b>Chrome</b><span class="tag allow">مسموح</span></div>
+          <div class="saver-row"><span class="av" style="background:#a855f7"></span><b>Instagram</b><span class="tag allow">مسموح</span></div>
+        </div>
+        <div class="vpn">🔒 اتصال VPN محلي — لا يمر أي شيء عبر سيرفر</div>
+        <div class="alert" style="color:var(--green);background:rgba(52,211,153,.08);border-color:rgba(52,211,153,.25)">✓ تم حظر 2 تطبيقين · 0 بايت مسرّبة</div>
+        <div class="nav"><i></i><i></i><i class="active"></i><i></i></div>
+      </div></div>
+
+    </section>
+
+    <aside>
+      <div class="card">
+        <h3>Quick Settings Tile</h3>
+        <div class="tile-row">
+          <div class="tile"><b>↓ 12.4M</b><span>Mizan</span></div>
+          <p>Live speed in one swipe.<br>Tap to open, long-press for Saver.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Persistent notification</h3>
+        <div class="notif">
+          <div class="top"><span style="width:14px;height:14px;border-radius:5px;background:#22d3ee"></span><b>Mizan</b><span style="margin-left:auto">الآن</span></div>
+          <div class="main">↓ 12.4 MB/s · ↑ 1.2 MB/s</div>
+          <div class="sub">اليوم 1.24 GB من 2.00 GB</div>
+          <div class="acts"><span>إيقاف مؤقت</span><span>فتح</span><span>حسناً</span></div>
+        </div>
+        <p style="font-size:9px;color:var(--muted);margin-top:8px">يبقى حتى الضغط — بصوت عند التجاوز.</p>
+      </div>
+
+      <div class="card">
+        <h3>Home widget · 2×2</h3>
+        <div class="widget">
+          <div class="wrow">
+            <div><div class="wt">TODAY</div><div class="wv">1.24 GB</div></div>
+            <div class="wr"><b>62%</b></div>
+          </div>
+          <div>
+            <div class="ws" style="display:flex;justify-content:space-between"><span>2.00 GB limit</span><span>↓ 12.4M</span></div>
+            <div class="wbar" style="margin-top:6px"><i></i></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Android reality</h3>
+        <div class="reality">
+          <div class="r ok"><i></i><span><b>Live speed:</b> TrafficStats, no permission.</span></div>
+          <div class="r"><i></i><span><b>Per-app:</b> NetworkStatsManager + Usage Access.</span></div>
+          <div class="r"><i></i><span><b>Real-time per-app:</b> VpnService only (phase 6).</span></div>
+          <div class="r ok"><i></i><span><b>Blocking:</b> VPN firewall, no root.</span></div>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <footer>
+    <div class="principles">
+      <span><b>No root</b></span><span><b>No analytics</b></span><span><b>Offline by design</b></span>
+      <span><b>Arabic RTL first</b></span><span><b>One commit per step</b></span>
+    </div>
+    <div class="tech"><span>Kotlin</span><span>Compose M3</span><span>Room</span><span>WorkManager</span><span>Glance</span><span>VpnService</span></div>
+  </footer>
+</div>
+</body>
+</html>

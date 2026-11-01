@@ -35,6 +35,14 @@
     <string name="history_empty_title">لا توجد بيانات بعد</string>
     <string name="history_empty_body">ابدأ القياس من الشاشة الرئيسية، وستظهر أول الأرقام خلال ثوانٍ.</string>
 
+    <string name="history_cycle_title">دورة الفاتورة</string>
+    <string name="history_cycle_range">%1$s – %2$s</string>
+    <string name="history_cycle_total">إجمالي الدورة</string>
+    <string name="history_cycle_start_day">يوم بداية الدورة</string>
+    <string name="history_cycle_start_decrease">تقديم بداية الدورة يوماً واحداً</string>
+    <string name="history_cycle_start_increase">تأخير بداية الدورة يوماً واحداً</string>
+    <string name="history_cycle_partial">لم تُراقَب كل أيام الدورة المنقضية؛ الإجمالي يغطي الأيام المسجَّلة فقط.</string>
+
     <string name="section_in_progress">قيد الإنشاء</string>
 
     <string name="notification_channel_monitoring">المراقبة الجارية</string>

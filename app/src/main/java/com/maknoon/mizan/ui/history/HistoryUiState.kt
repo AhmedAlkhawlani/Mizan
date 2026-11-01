@@ -2,6 +2,7 @@ package com.maknoon.mizan.ui.history
 
 import com.maknoon.mizan.core.data.db.DeviceDailyEntity
 import com.maknoon.mizan.core.data.db.DeviceHourlyEntity
+import com.maknoon.mizan.core.domain.cycle.BillingCycleCalculator
 import com.maknoon.mizan.core.domain.format.ByteFormatter
 
 /** One column of the 7-day chart, with the height already normalised to the tallest day. */
@@ -32,6 +33,9 @@ data class HourBarUi(
  *
  * Both charts are fixed-length: exactly [HISTORY_DAYS] day columns ending today and 24 hour
  * columns, so a gap in the data reads as an empty bar rather than quietly shifting the axis.
+ *
+ * The billing cycle can be longer than the chart window, so its total is computed from the
+ * cycle range rather than from [days].
  */
 data class HistoryUiState(
     val days: List<DayBarUi> = emptyList(),
@@ -39,6 +43,11 @@ data class HistoryUiState(
     val todayEpochDay: Long = 0L,
     val weekTotalLabel: String = UNKNOWN,
     val todayTotalLabel: String = UNKNOWN,
+    val cycleStartDay: Int = BillingCycleCalculator.MIN_START_DAY,
+    val cycleStartEpochDay: Long = 0L,
+    val cycleEndEpochDay: Long = 0L,
+    val cycleTotalLabel: String = UNKNOWN,
+    val cyclePartial: Boolean = false,
     val anyPartial: Boolean = false,
     val hasData: Boolean = false,
 ) {
@@ -58,6 +67,7 @@ internal fun historyUiState(
     daily: List<DeviceDailyEntity>,
     hourly: List<DeviceHourlyEntity>,
     todayEpochDay: Long,
+    cycleStartDay: Int = BillingCycleCalculator.MIN_START_DAY,
     daysShown: Int = HistoryUiState.HISTORY_DAYS,
 ): HistoryUiState {
     val dailyByDay = daily.associateBy { it.epochDay }
@@ -89,14 +99,28 @@ internal fun historyUiState(
     }
     val hourPeak = hourRows.maxOfOrNull { it.totalBytes } ?: 0L
 
+    val cycle = BillingCycleCalculator.cycleFor(todayEpochDay, cycleStartDay)
+    val cycleEnd = minOf(cycle.endEpochDay, todayEpochDay)
+    val cycleRows = daily.filter { it.epochDay in cycle.startEpochDay..cycleEnd }
+    // A day with no row was never observed: the service writes a row every few seconds while it
+    // runs, so a missing day is unknown rather than a measured zero. A cycle covering such a day
+    // must not claim its total is complete.
+    val cyclePartial = cycleRows.size.toLong() < cycleEnd - cycle.startEpochDay + 1 ||
+        cycleRows.any { it.partial }
+
     return HistoryUiState(
         days = dayRows.map { it.copy(fraction = fractionOf(it.totalBytes, dayPeak)) },
         hours = hourRows.map { it.copy(fraction = fractionOf(it.totalBytes, hourPeak)) },
         todayEpochDay = todayEpochDay,
         weekTotalLabel = ByteFormatter.data(dayRows.sumOf { it.totalBytes }),
         todayTotalLabel = ByteFormatter.data(dayRows.last().totalBytes),
+        cycleStartDay = BillingCycleCalculator.normalizedStartDay(cycleStartDay),
+        cycleStartEpochDay = cycle.startEpochDay,
+        cycleEndEpochDay = cycle.endEpochDay,
+        cycleTotalLabel = ByteFormatter.data(cycleRows.sumOf { it.rxBytes + it.txBytes }),
+        cyclePartial = cyclePartial,
         anyPartial = dayRows.any { it.partial },
-        hasData = dayPeak > 0L || hourPeak > 0L,
+        hasData = dayPeak > 0L || hourPeak > 0L || cycleRows.any { it.rxBytes + it.txBytes > 0L },
     )
 }
 

@@ -12,15 +12,18 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
@@ -30,6 +33,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.clipPath
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -45,7 +49,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.maknoon.mizan.R
 import com.maknoon.mizan.core.designsystem.theme.MizanTheme
 import com.maknoon.mizan.core.designsystem.theme.statusColors
+import com.maknoon.mizan.core.domain.cycle.BillingCycleCalculator
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 /**
  * The history section from docs/04: the last seven days and today's hours.
@@ -60,16 +66,27 @@ fun HistoryScreen(
     viewModel: HistoryViewModel = viewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    HistoryContent(uiState = uiState, modifier = modifier)
+    HistoryContent(
+        uiState = uiState,
+        onCycleStartDayChange = viewModel::setCycleStartDay,
+        modifier = modifier,
+    )
 }
 
 @Composable
-internal fun HistoryContent(uiState: HistoryUiState, modifier: Modifier = Modifier) {
+internal fun HistoryContent(
+    uiState: HistoryUiState,
+    onCycleStartDayChange: (Int) -> Unit,
+    modifier: Modifier = Modifier,
+) {
     LazyColumn(
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
+        item(key = "cycle") {
+            CycleCard(uiState = uiState, onCycleStartDayChange = onCycleStartDayChange)
+        }
         if (!uiState.hasData) {
             item(key = "empty") { EmptyHistoryCard() }
         } else {
@@ -79,6 +96,129 @@ internal fun HistoryContent(uiState: HistoryUiState, modifier: Modifier = Modifi
             item(key = "note") { ObservationNote() }
         }
     }
+}
+
+/**
+ * The operator's billing period: its date range, the traffic recorded inside it, and the
+ * day-of-month it starts on. Changing the start day re-reads the cycle from Room.
+ */
+@Composable
+private fun CycleCard(
+    uiState: HistoryUiState,
+    onCycleStartDayChange: (Int) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Card(modifier = modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier.padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Text(
+                text = stringResource(R.string.history_cycle_title),
+                style = MaterialTheme.typography.titleMedium,
+            )
+            if (uiState.cycleStartEpochDay > 0L && uiState.cycleEndEpochDay >= uiState.cycleStartEpochDay) {
+                Text(
+                    text = cycleRangeLabel(uiState.cycleStartEpochDay, uiState.cycleEndEpochDay),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = stringResource(R.string.history_cycle_total),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Text(
+                    text = uiState.cycleTotalLabel,
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = stringResource(R.string.history_cycle_start_day),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                CycleStartDayStepper(
+                    day = uiState.cycleStartDay,
+                    onDayChange = onCycleStartDayChange,
+                )
+            }
+            if (uiState.cyclePartial) {
+                Text(
+                    text = stringResource(R.string.history_cycle_partial),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.statusColors.warning,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun CycleStartDayStepper(
+    day: Int,
+    onDayChange: (Int) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val decreaseLabel = stringResource(R.string.history_cycle_start_decrease)
+    val increaseLabel = stringResource(R.string.history_cycle_start_increase)
+
+    Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
+        IconButton(
+            onClick = { onDayChange(day - 1) },
+            enabled = day > BillingCycleCalculator.MIN_START_DAY,
+        ) {
+            Text(
+                text = "−",
+                modifier = Modifier.semantics { contentDescription = decreaseLabel },
+                style = MaterialTheme.typography.titleLarge,
+            )
+        }
+        Text(
+            text = day.toString(),
+            modifier = Modifier.widthIn(min = 32.dp),
+            style = MaterialTheme.typography.titleMedium,
+            textAlign = TextAlign.Center,
+        )
+        IconButton(
+            onClick = { onDayChange(day + 1) },
+            enabled = day < BillingCycleCalculator.MAX_START_DAY,
+        ) {
+            Text(
+                text = "+",
+                modifier = Modifier.semantics { contentDescription = increaseLabel },
+                style = MaterialTheme.typography.titleLarge,
+            )
+        }
+    }
+}
+
+/**
+ * Renders the two ends as day-of-month plus a localised month name. The day stays a Western
+ * number per docs/04, which also keeps the label stable in RTL where digits do not mirror.
+ */
+@Composable
+private fun cycleRangeLabel(startEpochDay: Long, endEpochDay: Long): String {
+    val locale = LocalConfiguration.current.locales[0]
+    val monthFormat = remember(locale) { DateTimeFormatter.ofPattern("MMM", locale) }
+    val start = LocalDate.ofEpochDay(startEpochDay)
+    val end = LocalDate.ofEpochDay(endEpochDay)
+    return stringResource(
+        R.string.history_cycle_range,
+        "${start.dayOfMonth} ${start.format(monthFormat)}",
+        "${end.dayOfMonth} ${end.format(monthFormat)}",
+    )
 }
 
 @Composable
@@ -386,10 +526,15 @@ private fun HistoryPreview() {
         todayEpochDay = today,
         weekTotalLabel = "2.31 GB",
         todayTotalLabel = "280 MB",
+        cycleStartDay = 15,
+        cycleStartEpochDay = today - 5,
+        cycleEndEpochDay = today + 24,
+        cycleTotalLabel = "1.85 GB",
+        cyclePartial = true,
         anyPartial = true,
         hasData = true,
     )
     MizanTheme(dynamicColor = false) {
-        HistoryContent(uiState = preview)
+        HistoryContent(uiState = preview, onCycleStartDayChange = {})
     }
 }

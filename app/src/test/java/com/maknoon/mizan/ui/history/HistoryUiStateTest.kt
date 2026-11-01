@@ -3,11 +3,12 @@ package com.maknoon.mizan.ui.history
 import com.google.common.truth.Truth.assertThat
 import com.maknoon.mizan.core.data.db.DeviceDailyEntity
 import com.maknoon.mizan.core.data.db.DeviceHourlyEntity
+import java.time.LocalDate
 import org.junit.Test
 
 class HistoryUiStateTest {
 
-    private val today = 20_758L
+    private val today = LocalDate.of(2026, 3, 20).toEpochDay()
 
     @Test
     fun `an empty database has no content and unknown totals`() {
@@ -127,6 +128,113 @@ class HistoryUiStateTest {
         assertThat(state.hasData).isTrue()
         assertThat(state.hours[12].fraction).isEqualTo(1f)
         assertThat(state.weekTotalLabel).isEqualTo("0 B")
+    }
+
+    @Test
+    fun `the cycle starts on the configured day and ends the day before the next one`() {
+        val state = historyUiState(
+            daily = emptyList(),
+            hourly = emptyList(),
+            todayEpochDay = today,
+            cycleStartDay = 15,
+        )
+
+        assertThat(state.cycleStartDay).isEqualTo(15)
+        assertThat(state.cycleStartEpochDay).isEqualTo(LocalDate.of(2026, 3, 15).toEpochDay())
+        assertThat(state.cycleEndEpochDay).isEqualTo(LocalDate.of(2026, 4, 14).toEpochDay())
+    }
+
+    @Test
+    fun `the cycle total reaches back before the seven-day window`() {
+        val state = historyUiState(
+            daily = listOf(
+                daily(LocalDate.of(2026, 3, 2).toEpochDay(), rx = 4_000),
+                daily(LocalDate.of(2026, 3, 19).toEpochDay(), rx = 1_000),
+            ),
+            hourly = emptyList(),
+            todayEpochDay = today,
+        )
+
+        assertThat(state.weekTotalLabel).isEqualTo("1 KB")
+        assertThat(state.cycleTotalLabel).isEqualTo("5 KB")
+    }
+
+    @Test
+    fun `a day from the previous cycle is not part of the total`() {
+        val state = historyUiState(
+            daily = listOf(
+                daily(LocalDate.of(2026, 3, 14).toEpochDay(), rx = 9_000),
+                daily(LocalDate.of(2026, 3, 16).toEpochDay(), rx = 1_000),
+            ),
+            hourly = emptyList(),
+            todayEpochDay = today,
+            cycleStartDay = 15,
+        )
+
+        assertThat(state.cycleTotalLabel).isEqualTo("1 KB")
+    }
+
+    @Test
+    fun `a cycle with an unobserved elapsed day is partial`() {
+        val state = historyUiState(
+            daily = listOf(daily(today, rx = 1_000)),
+            hourly = emptyList(),
+            todayEpochDay = today,
+            cycleStartDay = 18,
+        )
+
+        assertThat(state.cyclePartial).isTrue()
+    }
+
+    @Test
+    fun `a cycle is complete once every elapsed day has a row`() {
+        val state = historyUiState(
+            daily = (today - 2..today).map { daily(it, rx = 0) },
+            hourly = emptyList(),
+            todayEpochDay = today,
+            cycleStartDay = 18,
+        )
+
+        // Days after today belong to the cycle but are not overdue yet.
+        assertThat(state.cyclePartial).isFalse()
+    }
+
+    @Test
+    fun `a partial day inside the cycle makes the cycle partial`() {
+        val state = historyUiState(
+            daily = (today - 2..today).map { daily(it, rx = 0, partial = it == today) },
+            hourly = emptyList(),
+            todayEpochDay = today,
+            cycleStartDay = 18,
+        )
+
+        assertThat(state.cyclePartial).isTrue()
+    }
+
+    @Test
+    fun `a start day outside the allowed range is clamped`() {
+        val state = historyUiState(
+            daily = emptyList(),
+            hourly = emptyList(),
+            todayEpochDay = today,
+            cycleStartDay = 40,
+        )
+
+        assertThat(state.cycleStartDay).isEqualTo(28)
+        assertThat(state.cycleStartEpochDay).isEqualTo(LocalDate.of(2026, 2, 28).toEpochDay())
+    }
+
+    @Test
+    fun `traffic outside the chart window still counts as data`() {
+        val state = historyUiState(
+            daily = listOf(daily(LocalDate.of(2026, 3, 2).toEpochDay(), rx = 4_000)),
+            hourly = emptyList(),
+            todayEpochDay = today,
+        )
+
+        assertThat(state.hasData).isTrue()
+        assertThat(state.days.all { it.totalBytes == 0L }).isTrue()
+        assertThat(state.cycleTotalLabel).isEqualTo("4 KB")
     }
 
     private fun daily(

@@ -3,7 +3,9 @@ package com.maknoon.mizan.ui.history
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.maknoon.mizan.core.data.settings.MizanSettings
 import com.maknoon.mizan.core.data.usage.DeviceUsageRepository
+import com.maknoon.mizan.core.domain.cycle.BillingCycleCalculator
 import java.time.Duration
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -17,6 +19,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 /**
  * Feeds the History screen from Room.
@@ -28,6 +31,7 @@ import kotlinx.coroutines.flow.stateIn
 class HistoryViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository = DeviceUsageRepository.create(application)
+    private val settings = MizanSettings(application)
     private val zone: ZoneId = ZoneId.systemDefault()
 
     private val todayFlow: Flow<Long> = flow {
@@ -41,12 +45,21 @@ class HistoryViewModel(application: Application) : AndroidViewModel(application)
     }.distinctUntilChanged()
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val uiState: StateFlow<HistoryUiState> = todayFlow
-        .flatMapLatest { today ->
+    val uiState: StateFlow<HistoryUiState> = combine(
+        todayFlow,
+        settings.cycleStartDay,
+    ) { today, cycleStartDay -> today to cycleStartDay }
+        .flatMapLatest { (today, cycleStartDay) ->
+            // The cycle can start before the seven-day window, and its total must include those
+            // days, so the query begins at whichever is older.
+            val cycle = BillingCycleCalculator.cycleFor(today, cycleStartDay)
+            val fromEpochDay = minOf(today - HISTORY_DAYS + 1, cycle.startEpochDay)
             combine(
-                repository.observeDailyRange(today - HISTORY_DAYS + 1, today),
+                repository.observeDailyRange(fromEpochDay, today),
                 repository.observeHourly(today),
-            ) { daily, hourly -> historyUiState(daily, hourly, today, HISTORY_DAYS) }
+            ) { daily, hourly ->
+                historyUiState(daily, hourly, today, cycleStartDay, HISTORY_DAYS)
+            }
         }
         .stateIn(
             scope = viewModelScope,
@@ -54,6 +67,11 @@ class HistoryViewModel(application: Application) : AndroidViewModel(application)
             started = SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS),
             initialValue = HistoryUiState(),
         )
+
+    /** Persists the operator's cycle start day; the flow above re-reads the cycle on change. */
+    fun setCycleStartDay(day: Int) {
+        viewModelScope.launch { settings.setCycleStartDay(day) }
+    }
 
     private companion object {
         const val HISTORY_DAYS = HistoryUiState.HISTORY_DAYS

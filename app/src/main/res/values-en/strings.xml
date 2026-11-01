@@ -33,6 +33,14 @@
     <string name="history_empty_title">No data yet</string>
     <string name="history_empty_body">Start measuring from the home screen; the first figures appear within seconds.</string>
 
+    <string name="history_cycle_title">Billing cycle</string>
+    <string name="history_cycle_range">%1$s – %2$s</string>
+    <string name="history_cycle_total">Cycle total</string>
+    <string name="history_cycle_start_day">Cycle start day</string>
+    <string name="history_cycle_start_decrease">Earlier cycle start day</string>
+    <string name="history_cycle_start_increase">Later cycle start day</string>
+    <string name="history_cycle_partial">Not every elapsed day of the cycle was observed; the total covers recorded days only.</string>
+
     <string name="section_in_progress">In progress</string>
 
     <string name="notification_channel_monitoring">Live monitoring</string>

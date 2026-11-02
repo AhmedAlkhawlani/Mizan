@@ -8,6 +8,9 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
 import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkCapabilities
+import android.net.NetworkRequest
 import android.net.VpnService
 import android.os.Build
 import android.os.ParcelFileDescriptor
@@ -19,13 +22,18 @@ import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import com.maknoon.mizan.MainActivity
 import com.maknoon.mizan.R
+import com.maknoon.mizan.core.data.db.MizanDatabaseProvider
+import com.maknoon.mizan.core.data.network.NetworkProfilesRepository
 import com.maknoon.mizan.core.data.settings.MizanSettings
+import com.maknoon.mizan.core.domain.network.ResolvedNetwork
 import com.maknoon.mizan.core.domain.saver.BlockedTrafficSnapshot
 import com.maknoon.mizan.core.domain.saver.ParsedIpPacket
 import com.maknoon.mizan.core.domain.saver.count
 import com.maknoon.mizan.core.domain.saver.parseIpPacket
 import com.maknoon.mizan.core.domain.saver.planVpnTunnel
+import com.maknoon.mizan.core.domain.saver.shouldBlockTraffic
 import com.maknoon.mizan.core.domain.usage.InstalledApp
+import com.maknoon.mizan.core.platform.network.AndroidNetworkStateSource
 import com.maknoon.mizan.core.platform.usage.AndroidInstalledAppsSource
 import java.io.FileInputStream
 import java.io.IOException
@@ -60,6 +68,35 @@ class MizanVpnService : VpnService() {
 
     private val connectivityManager by lazy { getSystemService(ConnectivityManager::class.java) }
 
+    private val networkProfiles by lazy {
+        NetworkProfilesRepository(MizanDatabaseProvider.networkProfileDao(this))
+    }
+
+    /**
+     * Observes only the physical transports. The VPN network itself is excluded, otherwise its
+     * arrival as the default network would re-enter the callback and flap the tunnel.
+     */
+    private val networkRequest = NetworkRequest.Builder()
+        .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+        .addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR)
+        .addTransportType(NetworkCapabilities.TRANSPORT_ETHERNET)
+        .build()
+
+    /**
+     * Re-evaluates the firewall when the network changes (6.4): joining an unmetered network
+     * releases the blocked apps, and leaving one re-blocks them. A rebuild happens only when the
+     * metered decision actually flips, so a capability flutter on the underlying network does
+     * not tear the tunnel down for nothing.
+     */
+    private val networkCallback = object : ConnectivityManager.NetworkCallback() {
+        override fun onAvailable(network: Network) = onNetworkChanged()
+
+        override fun onLost(network: Network) = onNetworkChanged()
+
+        override fun onCapabilitiesChanged(network: Network, capabilities: NetworkCapabilities) =
+            onNetworkChanged()
+    }
+
     private val openIntent by lazy {
         PendingIntent.getActivity(
             this,
@@ -88,6 +125,10 @@ class MizanVpnService : VpnService() {
     @Volatile
     private var generation = 0
 
+    /** The last metered decision, so a network callback rebuilds only when it flips. */
+    @Volatile
+    private var blocking = false
+
     /**
      * The blocked attempts counted for this service session. It survives a selection change
      * (reload), which rebuilds the tunnel but not the counter; only a fresh service resets it.
@@ -103,6 +144,7 @@ class MizanVpnService : VpnService() {
         startForegroundNotification(
             SaverNotifications.startingNotification(this, openIntent, stopIntent),
         )
+        connectivityManager.registerNetworkCallback(networkRequest, networkCallback)
     }
 
     /**
@@ -124,6 +166,7 @@ class MizanVpnService : VpnService() {
         // the launch check does not immediately try to take it back.
         generation++
         closeTunnel()
+        runCatching { connectivityManager.unregisterNetworkCallback(networkCallback) }
         SaverStateHolder.publish(SaverState(failure = SaverFailure.REVOKED))
         CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
             runCatching { settings.setDataSaverEnabled(false) }
@@ -136,6 +179,7 @@ class MizanVpnService : VpnService() {
         generation++
         establishJob?.cancel()
         closeTunnel()
+        runCatching { connectivityManager.unregisterNetworkCallback(networkCallback) }
         scope.cancel()
         SaverStateHolder.markServiceDestroyed()
         ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
@@ -150,6 +194,7 @@ class MizanVpnService : VpnService() {
         generation++
         establishJob?.cancel()
         closeTunnel()
+        runCatching { connectivityManager.unregisterNetworkCallback(networkCallback) }
         ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
         stopSelf()
     }
@@ -180,6 +225,18 @@ class MizanVpnService : VpnService() {
         }
         if (VpnService.prepare(this) != null) {
             fail(currentGeneration, SaverFailure.CONSENT_MISSING)
+            return
+        }
+
+        val resolved = resolveNetwork()
+        if (currentGeneration != generation) return
+        blocking = shouldBlockTraffic(resolved)
+        if (!blocking) {
+            // Unmetered (6.4): blocked apps are allowed through, so no tunnel is built. The
+            // switch stays on and the service keeps listening for a network change.
+            settings.setDataSaverEnabled(true)
+            SaverStateHolder.publish(SaverState(serviceRunning = true, unmetered = true))
+            refreshUnmeteredNotification()
             return
         }
 
@@ -242,6 +299,19 @@ class MizanVpnService : VpnService() {
         )
         refreshNotification(admitted)
         startReading(established, attribution)
+    }
+
+    private suspend fun resolveNetwork(): ResolvedNetwork {
+        val snapshot = AndroidNetworkStateSource(this).snapshot()
+        return networkProfiles.resolve(snapshot)
+    }
+
+    private fun onNetworkChanged() {
+        scope.launch {
+            if (shouldBlockTraffic(resolveNetwork()) != blocking) {
+                reload()
+            }
+        }
     }
 
     private suspend fun fail(currentGeneration: Int, failure: SaverFailure) {
@@ -380,6 +450,14 @@ class MizanVpnService : VpnService() {
         notificationManager.notify(
             SaverNotifications.NOTIFICATION_ID,
             SaverNotifications.activeNotification(this, blockedCount, openIntent, stopIntent),
+        )
+    }
+
+    private fun refreshUnmeteredNotification() {
+        if (!canPostNotifications()) return
+        notificationManager.notify(
+            SaverNotifications.NOTIFICATION_ID,
+            SaverNotifications.unmeteredNotification(this, openIntent, stopIntent),
         )
     }
 

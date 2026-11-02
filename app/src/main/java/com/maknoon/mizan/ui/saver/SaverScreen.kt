@@ -333,6 +333,7 @@ private fun FirewallCard(
             uiState.activeBlockedCount,
         )
 
+        uiState.unmetered -> stringResource(R.string.saver_status_unmetered)
         uiState.enabled -> stringResource(R.string.saver_status_starting)
         else -> stringResource(R.string.saver_status_stopped)
     }

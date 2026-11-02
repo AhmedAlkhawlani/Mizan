@@ -54,6 +54,17 @@ object SaverNotifications {
         stopIntent = stopIntent,
     )
 
+    fun unmeteredNotification(
+        context: Context,
+        openIntent: PendingIntent,
+        stopIntent: PendingIntent,
+    ): Notification = build(
+        context = context,
+        text = context.getString(R.string.saver_notification_unmetered),
+        openIntent = openIntent,
+        stopIntent = stopIntent,
+    )
+
     private fun build(
         context: Context,
         text: String,

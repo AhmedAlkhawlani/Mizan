@@ -38,6 +38,7 @@ data class SaverUiState(
     val active: Boolean = false,
     val activeBlockedCount: Int = 0,
     val failure: SaverFailure? = null,
+    val unmetered: Boolean = false,
 )
 
 /**
@@ -73,6 +74,7 @@ class SaverViewModel(application: Application) : AndroidViewModel(application) {
             active = runtime.active,
             activeBlockedCount = runtime.blockedCount,
             failure = runtime.failure,
+            unmetered = runtime.unmetered,
         )
     }.stateIn(
         scope = viewModelScope,

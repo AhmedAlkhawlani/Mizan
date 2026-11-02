@@ -19,12 +19,15 @@ enum class SaverFailure {
  * [serviceRunning] says the foreground service exists; [active] says a tunnel is established.
  * They differ while the settings are being read and [blockedCount] is the number of apps the
  * tunnel actually admits, which can be smaller than the stored list after an uninstall.
+ * [unmetered] says the service is on but deliberately has no tunnel because the connection is
+ * unmetered, so the blocked apps are currently allowed through (6.4).
  */
 data class SaverState(
     val serviceRunning: Boolean = false,
     val active: Boolean = false,
     val blockedCount: Int = 0,
     val failure: SaverFailure? = null,
+    val unmetered: Boolean = false,
 )
 
 /**
@@ -44,7 +47,7 @@ object SaverStateHolder {
     /** Keeps a failure visible after the service stops itself; clears the running flags. */
     fun markServiceDestroyed() {
         currentState.update {
-            it.copy(serviceRunning = false, active = false, blockedCount = 0)
+            it.copy(serviceRunning = false, active = false, blockedCount = 0, unmetered = false)
         }
     }
 

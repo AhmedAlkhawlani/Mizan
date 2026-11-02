@@ -12,6 +12,12 @@ class ShortcutTargetsTest {
     }
 
     @Test
+    fun `saver opens the guard tab`() {
+        assertThat(shortcutTarget("saver"))
+            .isEqualTo(ShortcutTarget.Destination(MizanDestination.Saver.route))
+    }
+
+    @Test
     fun `history opens the history tab`() {
         assertThat(shortcutTarget("history"))
             .isEqualTo(ShortcutTarget.Destination(MizanDestination.History.route))

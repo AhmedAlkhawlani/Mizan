@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.maknoon.mizan.core.domain.cycle.BillingCycleCalculator
 import kotlinx.coroutines.flow.Flow
@@ -47,9 +48,33 @@ class MizanSettings(context: Context) {
         store.edit { preferences -> preferences[CYCLE_START_DAY] = normalized }
     }
 
+    /**
+     * The firewall's master switch and the packages the operator chose to block (docs/04).
+     * Only the package names are stored; the labels and icons are read from PackageManager, so
+     * an app that is uninstalled or renamed never leaves a stale name on screen.
+     */
+    val dataSaverEnabled: Flow<Boolean> = store.data
+        .map { preferences -> preferences[DATA_SAVER_ENABLED] ?: false }
+        .distinctUntilChanged()
+
+    suspend fun setDataSaverEnabled(enabled: Boolean) {
+        store.edit { preferences -> preferences[DATA_SAVER_ENABLED] = enabled }
+    }
+
+    val blockedPackages: Flow<Set<String>> = store.data
+        .map { preferences -> preferences[BLOCKED_PACKAGES] ?: emptySet() }
+        .distinctUntilChanged()
+
+    suspend fun setBlockedPackages(packages: Set<String>) {
+        val normalized = packages.filterTo(LinkedHashSet()) { it.isNotBlank() }
+        store.edit { preferences -> preferences[BLOCKED_PACKAGES] = normalized }
+    }
+
     private companion object {
         val MONITORING_ENABLED = booleanPreferencesKey("monitoring_enabled")
         val CYCLE_START_DAY = intPreferencesKey("cycle_start_day")
+        val DATA_SAVER_ENABLED = booleanPreferencesKey("data_saver_enabled")
+        val BLOCKED_PACKAGES = stringSetPreferencesKey("data_saver_blocked_packages")
         const val DEFAULT_CYCLE_START_DAY = BillingCycleCalculator.MIN_START_DAY
     }
 }

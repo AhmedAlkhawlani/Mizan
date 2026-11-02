@@ -15,6 +15,7 @@ internal sealed interface ShortcutTarget {
 
 internal fun shortcutTarget(host: String?): ShortcutTarget? = when (host) {
     "apps" -> ShortcutTarget.Destination(MizanDestination.Apps.route)
+    "saver" -> ShortcutTarget.Destination(MizanDestination.Saver.route)
     "history" -> ShortcutTarget.Destination(MizanDestination.History.route)
     "budget" -> ShortcutTarget.Destination(BUDGET_ROUTE)
     "stop-monitoring" -> ShortcutTarget.StopMonitoring

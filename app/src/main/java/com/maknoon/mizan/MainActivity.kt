@@ -17,6 +17,8 @@ import com.maknoon.mizan.core.data.settings.MizanSettings
 import com.maknoon.mizan.core.designsystem.theme.MizanTheme
 import com.maknoon.mizan.monitoring.MonitoringControl
 import com.maknoon.mizan.monitoring.MonitoringStateHolder
+import com.maknoon.mizan.saver.SaverControl
+import com.maknoon.mizan.saver.SaverStateHolder
 import com.maknoon.mizan.sync.AppUsageSyncScheduler
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
@@ -44,6 +46,7 @@ class MainActivity : ComponentActivity() {
             // A stop shortcut has just written "off"; resuming in the same breath would race
             // that write and could restart the service the operator asked to stop.
             if (!stoppedByShortcut) resumeMonitoringIfRequested()
+            resumeSaverIfRequested()
             // The periodic registration is idempotent; the one-time run makes opening the app
             // refresh the per-app figures instead of waiting up to a quarter of an hour.
             AppUsageSyncScheduler.schedule(applicationContext)
@@ -101,6 +104,21 @@ class MainActivity : ComponentActivity() {
             val enabled = MizanSettings(appContext).monitoringEnabled.first()
             if (enabled && !MonitoringStateHolder.state.value.running) {
                 MonitoringControl.start(appContext)
+            }
+        }
+    }
+
+    /**
+     * A persisted "on" also means the firewall, not only monitoring. The service re-checks
+     * consent itself, so a revoked consent turns the switch off with an honest failure
+     * instead of silently leaving a switch that does nothing.
+     */
+    private fun resumeSaverIfRequested() {
+        val appContext = applicationContext
+        lifecycleScope.launch {
+            val enabled = MizanSettings(appContext).dataSaverEnabled.first()
+            if (enabled && !SaverStateHolder.state.value.serviceRunning) {
+                SaverControl.start(appContext)
             }
         }
     }

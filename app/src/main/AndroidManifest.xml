@@ -66,6 +66,26 @@
             </intent-filter>
         </service>
 
+        <!-- Blocking-only tunnel (docs/02 §7). The platform requires the VpnService action to
+             recognise the component; BIND_VPN_SERVICE keeps every other app from reaching it. -->
+        <service
+            android:name=".saver.MizanVpnService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse"
+            android:permission="android.permission.BIND_VPN_SERVICE">
+            <intent-filter>
+                <action android:name="android.net.VpnService" />
+            </intent-filter>
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="blocking_only_vpn_firewall" />
+        </service>
+
+        <!-- Only reachable through the firewall notification's own PendingIntent. -->
+        <receiver
+            android:name=".saver.SaverActionReceiver"
+            android:exported="false" />
+
         <!-- Resumes monitoring after a reboot when the user had it running. The broadcast is
              a protected system intent, so no other app can trigger it. -->
         <receiver

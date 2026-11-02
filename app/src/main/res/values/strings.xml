@@ -70,6 +70,48 @@
     <string name="saver_limits_title">قيود يجب معرفتها</string>
     <string name="saver_limits_body">VPN واحد فقط: تفعيل حماية ميزان يقطع أي VPN آخر. ستظهر أيقونة VPN في شريط الحالة. التطبيقات المحظورة ستفقد اتصالها حتى على Wi-Fi.</string>
     <string name="saver_revoke_note">يمكنك سحب الموافقة من إعدادات VPN في النظام في أي وقت.</string>
+    <string name="saver_firewall_title">جدار الحماية</string>
+    <string name="saver_firewall_switch">منع التطبيقات المحظورة من الشبكة</string>
+    <string name="saver_status_starting">جارٍ تشغيل الحماية…</string>
+    <string name="saver_status_stopped">الحماية متوقفة.</string>
+    <string name="saver_need_consent">امنح موافقة VPN أولاً لتشغيل الحماية.</string>
+    <string name="saver_need_apps">اختر تطبيقاً واحداً على الأقل لتشغيل الحماية.</string>
+    <string name="saver_apps_title">التطبيقات المحظورة</string>
+    <string name="saver_apps_empty">لم تختر أي تطبيق بعد. التطبيقات هنا وحدها تُمنع من الشبكة.</string>
+    <string name="saver_apps_choose">اختيار التطبيقات</string>
+    <string name="saver_apps_shared_uid_note">التطبيقات التي تتشارك معرّف UID مع تطبيق محظور تُحجب معه.</string>
+    <string name="saver_picker_title">اختيار التطبيقات</string>
+    <string name="saver_picker_search">ابحث بالاسم أو باسم الحزمة</string>
+    <string name="saver_picker_empty">لا توجد تطبيقات مطابقة.</string>
+    <string name="saver_picker_loading">جارٍ قراءة التطبيقات…</string>
+    <string name="saver_picker_done">تم</string>
+    <string name="saver_failure_consent">لم تعد موافقة VPN ممنوحة. امنحها من شاشة النظام ثم أعد التفعيل.</string>
+    <string name="saver_failure_no_apps">لا يوجد تطبيق محظور صالح للتشغيل.</string>
+    <string name="saver_failure_establish">تعذّر إنشاء النفق. تأكد من عدم وجود VPN آخر نشط ثم أعد المحاولة.</string>
+    <string name="saver_failure_revoked">أوقف النظام الحماية، غالباً لأن VPN آخر بدأ العمل.</string>
+    <string name="saver_vpn_session">ميزان — حماية الشبكة</string>
+    <string name="saver_notification_channel">حماية الشبكة</string>
+    <string name="saver_notification_channel_description">إشعار دائم يبيّن أن جدار الحماية يعمل، مع زر إيقاف فوري.</string>
+    <string name="saver_notification_starting">جارٍ تشغيل الحماية…</string>
+    <string name="saver_notification_action_stop">إيقاف الحماية</string>
+
+    <plurals name="saver_active_status">
+        <item quantity="zero">نشط — لا يحجب أي تطبيق</item>
+        <item quantity="one">نشط — يحجب تطبيقاً واحداً</item>
+        <item quantity="two">نشط — يحجب تطبيقين</item>
+        <item quantity="few">نشط — يحجب %d تطبيقات</item>
+        <item quantity="many">نشط — يحجب %d تطبيقاً</item>
+        <item quantity="other">نشط — يحجب %d تطبيق</item>
+    </plurals>
+
+    <plurals name="saver_notification_active">
+        <item quantity="zero">لا تطبيقات محجوبة</item>
+        <item quantity="one">يحجب تطبيقاً واحداً</item>
+        <item quantity="two">يحجب تطبيقين</item>
+        <item quantity="few">يحجب %d تطبيقات</item>
+        <item quantity="many">يحجب %d تطبيقاً</item>
+        <item quantity="other">يحجب %d تطبيق</item>
+    </plurals>
 
     <string name="history_last_7_days">آخر 7 أيام</string>
     <string name="history_today_hours">ساعات اليوم</string>

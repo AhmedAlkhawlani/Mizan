@@ -68,6 +68,40 @@
     <string name="saver_limits_title">Limits to know</string>
     <string name="saver_limits_body">One VPN at a time: enabling Mizan\u2019s guard disconnects any other VPN. A VPN icon appears in the status bar. Blocked apps lose connectivity even on Wi-Fi.</string>
     <string name="saver_revoke_note">You can revoke consent from the system\u2019s VPN settings at any time.</string>
+    <string name="saver_firewall_title">Firewall</string>
+    <string name="saver_firewall_switch">Keep blocked apps off the network</string>
+    <string name="saver_status_starting">Starting protection…</string>
+    <string name="saver_status_stopped">Protection is off.</string>
+    <string name="saver_need_consent">Grant VPN consent first to start protection.</string>
+    <string name="saver_need_apps">Choose at least one app to start protection.</string>
+    <string name="saver_apps_title">Blocked apps</string>
+    <string name="saver_apps_empty">No apps chosen yet. Only apps listed here are kept off the network.</string>
+    <string name="saver_apps_choose">Choose apps</string>
+    <string name="saver_apps_shared_uid_note">Apps that share a UID with a blocked app are blocked with it.</string>
+    <string name="saver_picker_title">Choose apps</string>
+    <string name="saver_picker_search">Search by name or package</string>
+    <string name="saver_picker_empty">No matching apps.</string>
+    <string name="saver_picker_loading">Reading installed apps…</string>
+    <string name="saver_picker_done">Done</string>
+    <string name="saver_failure_consent">VPN consent is no longer granted. Grant it from the system screen, then try again.</string>
+    <string name="saver_failure_no_apps">No blocked app is available to run protection.</string>
+    <string name="saver_failure_establish">The tunnel could not be created. Make sure no other VPN is active, then try again.</string>
+    <string name="saver_failure_revoked">The system stopped protection, usually because another VPN started.</string>
+    <string name="saver_vpn_session">Mizan — Network guard</string>
+    <string name="saver_notification_channel">Network guard</string>
+    <string name="saver_notification_channel_description">An ongoing notice that the firewall is running, with an instant stop action.</string>
+    <string name="saver_notification_starting">Starting protection…</string>
+    <string name="saver_notification_action_stop">Stop protection</string>
+
+    <plurals name="saver_active_status">
+        <item quantity="one">Active — blocking %d app</item>
+        <item quantity="other">Active — blocking %d apps</item>
+    </plurals>
+
+    <plurals name="saver_notification_active">
+        <item quantity="one">Blocking %d app</item>
+        <item quantity="other">Blocking %d apps</item>
+    </plurals>
 
     <string name="history_last_7_days">Last 7 days</string>
     <string name="history_today_hours">Today by hour</string>

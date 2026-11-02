@@ -128,8 +128,8 @@ val granted = mode == AppOpsManager.MODE_ALLOWED
 - الإيقاف الصريح يصل كأمر `ACTION_STOP` إلى الخدمة التي تغلق `ParcelFileDescriptor` ثم
   `stopSelf`؛ `stopService` وحدها لا تدمّر خدمة VPN نشطة لأن النظام يمسكها. بعد الإغلاق يُحرَّر
   الربط ويُستدعى `onDestroy`.
-- قيود معروفة: الحجب بالـUID (تطبيقات تشترك في UID واحد تُحجب معاً)، ولا استثناء للشبكات
-  غير المقنّنة بعد (6.4). لا صلاحية جديدة على المستخدم ولا إذن `INTERNET`.
+- قيود معروفة: الحجب بالـUID (تطبيقات تشترك في UID واحد تُحجب معاً). لا صلاحية جديدة على
+  المستخدم ولا إذن `INTERNET`.
 
 **التنفيذ في 6.3 (عدّ المحاولات):**
 - حلقة القراءة تحسب كل حزمة تُسقط: `parseIpPacket` في `:core:domain` يقرأ رأس IPv4/IPv6
@@ -141,6 +141,19 @@ val granted = mode == AppOpsManager.MODE_ALLOWED
   `unknown` لا إلى تطبيق مُخمَّن.
 - النشر عبر `SaverTrafficHolder` (StateFlow) كل 500 ms؛ العدّاد يبقى عبر إعادة بناء النفق
   ويُصفَّر عند إنشاء الخدمة، والعرض في شاشة حالة 6.5.
+
+**التنفيذ في 6.4 (السماح على غير المقنّن):**
+- قرار الحجب `shouldBlockTraffic(resolved) = resolved.connected && resolved.metered` في
+  `:core:domain`، و«مقنّن» يأتي من بنية 4.6: `NetworkProfilesRepository.resolve` على
+  `AndroidNetworkStateSource.snapshot` (ملف التعريف ثم راية النظام ثم «غير مقنّن مؤقتاً»).
+- قبل تأسيس النفق تقرأ الخدمة القرار؛ إن كان غير مقنّن تبقى منشأةً وتنشر حالة `unmetered`
+  وإشعاراً «الشبكة غير مقنّنة» بدل تأسيس نفق، ويبقى `data_saver_enabled = true` ليعود الحجب
+  فور العودة إلى مقنّن.
+- **متابعة الشبكة بلا حلقة إعادة بناء**: بدل `registerDefaultNetworkCallback` (الذي يرى نفق
+  VPN نفسه كشبكة افتراضية ويعيد الاستدعاء)، سُجّل `NetworkRequest` مرشّح بالنقل
+  (WIFI|CELLULAR|ETHERNET) مع قرار `@Volatile blocking`، و`onNetworkChanged` يعيد البناء فقط
+  عند عبور مقنّن↔غير مقنّن فعلي. `unregisterNetworkCallback` في الإيقاف الصريح و`onRevoke`
+  يمنع سباق حدث متأخر يعيد الحجب بعد الإيقاف.
 
 ## 8) الصلاحيات المطلوبة (القائمة النهائية لـ v1)
 

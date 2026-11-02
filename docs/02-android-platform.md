@@ -140,7 +140,7 @@ val granted = mode == AppOpsManager.MODE_ALLOWED
   أو حزمة بلا منافذ (ICMP، رؤوس امتداد IPv6)، أو UDP غير متصل، أو جهاز أقدم من 29 تُنسب إلى
   `unknown` لا إلى تطبيق مُخمَّن.
 - النشر عبر `SaverTrafficHolder` (StateFlow) كل 500 ms؛ العدّاد يبقى عبر إعادة بناء النفق
-  ويُصفَّر عند إنشاء الخدمة، والعرض في شاشة حالة 6.5.
+  ويُصفَّر عند إنشاء الخدمة، والعرض في شاشة حالة 6.5 (انظر أسفل).
 
 **التنفيذ في 6.4 (السماح على غير المقنّن):**
 - قرار الحجب `shouldBlockTraffic(resolved) = resolved.connected && resolved.metered` في
@@ -154,6 +154,19 @@ val granted = mode == AppOpsManager.MODE_ALLOWED
   (WIFI|CELLULAR|ETHERNET) مع قرار `@Volatile blocking`، و`onNetworkChanged` يعيد البناء فقط
   عند عبور مقنّن↔غير مقنّن فعلي. `unregisterNetworkCallback` في الإيقاف الصريح و`onRevoke`
   يمنع سباق حدث متأخر يعيد الحجب بعد الإيقاف.
+
+**التنفيذ في 6.5 (شاشة حالة الجدار):**
+- `SaverViewModel` يجمع خمسة مصادر في `uiState`: التفعيل، القائمة المحظورة، التطبيقات المثبتة،
+  `SaverStateHolder`، وزوج (`ResolvedNetwork?` من `NetworkProfilesRepository.resolve` على لقطة
+  شبكة حيّة، و`BlockedTrafficSnapshot` من `SaverTrafficHolder`). اللقطة تُحدَّث عند كل تغيّر في
+  `ConnectivityManager` عبر `NetworkRequest` مرشّح بالنقل (مثل 6.4) وعند `onResume`، فلا تعتمد
+  الشاشة على قراءة لحظية تتقادم.
+- الواجهة تقرأ البيانات ولا تعيد حساب شيء: المجاميع والحزم/البايتات لكل حزمة تُعرض كما يبثّها
+  العدّاد، ودلو `unknown` يظهر صراحةً «غير منسوب». لا استدعاء `NetworkStatsManager` هنا، ولا
+  صلاحية جديدة.
+- الهوية: مخطط داكن ثابت scoped (لا Dynamic Color) يلفّ `Scaffold` كاملاً على هذا التبويب فقط،
+  وأيقونات شريط النظام تصبح فاتحة عبر `WindowInsetsController` وتُعاد مع مغادرة التبويب. كل
+  النصوص في `values/` و`values-en`، والأرقام تُعرض LTR داخل جملة RTL.
 
 ## 8) الصلاحيات المطلوبة (القائمة النهائية لـ v1)
 

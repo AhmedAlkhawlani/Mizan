@@ -7,9 +7,12 @@ import android.app.PendingIntent
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
+import android.net.ConnectivityManager
 import android.net.VpnService
 import android.os.Build
 import android.os.ParcelFileDescriptor
+import android.os.Process
+import android.os.SystemClock
 import android.util.Log
 import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
@@ -17,10 +20,17 @@ import androidx.core.net.toUri
 import com.maknoon.mizan.MainActivity
 import com.maknoon.mizan.R
 import com.maknoon.mizan.core.data.settings.MizanSettings
+import com.maknoon.mizan.core.domain.saver.BlockedTrafficSnapshot
+import com.maknoon.mizan.core.domain.saver.ParsedIpPacket
+import com.maknoon.mizan.core.domain.saver.count
+import com.maknoon.mizan.core.domain.saver.parseIpPacket
 import com.maknoon.mizan.core.domain.saver.planVpnTunnel
+import com.maknoon.mizan.core.domain.usage.InstalledApp
 import com.maknoon.mizan.core.platform.usage.AndroidInstalledAppsSource
 import java.io.FileInputStream
 import java.io.IOException
+import java.net.InetAddress
+import java.net.InetSocketAddress
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -47,6 +57,8 @@ class MizanVpnService : VpnService() {
     private val settings by lazy { MizanSettings(this) }
 
     private val notificationManager by lazy { getSystemService(NotificationManager::class.java) }
+
+    private val connectivityManager by lazy { getSystemService(ConnectivityManager::class.java) }
 
     private val openIntent by lazy {
         PendingIntent.getActivity(
@@ -76,10 +88,18 @@ class MizanVpnService : VpnService() {
     @Volatile
     private var generation = 0
 
+    /**
+     * The blocked attempts counted for this service session. It survives a selection change
+     * (reload), which rebuilds the tunnel but not the counter; only a fresh service resets it.
+     */
+    private var trafficSnapshot = BlockedTrafficSnapshot()
+
     override fun onCreate() {
         super.onCreate()
         SaverNotifications.createChannel(this, notificationManager)
         SaverStateHolder.publish(SaverState(serviceRunning = true))
+        trafficSnapshot = BlockedTrafficSnapshot()
+        SaverTrafficHolder.reset()
         startForegroundNotification(
             SaverNotifications.startingNotification(this, openIntent, stopIntent),
         )
@@ -170,6 +190,7 @@ class MizanVpnService : VpnService() {
             fail(currentGeneration, SaverFailure.NO_APPS)
             return
         }
+        val attribution = buildUidAttribution(installed, plan.packageNames)
 
         val builder = Builder()
             .setSession(getString(R.string.saver_vpn_session))
@@ -220,7 +241,7 @@ class MizanVpnService : VpnService() {
             SaverState(serviceRunning = true, active = true, blockedCount = admitted),
         )
         refreshNotification(admitted)
-        startReading(established)
+        startReading(established, attribution)
     }
 
     private suspend fun fail(currentGeneration: Int, failure: SaverFailure) {
@@ -232,22 +253,105 @@ class MizanVpnService : VpnService() {
     }
 
     /**
-     * Drops every packet the admitted apps send. Reading (rather than merely leaving the TUN
-     * unread) keeps the interface flowing and gives phase 6.3 the byte counts it needs.
+     * Drops every packet the admitted apps send and counts it per app for phase 6.3.
+     *
+     * Reading (rather than merely leaving the TUN unread) keeps the interface flowing. Each read
+     * returns one packet, which is parsed and attributed through [ConnectivityManager
+     * .getConnectionOwnerUid]; the snapshot is published at most every [PUBLISH_INTERVAL_MILLIS]
+     * so the Guard screen does not get a StateFlow write per packet.
      */
-    private fun startReading(established: ParcelFileDescriptor) {
+    private fun startReading(established: ParcelFileDescriptor, attribution: Map<Int, String?>) {
         readJob?.cancel()
         readJob = scope.launch {
             val packets = ByteArray(MAX_PACKET_SIZE)
             val input = FileInputStream(established.fileDescriptor)
+            val flowCache = LinkedHashMap<String, Int>(FLOW_CACHE_CAPACITY, 0.75f, true)
+            var lastPublish = SystemClock.elapsedRealtime()
             try {
                 while (isActive) {
-                    if (input.read(packets) < 0) break
+                    val length = input.read(packets)
+                    if (length < 0) break
+                    trafficSnapshot = countPacket(trafficSnapshot, packets, length, attribution, flowCache)
+                    val now = SystemClock.elapsedRealtime()
+                    if (now - lastPublish >= PUBLISH_INTERVAL_MILLIS) {
+                        SaverTrafficHolder.publish(trafficSnapshot)
+                        lastPublish = now
+                    }
                 }
             } catch (e: IOException) {
                 // Closing the descriptor is how a stop or reload unblocks this read.
+            } finally {
+                SaverTrafficHolder.publish(trafficSnapshot)
+                Log.i(TAG, "blocked: packets=${trafficSnapshot.totalPackets} " +
+                    "bytes=${trafficSnapshot.totalBytes} " +
+                    "perApp=${trafficSnapshot.perPackage} unknown=${trafficSnapshot.unknown}")
             }
         }
+    }
+
+    /**
+     * Builds a uid → package map for the admitted apps. A uid shared by more than one
+     * internet-capable app maps to null: the tunnel operates per uid, so those packets cannot be
+     * attributed to a single package and are counted as unknown instead of being guessed.
+     */
+    private fun buildUidAttribution(
+        installed: List<InstalledApp>,
+        admitted: List<String>,
+    ): Map<Int, String?> {
+        val admittedSet = admitted.toHashSet()
+        val uidToPackage = HashMap<Int, String>()
+        val uidCount = HashMap<Int, Int>()
+        for (app in installed) {
+            uidCount[app.uid] = (uidCount[app.uid] ?: 0) + 1
+            if (app.packageName in admittedSet) uidToPackage[app.uid] = app.packageName
+        }
+        return uidToPackage.mapValues { (uid, packageName) ->
+            if (uidCount[uid] == 1) packageName else null
+        }
+    }
+
+    private fun countPacket(
+        snapshot: BlockedTrafficSnapshot,
+        bytes: ByteArray,
+        length: Int,
+        attribution: Map<Int, String?>,
+        flowCache: LinkedHashMap<String, Int>,
+    ): BlockedTrafficSnapshot {
+        val packet = parseIpPacket(bytes, length)
+            ?: return snapshot.count(null, length)
+        val packageName = if (packet.sourcePort >= 0) {
+            attribution[ownerUid(packet, flowCache)]
+        } else {
+            null
+        }
+        return snapshot.count(packageName, packet.byteCount)
+    }
+
+    private fun ownerUid(packet: ParsedIpPacket, flowCache: LinkedHashMap<String, Int>): Int {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return Process.INVALID_UID
+        val key = flowKey(packet)
+        flowCache[key]?.let { return it }
+        val uid = runCatching {
+            connectivityManager.getConnectionOwnerUid(
+                packet.protocol,
+                InetSocketAddress(InetAddress.getByAddress(packet.sourceAddress), packet.sourcePort),
+                InetSocketAddress(
+                    InetAddress.getByAddress(packet.destinationAddress),
+                    packet.destinationPort,
+                ),
+            )
+        }.getOrDefault(Process.INVALID_UID)
+        if (uid != Process.INVALID_UID) {
+            if (flowCache.size >= FLOW_CACHE_MAX) flowCache.clear()
+            flowCache[key] = uid
+        }
+        return uid
+    }
+
+    private fun flowKey(packet: ParsedIpPacket): String {
+        val source = InetAddress.getByAddress(packet.sourceAddress).hostAddress
+        val destination = InetAddress.getByAddress(packet.destinationAddress).hostAddress
+        return "${packet.protocol}|$source|${packet.sourcePort}|$destination|${packet.destinationPort}"
     }
 
     private fun closeTunnel() {
@@ -293,6 +397,9 @@ class MizanVpnService : VpnService() {
         const val VPN_IPV6_ADDRESS = "fd00:6d69:7a61:6e::1"
         const val VPN_IPV6_DNS = "fd00:6d69:7a61:6e::2"
         const val MAX_PACKET_SIZE = 65_535
+        const val PUBLISH_INTERVAL_MILLIS = 500L
+        const val FLOW_CACHE_CAPACITY = 256
+        const val FLOW_CACHE_MAX = 4_096
         const val OPEN_REQUEST_CODE = 20
         const val STOP_REQUEST_CODE = 21
         const val TAG = "MizanVpn"

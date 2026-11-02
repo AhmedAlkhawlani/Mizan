@@ -1,8 +1,12 @@
 package com.maknoon.mizan.app
 
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
 import android.net.Uri
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -14,12 +18,16 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.core.view.WindowCompat
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -35,6 +43,7 @@ import com.maknoon.mizan.ui.apps.AppsScreen
 import com.maknoon.mizan.ui.budget.BudgetScreen
 import com.maknoon.mizan.ui.dashboard.DashboardScreen
 import com.maknoon.mizan.ui.history.HistoryScreen
+import com.maknoon.mizan.ui.saver.GuardTheme
 import com.maknoon.mizan.ui.saver.SaverScreen
 
 /**
@@ -91,81 +100,111 @@ fun MizanApp(
         onShortcutDestinationHandled()
     }
 
-    Scaffold(
-        modifier = modifier.fillMaxSize(),
-        topBar = {
-            TopAppBar(
-                title = { Text(text = stringResource(R.string.app_name)) },
-                navigationIcon = {
-                    if (currentRoute == BUDGET_ROUTE) {
-                        IconButton(onClick = { navController.popBackStack() }) {
-                            Icon(
-                                painter = painterResource(R.drawable.ic_arrow_back),
-                                contentDescription = stringResource(R.string.budget_back),
-                            )
+    // The Guard tab keeps the concept board's near-black chrome on every edge, including the
+    // system bar icons, so switching tabs does not flash a light-app-bar frame around it.
+    val guardActive = currentRoute == MizanDestination.Saver.route
+    SystemBarIcons(lightIcons = !(guardActive || isSystemInDarkTheme()))
+
+    GuardTheme(enabled = guardActive) {
+        Scaffold(
+            modifier = modifier.fillMaxSize(),
+            topBar = {
+                TopAppBar(
+                    title = { Text(text = stringResource(R.string.app_name)) },
+                    navigationIcon = {
+                        if (currentRoute == BUDGET_ROUTE) {
+                            IconButton(onClick = { navController.popBackStack() }) {
+                                Icon(
+                                    painter = painterResource(R.drawable.ic_arrow_back),
+                                    contentDescription = stringResource(R.string.budget_back),
+                                )
+                            }
                         }
-                    }
-                },
-                actions = {
-                    if (currentRoute != BUDGET_ROUTE) {
-                        IconButton(
-                            onClick = {
-                                navController.navigate(BUDGET_ROUTE) { launchSingleTop = true }
+                    },
+                    actions = {
+                        if (currentRoute != BUDGET_ROUTE) {
+                            IconButton(
+                                onClick = {
+                                    navController.navigate(BUDGET_ROUTE) { launchSingleTop = true }
+                                },
+                            ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.ic_settings),
+                                    contentDescription = stringResource(R.string.settings_open),
+                                )
+                            }
+                        }
+                    },
+                )
+            },
+            bottomBar = {
+                NavigationBar {
+                    MizanDestination.entries.forEach { destination ->
+                        NavigationBarItem(
+                            selected = currentRoute == destination.route ||
+                                (destination == MizanDestination.Apps &&
+                                    currentRoute == APP_DETAIL_ROUTE),
+                            onClick = { navController.navigateToTab(destination) },
+                            icon = {
+                                Icon(
+                                    painter = painterResource(destination.iconRes),
+                                    contentDescription = null,
+                                )
                             },
-                        ) {
-                            Icon(
-                                painter = painterResource(R.drawable.ic_settings),
-                                contentDescription = stringResource(R.string.settings_open),
-                            )
-                        }
+                            label = { Text(text = stringResource(destination.labelRes)) },
+                        )
                     }
-                },
-            )
-        },
-        bottomBar = {
-            NavigationBar {
-                MizanDestination.entries.forEach { destination ->
-                    NavigationBarItem(
-                        selected = currentRoute == destination.route ||
-                            (destination == MizanDestination.Apps && currentRoute == APP_DETAIL_ROUTE),
-                        onClick = { navController.navigateToTab(destination) },
-                        icon = {
-                            Icon(
-                                painter = painterResource(destination.iconRes),
-                                contentDescription = null,
-                            )
-                        },
-                        label = { Text(text = stringResource(destination.labelRes)) },
+                }
+            },
+        ) { innerPadding ->
+            NavHost(
+                navController = navController,
+                startDestination = MizanDestination.Dashboard.route,
+                modifier = Modifier.padding(innerPadding),
+            ) {
+                composable(MizanDestination.Dashboard.route) { DashboardScreen() }
+                composable(MizanDestination.Apps.route) {
+                    AppsScreen(onAppClick = { packageName ->
+                        navController.navigate(appDetailRoute(packageName))
+                    })
+                }
+                composable(
+                    route = APP_DETAIL_ROUTE,
+                    arguments = listOf(navArgument("packageName") { type = NavType.StringType }),
+                ) { entry ->
+                    AppDetailScreen(
+                        packageName = entry.arguments?.getString("packageName").orEmpty(),
+                        onBack = { navController.popBackStack() },
                     )
                 }
+                composable(MizanDestination.History.route) { HistoryScreen() }
+                composable(MizanDestination.Saver.route) { SaverScreen() }
+                composable(BUDGET_ROUTE) { BudgetScreen() }
             }
-        },
-    ) { innerPadding ->
-        NavHost(
-            navController = navController,
-            startDestination = MizanDestination.Dashboard.route,
-            modifier = Modifier.padding(innerPadding),
-        ) {
-            composable(MizanDestination.Dashboard.route) { DashboardScreen() }
-            composable(MizanDestination.Apps.route) {
-                AppsScreen(onAppClick = { packageName ->
-                    navController.navigate(appDetailRoute(packageName))
-                })
-            }
-            composable(
-                route = APP_DETAIL_ROUTE,
-                arguments = listOf(navArgument("packageName") { type = NavType.StringType }),
-            ) { entry ->
-                AppDetailScreen(
-                    packageName = entry.arguments?.getString("packageName").orEmpty(),
-                    onBack = { navController.popBackStack() },
-                )
-            }
-            composable(MizanDestination.History.route) { HistoryScreen() }
-            composable(MizanDestination.Saver.route) { SaverScreen() }
-            composable(BUDGET_ROUTE) { BudgetScreen() }
         }
     }
+}
+
+/** Keeps the status and navigation bar icons readable against the current chrome. */
+@Composable
+private fun SystemBarIcons(lightIcons: Boolean) {
+    val view = LocalView.current
+    val window = LocalContext.current.findActivity()?.window ?: return
+    DisposableEffect(window, lightIcons) {
+        val controller = WindowCompat.getInsetsController(window, view)
+        controller.isAppearanceLightStatusBars = lightIcons
+        controller.isAppearanceLightNavigationBars = lightIcons
+        onDispose { }
+    }
+}
+
+private fun Context.findActivity(): Activity? {
+    var context = this
+    while (context is ContextWrapper) {
+        if (context is Activity) return context
+        context = context.baseContext
+    }
+    return null
 }
 
 /**

@@ -4,9 +4,13 @@ import android.net.VpnService
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
@@ -20,6 +24,7 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.selection.toggleable
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -32,6 +37,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -40,6 +46,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
@@ -57,18 +66,28 @@ import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.maknoon.mizan.R
+import com.maknoon.mizan.core.designsystem.theme.MizanPalette
 import com.maknoon.mizan.core.designsystem.theme.MizanTheme
 import com.maknoon.mizan.core.designsystem.theme.statusColors
+import com.maknoon.mizan.core.domain.format.ByteFormatter
+import com.maknoon.mizan.core.domain.network.NetworkTransport
+import com.maknoon.mizan.core.domain.network.ResolvedNetwork
+import com.maknoon.mizan.core.domain.saver.BlockedTrafficSnapshot
 import com.maknoon.mizan.saver.SaverFailure
 import com.maknoon.mizan.ui.apps.AppIcon
 import java.util.LinkedHashSet
 
 /**
- * The Guard section (docs/04).
+ * The Guard section (docs/04), styled after the concept board's third phone.
  *
  * Consent is a system concept and stays in the composable; the blocklist and the tunnel state
  * live in [SaverViewModel] and [com.maknoon.mizan.saver.SaverStateHolder]. The screen never
- * claims protection is active unless the service reports an established tunnel.
+ * claims protection is active unless the service reports an established tunnel, and the traffic
+ * card only shows what the tunnel actually dropped.
+ *
+ * The section runs on a fixed dark brand palette even when the rest of the app follows Material
+ * You: the concept board presents this tab as a dark, neon-accented shield, and the status
+ * colours must keep their meaning over any wallpaper.
  */
 @Composable
 fun SaverScreen(
@@ -115,40 +134,90 @@ fun SaverScreen(
             pendingEnable = false
             viewModel.setEnabled(true)
         }
+        viewModel.refreshNetwork()
         onPauseOrDispose { }
     }
 
-    SaverContent(
-        uiState = uiState,
-        consentGranted = consentGranted,
-        onRequestConsent = launchConsent,
-        onEnabledChange = { enabled ->
-            if (enabled) {
-                if (consentGranted) {
-                    viewModel.setEnabled(true)
+    GuardTheme {
+        SaverContent(
+            uiState = uiState,
+            consentGranted = consentGranted,
+            onRequestConsent = launchConsent,
+            onEnabledChange = { enabled ->
+                if (enabled) {
+                    if (consentGranted) {
+                        viewModel.setEnabled(true)
+                    } else {
+                        // Ask for consent first, then turn the switch on if the user grants it.
+                        pendingEnable = true
+                        launchConsent()
+                    }
                 } else {
-                    // Ask for consent first, then turn the switch on if the user grants it.
-                    pendingEnable = true
-                    launchConsent()
+                    pendingEnable = false
+                    viewModel.setEnabled(false)
                 }
-            } else {
-                pendingEnable = false
-                viewModel.setEnabled(false)
-            }
-        },
-        onChooseApps = { showingPicker = true },
-        onAppBlockedChange = viewModel::setAppBlocked,
-        modifier = modifier,
-    )
-
-    if (showingPicker) {
-        SaverAppPickerDialog(
-            apps = uiState.apps,
-            loading = uiState.appsLoading,
-            blockedPackages = uiState.blockedPackages,
-            onBlockedChange = viewModel::setAppBlocked,
-            onDismiss = { showingPicker = false },
+            },
+            onChooseApps = { showingPicker = true },
+            onAppBlockedChange = viewModel::setAppBlocked,
+            modifier = modifier,
         )
+
+        if (showingPicker) {
+            SaverAppPickerDialog(
+                apps = uiState.apps,
+                loading = uiState.appsLoading,
+                blockedPackages = uiState.blockedPackages,
+                onBlockedChange = viewModel::setAppBlocked,
+                onDismiss = { showingPicker = false },
+            )
+        }
+    }
+}
+
+/**
+ * A fixed dark scheme for the Guard tab, matching the concept board: near-black background,
+ * graphite panels and cyan/pink/green neon accents. The status colours come from [MizanTheme],
+ * which this wraps so the shield stays green in both light and dark system themes.
+ */
+private val GuardColorScheme = darkColorScheme(
+    primary = MizanPalette.DataDown,
+    onPrimary = Color(0xFF083344),
+    primaryContainer = Color(0xFF155E75),
+    onPrimaryContainer = Color(0xFFCFFAFE),
+    secondary = MizanPalette.DataUp,
+    onSecondary = Color(0xFF500724),
+    secondaryContainer = Color(0xFF831843),
+    onSecondaryContainer = Color(0xFFFCE7F3),
+    tertiary = MizanPalette.Guard,
+    onTertiary = Color(0xFF022C22),
+    background = Color(0xFF07090D),
+    onBackground = Color(0xFFF5F7FA),
+    surface = Color(0xFF11151C),
+    onSurface = Color(0xFFF5F7FA),
+    surfaceVariant = Color(0xFF161C25),
+    onSurfaceVariant = Color(0xFF8A93A6),
+    outline = Color(0x1FFFFFFF),
+    surfaceContainerLowest = Color(0xFF05070A),
+    surfaceContainerLow = Color(0xFF0B0E13),
+    surfaceContainer = Color(0xFF0B0E13),
+    surfaceContainerHigh = Color(0xFF11151C),
+    surfaceContainerHighest = Color(0xFF161C25),
+    error = MizanPalette.Danger,
+    onError = Color(0xFF450A0A),
+)
+
+/**
+ * Scopes the Guard palette, including the app bars when [enabled] is set by the shell, so the
+ * top bar and bottom navigation stay on the same near-black chrome as the screen behind them.
+ */
+@Composable
+internal fun GuardTheme(enabled: Boolean = true, content: @Composable () -> Unit) {
+    if (!enabled) {
+        content()
+        return
+    }
+    MizanTheme(darkTheme = true, dynamicColor = false) {
+        MaterialTheme(colorScheme = GuardColorScheme, content = content)
     }
 }
 
@@ -162,10 +231,15 @@ internal fun SaverContent(
     onAppBlockedChange: (String, Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val blockedApps = uiState.apps.filter { it.packageName in uiState.blockedPackages }
+    val allowedApps = uiState.apps.filter { it.packageName !in uiState.blockedPackages }
+
     LazyColumn(
-        modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(horizontal = 24.dp, vertical = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        modifier = modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background),
+        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
         item { SaverHero() }
         item {
@@ -175,17 +249,50 @@ internal fun SaverContent(
             )
         }
         item {
-            FirewallCard(
+            StatusCard(
                 uiState = uiState,
                 consentGranted = consentGranted,
                 onEnabledChange = onEnabledChange,
             )
         }
+        item { NetworkCard(uiState = uiState) }
+        item { TrafficCard(uiState = uiState) }
+
+        if (uiState.appsLoading) {
+            item {
+                Text(
+                    text = stringResource(R.string.saver_picker_loading),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        } else {
+            item {
+                AppsHeader(
+                    blockedCount = blockedApps.size,
+                    allowedCount = allowedApps.size,
+                )
+            }
+            items(blockedApps, key = { it.packageName }) { app ->
+                AppRow(
+                    app = app,
+                    blocked = true,
+                    onBlockedChange = onAppBlockedChange,
+                )
+            }
+            items(allowedApps, key = { it.packageName }) { app ->
+                AppRow(
+                    app = app,
+                    blocked = false,
+                    onBlockedChange = onAppBlockedChange,
+                )
+            }
+        }
+
         item {
-            BlockedAppsCard(
-                uiState = uiState,
+            AppsFooter(
+                appsLoading = uiState.appsLoading,
                 onChooseApps = onChooseApps,
-                onAppBlockedChange = onAppBlockedChange,
             )
         }
         item {
@@ -217,39 +324,97 @@ internal fun SaverContent(
     }
 }
 
+/** A dark, rounded panel with a hairline border, the concept board's `.card` treatment. */
 @Composable
-private fun SaverHero(modifier: Modifier = Modifier) {
+private fun GuardCard(
+    modifier: Modifier = Modifier,
+    content: @Composable ColumnScope.() -> Unit,
+) {
     Card(
         modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
-        ),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
     ) {
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(20.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
+                .padding(18.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            content = content,
+        )
+    }
+}
+
+@Composable
+private fun SaverHero(modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(22.dp))
+            .background(
+                Brush.linearGradient(
+                    listOf(Color(0xFF16202B), Color(0xFF0B0F14)),
+                ),
+            )
+            .border(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.outline,
+                shape = RoundedCornerShape(22.dp),
+            )
+            .padding(18.dp),
+        horizontalArrangement = Arrangement.spacedBy(14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(
+            modifier = Modifier
+                .size(46.dp)
+                .clip(RoundedCornerShape(14.dp))
+                .background(MizanPalette.Guard.copy(alpha = 0.14f))
+                .border(
+                    width = 1.dp,
+                    color = MizanPalette.Guard.copy(alpha = 0.35f),
+                    shape = RoundedCornerShape(14.dp),
+                ),
+            contentAlignment = Alignment.Center,
         ) {
             Icon(
                 painter = painterResource(R.drawable.ic_shield),
                 contentDescription = null,
-                modifier = Modifier.size(40.dp),
-                tint = MaterialTheme.statusColors.guard,
+                modifier = Modifier.size(24.dp),
+                tint = MizanPalette.Guard,
             )
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text(
-                    text = stringResource(R.string.saver_title),
-                    style = MaterialTheme.typography.titleLarge,
-                )
-                Text(
-                    text = stringResource(R.string.saver_subtitle),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
         }
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(3.dp),
+        ) {
+            Text(
+                text = stringResource(R.string.saver_title),
+                style = MaterialTheme.typography.titleLarge,
+            )
+            Text(
+                text = stringResource(R.string.saver_subtitle),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+        Text(
+            text = stringResource(R.string.saver_local_vpn_pill),
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier
+                .clip(RoundedCornerShape(999.dp))
+                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.10f))
+                .border(
+                    width = 1.dp,
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.25f),
+                    shape = RoundedCornerShape(999.dp),
+                )
+                .padding(horizontal = 9.dp, vertical = 4.dp),
+        )
     }
 }
 
@@ -259,64 +424,57 @@ private fun ConsentCard(
     onRequestConsent: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Card(modifier = modifier.fillMaxWidth()) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+    GuardCard(modifier = modifier) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Icon(
-                    painter = painterResource(
-                        if (consentGranted) R.drawable.ic_check_circle else R.drawable.ic_shield,
-                    ),
-                    contentDescription = null,
-                    modifier = Modifier.size(28.dp),
-                    tint = MaterialTheme.statusColors.guard,
-                )
-                Text(
-                    text = stringResource(
-                        if (consentGranted) {
-                            R.string.saver_consent_granted_title
-                        } else {
-                            R.string.saver_consent_title
-                        },
-                    ),
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.semantics { heading() },
-                )
-            }
+            Icon(
+                painter = painterResource(
+                    if (consentGranted) R.drawable.ic_check_circle else R.drawable.ic_shield,
+                ),
+                contentDescription = null,
+                modifier = Modifier.size(26.dp),
+                tint = MizanPalette.Guard,
+            )
             Text(
                 text = stringResource(
                     if (consentGranted) {
-                        R.string.saver_consent_granted_body
+                        R.string.saver_consent_granted_title
                     } else {
-                        R.string.saver_consent_body
+                        R.string.saver_consent_title
                     },
                 ),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.semantics { heading() },
             )
-            if (!consentGranted) {
-                Button(
-                    onClick = onRequestConsent,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(min = 48.dp),
-                ) {
-                    Text(text = stringResource(R.string.saver_consent_action))
-                }
+        }
+        Text(
+            text = stringResource(
+                if (consentGranted) {
+                    R.string.saver_consent_granted_body
+                } else {
+                    R.string.saver_consent_body
+                },
+            ),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        if (!consentGranted) {
+            Button(
+                onClick = onRequestConsent,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 48.dp),
+            ) {
+                Text(text = stringResource(R.string.saver_consent_action))
             }
         }
     }
 }
 
 @Composable
-private fun FirewallCard(
+private fun StatusCard(
     uiState: SaverUiState,
     consentGranted: Boolean,
     onEnabledChange: (Boolean) -> Unit,
@@ -340,6 +498,7 @@ private fun FirewallCard(
     val statusColor = when {
         failure != null -> MaterialTheme.colorScheme.error
         uiState.active -> MaterialTheme.statusColors.guard
+        uiState.unmetered -> MaterialTheme.colorScheme.primary
         else -> MaterialTheme.colorScheme.onSurfaceVariant
     }
     val hintRes = when {
@@ -348,113 +507,60 @@ private fun FirewallCard(
         else -> null
     }
 
-    Card(modifier = modifier.fillMaxWidth()) {
-        Column(
+    GuardCard(modifier = modifier) {
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .toggleable(
-                        value = uiState.enabled,
-                        enabled = canToggle,
-                        role = Role.Switch,
-                        onValueChange = onEnabledChange,
-                    ),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Column(
-                    modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(2.dp),
-                ) {
-                    Text(
-                        text = stringResource(R.string.saver_firewall_title),
-                        style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.semantics { heading() },
-                    )
-                    Text(
-                        text = stringResource(R.string.saver_firewall_switch),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                Switch(
-                    checked = uiState.enabled,
-                    onCheckedChange = null,
+                .toggleable(
+                    value = uiState.enabled,
                     enabled = canToggle,
-                )
-            }
-            Text(
-                text = statusText,
-                style = MaterialTheme.typography.bodyMedium,
-                color = statusColor,
-            )
-            if (hintRes != null) {
+                    role = Role.Switch,
+                    onValueChange = onEnabledChange,
+                ),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(2.dp),
+            ) {
                 Text(
-                    text = stringResource(hintRes),
+                    text = stringResource(R.string.saver_firewall_title),
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.semantics { heading() },
+                )
+                Text(
+                    text = stringResource(R.string.saver_firewall_switch),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-        }
-    }
-}
-
-@Composable
-private fun BlockedAppsCard(
-    uiState: SaverUiState,
-    onChooseApps: () -> Unit,
-    onAppBlockedChange: (String, Boolean) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val blockedApps = uiState.apps.filter { it.packageName in uiState.blockedPackages }
-    Card(modifier = modifier.fillMaxWidth()) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            Text(
-                text = stringResource(R.string.saver_apps_title),
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.semantics { heading() },
+            Switch(
+                checked = uiState.enabled,
+                onCheckedChange = null,
+                enabled = canToggle,
             )
-            when {
-                uiState.appsLoading -> Text(
-                    text = stringResource(R.string.saver_picker_loading),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-
-                blockedApps.isEmpty() -> Text(
-                    text = stringResource(R.string.saver_apps_empty),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-
-                else -> blockedApps.forEach { app ->
-                    BlockedAppRow(
-                        app = app,
-                        onUnblock = { onAppBlockedChange(app.packageName, false) },
-                    )
-                }
-            }
-            OutlinedButton(
-                onClick = onChooseApps,
-                enabled = !uiState.appsLoading,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = 48.dp),
-            ) {
-                Text(text = stringResource(R.string.saver_apps_choose))
-            }
+        }
+        StatusLine(text = statusText, color = statusColor)
+        if (hintRes != null) {
             Text(
-                text = stringResource(R.string.saver_apps_shared_uid_note),
+                text = stringResource(hintRes),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.ic_shield),
+                contentDescription = null,
+                modifier = Modifier.size(16.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(
+                text = stringResource(R.string.saver_vpn_note),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -463,22 +569,384 @@ private fun BlockedAppsCard(
 }
 
 @Composable
-private fun BlockedAppRow(
+private fun StatusLine(text: String, color: Color, modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(color.copy(alpha = 0.10f))
+            .padding(horizontal = 12.dp, vertical = 9.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodyMedium,
+            color = color,
+        )
+    }
+}
+
+@Composable
+private fun NetworkCard(
+    uiState: SaverUiState,
+    modifier: Modifier = Modifier,
+) {
+    val network = uiState.network
+    GuardCard(modifier = modifier) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = stringResource(R.string.saver_network_title),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier
+                    .weight(1f)
+                    .semantics { heading() },
+            )
+            if (network != null && network.connected) {
+                TransportPill(transport = network.transport)
+            }
+        }
+
+        when {
+            network == null -> Text(
+                text = stringResource(R.string.saver_network_reading),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+
+            !network.connected -> {
+                NetworkChip(
+                    text = stringResource(R.string.saver_network_disconnected),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                BehaviorLine(
+                    text = stringResource(R.string.saver_behavior_disconnected),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+
+            else -> {
+                NetworkChip(
+                    text = stringResource(
+                        if (network.metered) {
+                            R.string.saver_network_metered
+                        } else {
+                            R.string.saver_network_unmetered
+                        },
+                    ),
+                    color = if (network.metered) {
+                        MaterialTheme.statusColors.warning
+                    } else {
+                        MaterialTheme.colorScheme.primary
+                    },
+                )
+                val behavior = when {
+                    !uiState.enabled -> R.string.saver_behavior_off
+                    uiState.unmetered || !network.metered -> R.string.saver_behavior_unmetered
+                    else -> R.string.saver_behavior_metered
+                }
+                BehaviorLine(
+                    text = stringResource(behavior),
+                    color = when {
+                        !uiState.enabled -> MaterialTheme.colorScheme.onSurfaceVariant
+                        uiState.unmetered || !network.metered -> MaterialTheme.colorScheme.primary
+                        else -> MaterialTheme.statusColors.warning
+                    },
+                )
+                network.profile?.let { profile ->
+                    Text(
+                        text = stringResource(R.string.saver_profile_label, profile.name),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                if (network.roaming) {
+                    Text(
+                        text = stringResource(R.string.saver_network_roaming),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.statusColors.warning,
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun TransportPill(transport: NetworkTransport, modifier: Modifier = Modifier) {
+    Text(
+        text = stringResource(transport.labelRes()),
+        style = MaterialTheme.typography.labelSmall,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = modifier
+            .clip(RoundedCornerShape(999.dp))
+            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.10f))
+            .border(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.25f),
+                shape = RoundedCornerShape(999.dp),
+            )
+            .padding(horizontal = 9.dp, vertical = 4.dp),
+    )
+}
+
+@Composable
+private fun NetworkChip(text: String, color: Color, modifier: Modifier = Modifier) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.labelMedium,
+        color = color,
+        modifier = modifier
+            .clip(RoundedCornerShape(999.dp))
+            .background(color.copy(alpha = 0.10f))
+            .border(
+                width = 1.dp,
+                color = color.copy(alpha = 0.28f),
+                shape = RoundedCornerShape(999.dp),
+            )
+            .padding(horizontal = 10.dp, vertical = 5.dp),
+    )
+}
+
+@Composable
+private fun BehaviorLine(text: String, color: Color, modifier: Modifier = Modifier) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.bodyMedium,
+        color = color,
+        modifier = modifier,
+    )
+}
+
+@Composable
+private fun TrafficCard(
+    uiState: SaverUiState,
+    modifier: Modifier = Modifier,
+) {
+    val snapshot = uiState.blockedTraffic
+    val rows = remember(snapshot, uiState.apps) { trafficRows(snapshot, uiState.apps) }
+
+    GuardCard(modifier = modifier) {
+        Text(
+            text = stringResource(R.string.saver_traffic_title),
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.semantics { heading() },
+        )
+        if (snapshot.totalPackets == 0L) {
+            Text(
+                text = stringResource(R.string.saver_traffic_empty),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        } else {
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                StatBox(
+                    label = stringResource(R.string.saver_traffic_packets_label),
+                    value = snapshot.totalPackets.toString(),
+                    color = MaterialTheme.colorScheme.secondary,
+                    modifier = Modifier.weight(1f),
+                )
+                StatBox(
+                    label = stringResource(R.string.saver_traffic_bytes_label),
+                    value = ByteFormatter.data(snapshot.totalBytes),
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.weight(1f),
+                )
+            }
+            rows.forEach { row -> TrafficRowItem(row = row) }
+            if (snapshot.unknown.packets > 0) {
+                TrafficRowItem(
+                    row = TrafficRow(
+                        packageName = null,
+                        label = stringResource(R.string.saver_traffic_unknown),
+                        packets = snapshot.unknown.packets,
+                        bytes = snapshot.unknown.bytes,
+                    ),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun StatBox(
+    label: String,
+    value: String,
+    color: Color,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier
+            .clip(RoundedCornerShape(14.dp))
+            .background(color.copy(alpha = 0.09f))
+            .border(
+                width = 1.dp,
+                color = color.copy(alpha = 0.20f),
+                shape = RoundedCornerShape(14.dp),
+            )
+            .padding(horizontal = 14.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Text(
+            text = value,
+            style = MaterialTheme.typography.headlineSmall
+                .copy(textDirection = TextDirection.Ltr),
+            color = color,
+        )
+    }
+}
+
+private data class TrafficRow(
+    val packageName: String?,
+    val label: String,
+    val packets: Long,
+    val bytes: Long,
+)
+
+private fun trafficRows(
+    snapshot: BlockedTrafficSnapshot,
+    apps: List<SaverApp>,
+): List<TrafficRow> {
+    val labels = apps.associate { it.packageName to it.label }
+    return snapshot.perPackage.entries
+        .sortedByDescending { it.value.bytes }
+        .map { (packageName, count) ->
+            TrafficRow(
+                packageName = packageName,
+                label = labels[packageName] ?: packageName,
+                packets = count.packets,
+                bytes = count.bytes,
+            )
+        }
+}
+
+@Composable
+private fun TrafficRowItem(row: TrafficRow, modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.03f))
+            .border(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.outline,
+                shape = RoundedCornerShape(12.dp),
+            )
+            .padding(horizontal = 10.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        val packageName = row.packageName
+        if (packageName != null) {
+            AppIcon(packageName = packageName)
+        } else {
+            Icon(
+                painter = painterResource(R.drawable.ic_apps),
+                contentDescription = null,
+                modifier = Modifier.size(40.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = row.label,
+                style = MaterialTheme.typography.bodyMedium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                text = stringResource(
+                    R.string.saver_traffic_row,
+                    row.packets,
+                    ByteFormatter.data(row.bytes),
+                ),
+                style = MaterialTheme.typography.bodySmall
+                    .copy(textDirection = TextDirection.Ltr),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+@Composable
+private fun AppsHeader(
+    blockedCount: Int,
+    allowedCount: Int,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = stringResource(R.string.saver_apps_section_title),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier
+                    .weight(1f)
+                    .semantics { heading() },
+            )
+            Text(
+                text = stringResource(
+                    R.string.saver_apps_counts,
+                    blockedCount,
+                    allowedCount,
+                ),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        Text(
+            text = stringResource(
+                if (blockedCount == 0) {
+                    R.string.saver_apps_empty
+                } else {
+                    R.string.saver_apps_allowed_note
+                },
+            ),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+@Composable
+private fun AppRow(
     app: SaverApp,
-    onUnblock: () -> Unit,
+    blocked: Boolean,
+    onBlockedChange: (String, Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .toggleable(
-                value = true,
-                role = Role.Switch,
-                onValueChange = { checked -> if (!checked) onUnblock() },
+            .clip(RoundedCornerShape(12.dp))
+            .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.03f))
+            .border(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.outline,
+                shape = RoundedCornerShape(12.dp),
             )
-            .heightIn(min = 56.dp)
-            .padding(vertical = 4.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
+            .toggleable(
+                value = blocked,
+                role = Role.Switch,
+                onValueChange = { onBlockedChange(app.packageName, it) },
+            )
+            .heightIn(min = 58.dp)
+            .padding(horizontal = 10.dp, vertical = 6.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         AppIcon(packageName = app.packageName)
@@ -498,7 +966,55 @@ private fun BlockedAppRow(
                 overflow = TextOverflow.Ellipsis,
             )
         }
-        Switch(checked = true, onCheckedChange = null)
+        StatusTag(blocked = blocked)
+        Switch(checked = blocked, onCheckedChange = null)
+    }
+}
+
+@Composable
+private fun StatusTag(blocked: Boolean, modifier: Modifier = Modifier) {
+    val color = if (blocked) {
+        MaterialTheme.colorScheme.error
+    } else {
+        MaterialTheme.colorScheme.onSurfaceVariant
+    }
+    Text(
+        text = stringResource(
+            if (blocked) R.string.saver_apps_tag_blocked else R.string.saver_apps_tag_allowed,
+        ),
+        style = MaterialTheme.typography.labelSmall,
+        color = color,
+        modifier = modifier
+            .clip(RoundedCornerShape(999.dp))
+            .background(color.copy(alpha = 0.12f))
+            .padding(horizontal = 8.dp, vertical = 3.dp),
+    )
+}
+
+@Composable
+private fun AppsFooter(
+    appsLoading: Boolean,
+    onChooseApps: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        OutlinedButton(
+            onClick = onChooseApps,
+            enabled = !appsLoading,
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = 48.dp),
+        ) {
+            Text(text = stringResource(R.string.saver_apps_choose))
+        }
+        Text(
+            text = stringResource(R.string.saver_apps_shared_uid_note),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 
@@ -654,26 +1170,32 @@ private fun ExplanationCard(
     modifier: Modifier = Modifier,
     warn: Boolean = false,
 ) {
-    Card(modifier = modifier.fillMaxWidth()) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            Text(
-                text = stringResource(titleRes),
-                style = MaterialTheme.typography.titleMedium,
-                color = if (warn) MaterialTheme.statusColors.warning else MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.semantics { heading() },
-            )
-            Text(
-                text = stringResource(bodyRes),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
+    GuardCard(modifier = modifier) {
+        Text(
+            text = stringResource(titleRes),
+            style = MaterialTheme.typography.titleMedium,
+            color = if (warn) {
+                MaterialTheme.statusColors.warning
+            } else {
+                MaterialTheme.colorScheme.onSurface
+            },
+            modifier = Modifier.semantics { heading() },
+        )
+        Text(
+            text = stringResource(bodyRes),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
+}
+
+@StringRes
+private fun NetworkTransport.labelRes(): Int = when (this) {
+    NetworkTransport.WIFI -> R.string.saver_transport_wifi
+    NetworkTransport.CELLULAR -> R.string.saver_transport_cellular
+    NetworkTransport.ETHERNET -> R.string.saver_transport_ethernet
+    NetworkTransport.VPN -> R.string.saver_transport_vpn
+    NetworkTransport.OTHER -> R.string.saver_transport_other
 }
 
 @StringRes
@@ -687,9 +1209,17 @@ private fun SaverFailure.messageRes(): Int = when (this) {
 @Preview(name = "Guard — consent needed", locale = "ar", showBackground = true)
 @Composable
 private fun SaverConsentPreview() {
-    MizanTheme(dynamicColor = false) {
+    GuardTheme {
         SaverContent(
-            uiState = SaverUiState(),
+            uiState = SaverUiState(
+                network = ResolvedNetwork(
+                    connected = true,
+                    transport = NetworkTransport.WIFI,
+                    metered = true,
+                    roaming = false,
+                    profile = null,
+                ),
+            ),
             consentGranted = false,
             onRequestConsent = {},
             onEnabledChange = {},
@@ -706,16 +1236,36 @@ private fun SaverActivePreview() {
         SaverApp(packageName = "com.example.video", label = "تطبيق فيديو"),
         SaverApp(packageName = "com.example.social", label = "شبكة اجتماعية"),
     )
-    MizanTheme(dynamicColor = false) {
+    val blocked = apps.mapTo(LinkedHashSet()) { it.packageName }
+    GuardTheme {
         SaverContent(
             uiState = SaverUiState(
                 enabled = true,
-                blockedPackages = apps.mapTo(LinkedHashSet()) { it.packageName },
+                blockedPackages = blocked,
                 apps = apps,
                 appsLoading = false,
                 serviceRunning = true,
                 active = true,
-                activeBlockedCount = apps.size,
+                activeBlockedCount = blocked.size,
+                network = ResolvedNetwork(
+                    connected = true,
+                    transport = NetworkTransport.WIFI,
+                    metered = true,
+                    roaming = false,
+                    profile = null,
+                ),
+                blockedTraffic = BlockedTrafficSnapshot(
+                    perPackage = mapOf(
+                        "com.example.video" to com.maknoon.mizan.core.domain.saver.TrafficCount(
+                            packets = 82,
+                            bytes = 5_518,
+                        ),
+                    ),
+                    unknown = com.maknoon.mizan.core.domain.saver.TrafficCount(
+                        packets = 3,
+                        bytes = 210,
+                    ),
+                ),
             ),
             consentGranted = true,
             onRequestConsent = {},

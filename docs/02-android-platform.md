@@ -112,6 +112,26 @@ val granted = mode == AppOpsManager.MODE_ALLOWED
 - قيود: VPN واحد فقط؛ لا يعمل مع VPN آخر؛ أيقونة في شريط الحالة؛ استهلاك بطارية؛ سياسات Play صارمة.
 - **القرار:** مرحلة منفصلة اختيارية، مع شاشة شرح صريحة، وبدون أي إرسال بيانات خارج الجهاز.
 
+**التنفيذ في 6.2 (`MizanVpnService`):**
+- الخدمة معلنة بـ`android:permission="android.permission.BIND_VPN_SERVICE"` مع فلتر
+  `android.net.VpnService`، و`foregroundServiceType="specialUse"` ونوعه الفرعي
+  `blocking_only_vpn_firewall`، وإشعار قناة LOW صامت بإجراء «إيقاف».
+- النفق مزدوج المكدّس: عنوان `10.111.222.1/32` و`fd00:6d69:7a61:6e::1/128`، مسار افتراضي
+  `0.0.0.0/0` و`::/0`، DNS وهمي `10.111.222.2` و`fd00:6d69:7a61:6e::2`، MTU 1500،
+  و`setBlocking(true)`. حلقة قراءة واحدة تقرأ كل حزمة وتُسقطها؛ لا مقبس، ولا NAT، ولا إعادة توجيه.
+- المخطط النقي `planVpnTunnel` في `:core:domain` ينقّي القائمة (فارغ، اسم الحزمة الذاتي، غير
+  المثبّت) ويوحّد ويرتّب. مخطط `null` أو عدد تطبيقات صفر ⇒ لا `establish()`، لأن Builder بلا
+  `addAllowedApplication` يوجّه **كل** تطبيقات الجهاز إلى النفق.
+- تعديل القائمة أثناء التشغيل لا يعدّل نفقاً قائماً: الخدمة تعيد البناء داخلياً بجولة جديدة من
+  عدّاد `generation` يمنع سباق حلقة قديمة مع نفق جديد. التفضيل محفوظ في DataStore
+  (`data_saver_enabled`، `data_saver_blocked_packages`).
+- الإيقاف الصريح يصل كأمر `ACTION_STOP` إلى الخدمة التي تغلق `ParcelFileDescriptor` ثم
+  `stopSelf`؛ `stopService` وحدها لا تدمّر خدمة VPN نشطة لأن النظام يمسكها. بعد الإغلاق يُحرَّر
+  الربط ويُستدعى `onDestroy`.
+- قيود معروفة: الحجب بالـUID (تطبيقات تشترك في UID واحد تُحجب معاً)، ولا عدّ بايتات محاولات
+  المحظور بعد (6.3)، ولا استثناء للشبكات غير المقنّنة بعد (6.4). لا صلاحية جديدة على المستخدم
+  ولا إذن `INTERNET`.
+
 ## 8) الصلاحيات المطلوبة (القائمة النهائية لـ v1)
 
 ```xml
@@ -127,7 +147,7 @@ val granted = mode == AppOpsManager.MODE_ALLOWED
 ```
 - **لا `INTERNET`**: أُزيل بقرار 2026-11-02. الحجب لا يمرّر ترافيكاً ولا يفتح مقبساً خارجياً،
   فلا يحتاجه التطبيق؛ وبقاؤه غائباً هو أقوى ضمانة أن ميزان لا يتصل بأي سيرفر.
-- خدمة VPN ستعلن `android:permission="android.permission.BIND_VPN_SERVICE"` في المرحلة 6.2،
+- خدمة VPN (`MizanVpnService`، 6.2) تعلن `android:permission="android.permission.BIND_VPN_SERVICE"`،
   وهي صلاحية على مستوى المكوّن لا إذن مستخدم، ولا تُضاف إلى القائمة أعلاه.
 - `QUERY_ALL_PACKAGES` لأجل عرض أسماء التطبيقات؛ بديله `<queries>` إن أمكن لتقليل سياسة Play.
 - لا `READ_PHONE_STATE`، ولا `ACCESS_FINE_LOCATION` في v1.

@@ -103,6 +103,10 @@ data class BlockedAppEntity(
 )
 ```
 
+> **المنفَّذ في 6.2:** لم يُنشأ هذا الجدول. القائمة محفوظة في DataStore
+> (`data_saver_blocked_packages`) لأنها مجموعة أسماء صغيرة يقرأها مقدّم الخدمة قبل بناء النفق
+> مباشرة، فلا تحتاج استعلاماً ولا هجرة. `allowOnUnmetered` مؤجل إلى 6.4.
+
 ### 7) ملفات تعريف الشبكات
 
 ```kotlin
@@ -189,6 +193,7 @@ object SettingsKeys {
     val ALERTS_ENABLED = booleanPreferencesKey("alerts_enabled")
     val ONGOING_NOTIFICATION = booleanPreferencesKey("ongoing_notification")
     val DATA_SAVER_ENABLED = booleanPreferencesKey("data_saver_enabled")
+    val DATA_SAVER_BLOCKED_PACKAGES = stringSetPreferencesKey("data_saver_blocked_packages")
     val ACTIVE_PROFILE_ID = longPreferencesKey("active_profile_id")
     val ONBOARDING_DONE = booleanPreferencesKey("onboarding_done")
 }

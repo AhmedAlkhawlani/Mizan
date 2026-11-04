@@ -1,3 +1,4 @@
+import java.util.Properties
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -5,6 +6,27 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
 }
+
+// Signing material never enters the repository (docs/07): either an untracked
+// keystore.properties at the root or MIZAN_RELEASE_* environment variables, as on CI.
+val keystoreProperties = Properties().apply {
+    rootProject.file("keystore.properties").takeIf { it.isFile }?.reader()?.use { load(it) }
+}
+
+fun signingValue(property: String, environment: String): String? =
+    keystoreProperties.getProperty(property) ?: System.getenv(environment)
+
+val releaseStoreFile = signingValue("storeFile", "MIZAN_RELEASE_STORE_FILE")
+val releaseStorePassword =
+    signingValue("storePassword", "MIZAN_RELEASE_STORE_PASSWORD")
+val releaseKeyAlias = signingValue("keyAlias", "MIZAN_RELEASE_KEY_ALIAS")
+val releaseKeyPassword = signingValue("keyPassword", "MIZAN_RELEASE_KEY_PASSWORD")
+val hasReleaseSigning = listOf(
+    releaseStoreFile,
+    releaseStorePassword,
+    releaseKeyAlias,
+    releaseKeyPassword,
+).all { it != null }
 
 android {
     namespace = "com.maknoon.mizan"
@@ -15,18 +37,33 @@ android {
         minSdk = libs.versions.minSdk.get().toInt()
         targetSdk = libs.versions.targetSdk.get().toInt()
         versionCode = 1
-        versionName = "0.1.0"
+        versionName = "1.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        if (hasReleaseSigning) {
+            create("release") {
+                storeFile = file(releaseStoreFile!!)
+                storePassword = releaseStorePassword
+                keyAlias = releaseKeyAlias
+                keyPassword = releaseKeyPassword
+            }
+        }
+    }
+
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
+            // Without signing material the release APK stays unsigned, which is what F-Droid
+            // wants: it builds from source and signs with its own key.
+            signingConfig = signingConfigs.findByName("release")
         }
     }
 

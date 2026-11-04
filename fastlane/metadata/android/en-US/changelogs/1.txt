@@ -1,0 +1,1 @@
+First release: speed and usage measurement, daily and hourly history, per-app usage, budgets and alerts, two widgets, and an optional VPN guard — all with no Internet permission.

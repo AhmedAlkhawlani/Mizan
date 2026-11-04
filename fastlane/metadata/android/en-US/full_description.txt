@@ -1,0 +1,13 @@
+Mizan is a data meter that runs entirely on your device, with no account and no server. It has no Internet permission at all, so every measurement, limit and history entry stays in a local database.
+
+What it does:
+• Live download and upload speed, and today’s total split between mobile and Wi-Fi.
+• Daily and hourly history, plus a billing cycle that starts on the day you choose.
+• Per-app usage for today, seven days or the billing cycle, using Android’s Usage access permission.
+• Daily and monthly device budgets and per-app budgets, with alerts at 80% and when a limit is crossed.
+• Two home-screen widgets (speed and budget ring) and quick shortcuts.
+• Optional VpnService guard that blocks the apps you choose from the network, can let them through on unmetered Wi-Fi, and counts what it dropped.
+
+Privacy: no Internet, no analytics, no ads, and no numbers uploaded. The one broad permission is Usage access, and Mizan reads byte counters only from it.
+
+Open source, and supports Android 8.0 and newer.

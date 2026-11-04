@@ -43,6 +43,7 @@ import com.maknoon.mizan.core.designsystem.component.UsageBarChart
 import com.maknoon.mizan.core.designsystem.theme.MizanTheme
 import com.maknoon.mizan.core.designsystem.theme.statusColors
 import com.maknoon.mizan.core.domain.format.ByteFormatter
+import com.maknoon.mizan.core.domain.format.isolateLtr
 import com.maknoon.mizan.ui.component.AppTopBar
 import com.maknoon.mizan.ui.component.AppTopBarRow
 import java.time.LocalDate
@@ -153,7 +154,7 @@ private fun DetailChartCard(uiState: AppDetailUiState, modifier: Modifier = Modi
                     style = MaterialTheme.typography.titleMedium,
                 )
                 Text(
-                    text = stringResource(R.string.app_detail_total, totalLabel),
+                    text = stringResource(R.string.app_detail_total, isolateLtr(totalLabel)),
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

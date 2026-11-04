@@ -40,6 +40,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.LayoutDirection
@@ -51,6 +52,7 @@ import com.maknoon.mizan.core.designsystem.component.UsageBar
 import com.maknoon.mizan.core.designsystem.component.UsageBarChart
 import com.maknoon.mizan.core.designsystem.theme.MizanTheme
 import com.maknoon.mizan.core.designsystem.theme.statusColors
+import com.maknoon.mizan.core.domain.format.isolateLtr
 import com.maknoon.mizan.ui.component.AppTopBar
 import com.maknoon.mizan.ui.component.AppTopBarRow
 import com.maknoon.mizan.ui.component.CycleStartDayStepper
@@ -132,7 +134,7 @@ internal fun HistoryContent(
                                     uiState.cycleStartEpochDay,
                                     uiState.cycleEndEpochDay,
                                 ),
-                                uiState.cycleTotalLabel,
+                                isolateLtr(uiState.cycleTotalLabel),
                             ),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -251,7 +253,9 @@ private fun CycleDialog(
                 )
                 Text(
                     text = uiState.cycleTotalLabel,
-                    style = MaterialTheme.typography.headlineSmall,
+                    style = MaterialTheme.typography.headlineSmall.copy(
+                        textDirection = TextDirection.Ltr,
+                    ),
                     color = MaterialTheme.colorScheme.primary,
                 )
                 if (uiState.cyclePartial) {
@@ -307,7 +311,7 @@ private fun DailyChartCard(uiState: HistoryUiState, modifier: Modifier = Modifie
         ) {
             ChartHeader(
                 title = stringResource(R.string.history_last_7_days),
-                total = stringResource(R.string.history_total, uiState.weekTotalLabel),
+                total = stringResource(R.string.history_total, isolateLtr(uiState.weekTotalLabel)),
             )
             Legend()
             // The canvas always paints its list left-to-right. Wrapping the canvas and its axis
@@ -349,7 +353,10 @@ private fun HourlyChartCard(uiState: HistoryUiState, modifier: Modifier = Modifi
         ) {
             ChartHeader(
                 title = stringResource(R.string.history_today_hours),
-                total = stringResource(R.string.history_today_total, uiState.todayTotalLabel),
+                total = stringResource(
+                    R.string.history_today_total,
+                    isolateLtr(uiState.todayTotalLabel),
+                ),
             )
             Legend()
             CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {

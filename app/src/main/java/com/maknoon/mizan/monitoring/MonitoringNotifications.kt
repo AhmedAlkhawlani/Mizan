@@ -8,6 +8,7 @@ import android.content.Context
 import androidx.core.app.NotificationCompat
 import com.maknoon.mizan.R
 import com.maknoon.mizan.core.domain.format.ByteFormatter
+import com.maknoon.mizan.core.domain.format.isolateLtr
 
 /** Builds the ongoing notification that a foreground monitoring service is required to show. */
 object MonitoringNotifications {
@@ -60,10 +61,13 @@ object MonitoringNotifications {
             usage == null -> context.getString(R.string.notification_today_unknown)
             usage.partial -> context.getString(
                 R.string.notification_today_partial,
-                ByteFormatter.data(usage.totalBytes),
+                isolateLtr(ByteFormatter.data(usage.totalBytes)),
             )
 
-            else -> context.getString(R.string.notification_today_line, ByteFormatter.data(usage.totalBytes))
+            else -> context.getString(
+                R.string.notification_today_line,
+                isolateLtr(ByteFormatter.data(usage.totalBytes)),
+            )
         }
 
         return NotificationCompat.Builder(context, MONITORING_CHANNEL_ID)

@@ -21,6 +21,7 @@ import com.maknoon.mizan.core.domain.budget.BudgetLevel
 import com.maknoon.mizan.core.domain.budget.BudgetPeriod
 import com.maknoon.mizan.core.domain.budget.BudgetScope
 import com.maknoon.mizan.core.domain.format.ByteFormatter
+import com.maknoon.mizan.core.domain.format.isolateLtr
 
 /**
  * Shows budget alerts on their own high-importance channel (docs/04).
@@ -88,8 +89,8 @@ class BudgetAlertNotifier(private val context: Context) {
         .setContentText(
             context.getString(
                 R.string.budget_alert_body,
-                ByteFormatter.data(alert.usedBytes),
-                ByteFormatter.data(alert.limitBytes),
+                isolateLtr(ByteFormatter.data(alert.usedBytes)),
+                isolateLtr(ByteFormatter.data(alert.limitBytes)),
             ),
         )
         .setSubText(periodLabel(alert.period))

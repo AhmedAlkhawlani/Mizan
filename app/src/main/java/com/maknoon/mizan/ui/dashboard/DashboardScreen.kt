@@ -53,6 +53,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.maknoon.mizan.R
 import com.maknoon.mizan.core.designsystem.theme.MizanTheme
 import com.maknoon.mizan.core.designsystem.theme.statusColors
+import com.maknoon.mizan.core.domain.format.isolateLtr
 import com.maknoon.mizan.monitoring.MonitoringControl
 import com.maknoon.mizan.ui.component.AppTopBar
 import com.maknoon.mizan.ui.component.AppTopBarRow
@@ -293,8 +294,8 @@ private fun BudgetBarCard(uiState: DashboardUiState, modifier: Modifier = Modifi
                 Text(
                     text = stringResource(
                         R.string.dashboard_budget_line,
-                        uiState.todayTotal,
-                        limit,
+                        isolateLtr(uiState.todayTotal),
+                        isolateLtr(limit),
                     ),
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -380,7 +381,7 @@ private fun TodayCard(uiState: DashboardUiState, modifier: Modifier = Modifier) 
 @Composable
 private fun ChannelFigure(label: String, value: String, modifier: Modifier = Modifier) {
     Text(
-        text = "$label $value",
+        text = "$label ${isolateLtr(value)}",
         modifier = modifier,
         style = MaterialTheme.typography.bodySmall,
         color = MaterialTheme.colorScheme.onSurfaceVariant,

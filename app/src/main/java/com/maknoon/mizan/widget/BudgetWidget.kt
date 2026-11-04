@@ -52,6 +52,7 @@ import com.maknoon.mizan.core.data.widget.BudgetWidgetSnapshot
 import com.maknoon.mizan.core.data.widget.WidgetConfigStore
 import com.maknoon.mizan.core.designsystem.theme.MizanPalette
 import com.maknoon.mizan.core.domain.format.ByteFormatter
+import com.maknoon.mizan.core.domain.format.isolateLtr
 import com.maknoon.mizan.monitoring.MonitoringStateHolder
 import com.maknoon.mizan.ui.dashboard.DashboardUiState
 import kotlinx.coroutines.CancellationException
@@ -186,7 +187,7 @@ private fun BudgetWidgetContent(
                 Column(horizontalAlignment = Alignment.Horizontal.CenterHorizontally) {
                     Text(
                         text = state.centerBytes(config.showRemaining)
-                            ?.let { ByteFormatter.data(it) }
+                            ?.let { isolateLtr(ByteFormatter.data(it)) }
                             ?: DashboardUiState.UNKNOWN,
                         style = TextStyle(
                             color = ColorProvider(Color(0xFFE5E7EB)),
@@ -201,12 +202,12 @@ private fun BudgetWidgetContent(
                             limit == null -> context.getString(R.string.widget_budget_no_limit)
                             config.showRemaining -> context.getString(
                                 R.string.widget_budget_remaining_of_limit,
-                                ByteFormatter.data(limit),
+                                isolateLtr(ByteFormatter.data(limit)),
                             )
 
                             else -> context.getString(
                                 R.string.widget_budget_of_limit,
-                                ByteFormatter.data(limit),
+                                isolateLtr(ByteFormatter.data(limit)),
                             )
                         },
                         style = TextStyle(
@@ -249,7 +250,7 @@ private fun BudgetWidgetContent(
                     )
                     Text(
                         text = state.topAppBytes
-                            ?.let { ByteFormatter.data(it) }
+                            ?.let { isolateLtr(ByteFormatter.data(it)) }
                             ?: DashboardUiState.UNKNOWN,
                         style = TextStyle(
                             color = ColorProvider(Color(0xFF8A94A6)),

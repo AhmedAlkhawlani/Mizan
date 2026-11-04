@@ -32,6 +32,7 @@ import com.maknoon.mizan.R
 import com.maknoon.mizan.core.data.widget.SpeedWidgetConfig
 import com.maknoon.mizan.core.data.widget.WidgetConfigStore
 import com.maknoon.mizan.core.designsystem.theme.MizanPalette
+import com.maknoon.mizan.core.domain.format.isolateLtr
 import com.maknoon.mizan.monitoring.MonitoringStateHolder
 import com.maknoon.mizan.ui.dashboard.DashboardUiState
 import com.maknoon.mizan.ui.dashboard.toDashboardUiState
@@ -99,7 +100,10 @@ private fun SpeedWidgetContent(state: DashboardUiState, config: SpeedWidgetConfi
 
                 state.speedAvailable -> {
                     Text(
-                        text = context.getString(R.string.widget_speed_down, state.downSpeed),
+                        text = context.getString(
+                            R.string.widget_speed_down,
+                            isolateLtr(state.downSpeed),
+                        ),
                         style = TextStyle(
                             color = ColorProvider(MizanPalette.DataDown),
                             fontSize = 14.sp,
@@ -109,7 +113,10 @@ private fun SpeedWidgetContent(state: DashboardUiState, config: SpeedWidgetConfi
                     )
                     if (config.showUpload) {
                         Text(
-                            text = context.getString(R.string.widget_speed_up, state.upSpeed),
+                            text = context.getString(
+                                R.string.widget_speed_up,
+                                isolateLtr(state.upSpeed),
+                            ),
                             style = TextStyle(
                                 color = ColorProvider(MizanPalette.DataUp),
                                 fontSize = 9.sp,
@@ -144,7 +151,7 @@ private fun SpeedWidgetContent(state: DashboardUiState, config: SpeedWidgetConfi
                     maxLines = 1,
                 )
                 Text(
-                    text = state.todayTotal,
+                    text = isolateLtr(state.todayTotal),
                     style = TextStyle(
                         color = ColorProvider(Color(0xFFE5E7EB)),
                         fontSize = 12.sp,

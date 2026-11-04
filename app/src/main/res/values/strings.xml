@@ -245,4 +245,26 @@
     <string name="widget_config_cancel">إلغاء</string>
     <string name="widget_config_save">تم</string>
     <string name="widget_config_save_failed">تعذّر حفظ الإعدادات، حاول مرة أخرى.</string>
+
+    <string name="onboarding_tagline">الإعداد الأولي</string>
+    <string name="onboarding_title">مرحباً في ميزان</string>
+    <string name="onboarding_subtitle">عداد بيانات يعمل على جهازك: يقيس الاستهلاك، يعرض السرعة، وينبّه قبل تجاوز الحد — بلا حساب وبلا إنترنت.</string>
+    <string name="onboarding_privacy_title">بياناتك لا تغادر جهازك</string>
+    <string name="onboarding_privacy_body">ميزان لا يملك صلاحية الإنترنت إطلاقاً، ويحفظ كل قياساته وحدوده في قاعدة بيانات محلية.</string>
+    <string name="onboarding_status_granted">ممنوح</string>
+    <string name="onboarding_status_not_granted">غير ممنوح</string>
+    <string name="onboarding_notifications_title">الإشعارات</string>
+    <string name="onboarding_notifications_body">إشعار دائم بالسرعة واستهلاك اليوم، وتنبيهات الميزانية. يمكنك المتابعة بدونها، لكن التنبيهات لن تظهر.</string>
+    <string name="onboarding_notifications_allow">السماح بالإشعارات</string>
+    <string name="onboarding_notifications_manage">إعدادات الإشعارات</string>
+    <string name="onboarding_status_allowed">مسموح</string>
+    <string name="onboarding_status_not_allowed">غير مسموح</string>
+    <string name="onboarding_monitoring_title">بدء القياس</string>
+    <string name="onboarding_monitoring_body">يقرأ ميزان عدّادات الشبكة أثناء العمل، ويكمل بعد إغلاق التطبيق عبر خدمة أمامية دائمة.</string>
+    <string name="onboarding_monitoring_running">القياس يعمل</string>
+    <string name="onboarding_saver_title">الحماية — اختياري</string>
+    <string name="onboarding_saver_body">يمكنك لاحقاً حظر تطبيقات معيّنة من الشبكة عبر تبويب «الحماية»، بعد منح موافقة VPN من النظام. لا يبدأ شيء تلقائياً.</string>
+    <string name="onboarding_finish">ابدأ الاستخدام</string>
+    <string name="onboarding_skip">تخطّي الآن</string>
+    <string name="onboarding_footer_note">يمكنك تغيير كل هذه الخيارات لاحقاً من داخل التطبيق.</string>
 </resources>

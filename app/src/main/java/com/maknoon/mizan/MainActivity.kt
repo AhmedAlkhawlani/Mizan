@@ -10,6 +10,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.lifecycle.lifecycleScope
 import com.maknoon.mizan.app.AppLanguage
 import com.maknoon.mizan.app.MizanApp
@@ -63,8 +64,17 @@ class MainActivity : ComponentActivity() {
             // app, independent of the wallpaper and of the system light/dark switch.
             MizanTheme(darkTheme = true, dynamicColor = false) {
                 val destination by shortcutDestination.collectAsState()
+                val settings = remember { MizanSettings(applicationContext) }
+                // Null until DataStore answers, which keeps the walkthrough from flashing for
+                // an install that already finished it.
+                val onboardingCompleted by settings.onboardingCompleted
+                    .collectAsState(initial = null)
                 MizanApp(
                     shortcutDestination = destination,
+                    onboardingCompleted = onboardingCompleted,
+                    onOnboardingCompleted = {
+                        lifecycleScope.launch { settings.setOnboardingCompleted(true) }
+                    },
                     onShortcutDestinationHandled = { shortcutDestination.value = null },
                 )
             }

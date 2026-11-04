@@ -70,11 +70,25 @@ class MizanSettings(context: Context) {
         store.edit { preferences -> preferences[BLOCKED_PACKAGES] = normalized }
     }
 
+    /**
+     * Whether the first-run walkthrough has been completed or skipped. Absent means "not seen",
+     * so an update that introduces it shows the flow once instead of hiding it from every
+     * existing install.
+     */
+    val onboardingCompleted: Flow<Boolean> = store.data
+        .map { preferences -> preferences[ONBOARDING_COMPLETED] ?: false }
+        .distinctUntilChanged()
+
+    suspend fun setOnboardingCompleted(completed: Boolean) {
+        store.edit { preferences -> preferences[ONBOARDING_COMPLETED] = completed }
+    }
+
     private companion object {
         val MONITORING_ENABLED = booleanPreferencesKey("monitoring_enabled")
         val CYCLE_START_DAY = intPreferencesKey("cycle_start_day")
         val DATA_SAVER_ENABLED = booleanPreferencesKey("data_saver_enabled")
         val BLOCKED_PACKAGES = stringSetPreferencesKey("data_saver_blocked_packages")
+        val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
         const val DEFAULT_CYCLE_START_DAY = BillingCycleCalculator.MIN_START_DAY
     }
 }

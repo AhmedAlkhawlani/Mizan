@@ -235,4 +235,26 @@
     <string name="widget_config_cancel">Cancel</string>
     <string name="widget_config_save">Done</string>
     <string name="widget_config_save_failed">Couldn\'t save settings. Try again.</string>
+
+    <string name="onboarding_tagline">First run</string>
+    <string name="onboarding_title">Welcome to Mizan</string>
+    <string name="onboarding_subtitle">A data meter that runs on your device: it measures usage, shows speed, and warns you before a limit is crossed — no account and no Internet.</string>
+    <string name="onboarding_privacy_title">Your data stays on your device</string>
+    <string name="onboarding_privacy_body">Mizan has no Internet permission at all, and keeps every measurement and limit in a local database.</string>
+    <string name="onboarding_status_granted">Granted</string>
+    <string name="onboarding_status_not_granted">Not granted</string>
+    <string name="onboarding_notifications_title">Notifications</string>
+    <string name="onboarding_notifications_body">A persistent notification with speed and today\u2019s usage, plus budget alerts. You can continue without it, but alerts will not appear.</string>
+    <string name="onboarding_notifications_allow">Allow notifications</string>
+    <string name="onboarding_notifications_manage">Notification settings</string>
+    <string name="onboarding_status_allowed">Allowed</string>
+    <string name="onboarding_status_not_allowed">Not allowed</string>
+    <string name="onboarding_monitoring_title">Start measuring</string>
+    <string name="onboarding_monitoring_body">Mizan reads the network counters while it runs, and keeps going after you close the app through a permanent foreground service.</string>
+    <string name="onboarding_monitoring_running">Measuring</string>
+    <string name="onboarding_saver_title">Guard — optional</string>
+    <string name="onboarding_saver_body">You can later block specific apps from the network from the Guard tab, after granting VPN consent in the system dialog. Nothing starts automatically.</string>
+    <string name="onboarding_finish">Start using Mizan</string>
+    <string name="onboarding_skip">Skip for now</string>
+    <string name="onboarding_footer_note">You can change all of these options later inside the app.</string>
 </resources>

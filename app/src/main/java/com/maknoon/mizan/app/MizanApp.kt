@@ -34,6 +34,7 @@ import com.maknoon.mizan.ui.apps.AppsScreen
 import com.maknoon.mizan.ui.budget.BudgetScreen
 import com.maknoon.mizan.ui.dashboard.DashboardScreen
 import com.maknoon.mizan.ui.history.HistoryScreen
+import com.maknoon.mizan.ui.onboarding.OnboardingScreen
 import com.maknoon.mizan.ui.saver.SaverScreen
 
 /**
@@ -70,8 +71,19 @@ private fun appDetailRoute(packageName: String): String =
 fun MizanApp(
     modifier: Modifier = Modifier,
     shortcutDestination: String? = null,
+    onboardingCompleted: Boolean? = true,
+    onOnboardingCompleted: () -> Unit = {},
     onShortcutDestinationHandled: () -> Unit = {},
 ) {
+    // Null means the settings store has not answered yet; drawing the shell first and the
+    // walkthrough after it would look like a glitch to a first-run user.
+    if (onboardingCompleted != true) {
+        if (onboardingCompleted == false) {
+            OnboardingScreen(onFinished = onOnboardingCompleted)
+        }
+        return
+    }
+
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route

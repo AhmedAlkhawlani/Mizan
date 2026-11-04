@@ -10,6 +10,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.maknoon.mizan.core.data.db.BudgetEntity
 import com.maknoon.mizan.core.data.db.MizanDatabaseProvider
 import com.maknoon.mizan.core.data.settings.MizanSettings
+import com.maknoon.mizan.core.data.settings.StatusBarSpeedMode
 import com.maknoon.mizan.core.domain.budget.BudgetPeriod
 import com.maknoon.mizan.core.domain.budget.BudgetScope
 import com.maknoon.mizan.core.domain.budget.DEVICE_TARGET_ID
@@ -48,8 +49,9 @@ class BudgetViewModel(application: Application) : AndroidViewModel(application) 
         settings.cycleStartDay,
         dailyText,
         monthlyText,
-    ) { budgets, cycleStartDay, daily, monthly ->
-        budgetUiState(budgets, cycleStartDay, daily, monthly)
+        settings.statusBarSpeedMode,
+    ) { budgets, cycleStartDay, daily, monthly, statusBarIcon ->
+        budgetUiState(budgets, cycleStartDay, daily, monthly, statusBarIcon)
     }.stateIn(
         scope = viewModelScope,
         // Keep the last value briefly so a rotation does not flash an empty screen.
@@ -77,6 +79,11 @@ class BudgetViewModel(application: Application) : AndroidViewModel(application) 
 
     fun setCycleStartDay(day: Int) {
         viewModelScope.launch { settings.setCycleStartDay(day) }
+    }
+
+    /** The service reads this preference and redraws its icon on the next sample. */
+    fun setStatusBarSpeedMode(mode: StatusBarSpeedMode) {
+        viewModelScope.launch { settings.setStatusBarSpeedMode(mode) }
     }
 
     /** An unparsable keystroke is ignored: the stored limit keeps its last valid value. */

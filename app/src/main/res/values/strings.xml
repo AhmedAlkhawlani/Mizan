@@ -183,6 +183,12 @@
     <string name="budget_cycle_start_day">يوم بداية الدورة</string>
     <string name="budget_cycle_note">تبدأ ميزانية الشهر مع دورة الفاتورة وتنتهي قبل بداية الدورة التالية.</string>
 
+    <string name="settings_status_icon_title">أيقونة شريط الحالة</string>
+    <string name="settings_status_icon_note">رقم صغير بجانب الساعة يعرض السرعة أثناء عمل المراقبة. بعض المشغّلات ترسم أيقونات الإشعارات بلون واحد.</string>
+    <string name="settings_status_icon_download">سرعة التنزيل</string>
+    <string name="settings_status_icon_upload">سرعة الرفع</string>
+    <string name="settings_status_icon_off">بدون رقم (أيقونة ثابتة)</string>
+
     <string name="history_export_title">تصدير البيانات</string>
     <string name="history_export_body">ملف CSV بكل الأيام المسجّلة. يختار النظام مكان الحفظ، فلا يحتاج التطبيق إلى صلاحية تخزين.</string>
     <string name="history_export_action">حفظ ملف CSV</string>

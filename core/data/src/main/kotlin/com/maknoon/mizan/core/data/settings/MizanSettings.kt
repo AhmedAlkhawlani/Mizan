@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.maknoon.mizan.core.domain.cycle.BillingCycleCalculator
@@ -83,12 +84,29 @@ class MizanSettings(context: Context) {
         store.edit { preferences -> preferences[ONBOARDING_COMPLETED] = completed }
     }
 
+    /**
+     * Which rate the status-bar icon draws. Download is the default because it is the number
+     * most people check; an unknown stored value falls back to it rather than crashing.
+     */
+    val statusBarSpeedMode: Flow<StatusBarSpeedMode> = store.data
+        .map { preferences ->
+            preferences[STATUS_BAR_SPEED_MODE]
+                ?.let { stored -> StatusBarSpeedMode.entries.firstOrNull { it.name == stored } }
+                ?: StatusBarSpeedMode.DOWNLOAD
+        }
+        .distinctUntilChanged()
+
+    suspend fun setStatusBarSpeedMode(mode: StatusBarSpeedMode) {
+        store.edit { preferences -> preferences[STATUS_BAR_SPEED_MODE] = mode.name }
+    }
+
     private companion object {
         val MONITORING_ENABLED = booleanPreferencesKey("monitoring_enabled")
         val CYCLE_START_DAY = intPreferencesKey("cycle_start_day")
         val DATA_SAVER_ENABLED = booleanPreferencesKey("data_saver_enabled")
         val BLOCKED_PACKAGES = stringSetPreferencesKey("data_saver_blocked_packages")
         val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
+        val STATUS_BAR_SPEED_MODE = stringPreferencesKey("status_bar_speed_mode")
         const val DEFAULT_CYCLE_START_DAY = BillingCycleCalculator.MIN_START_DAY
     }
 }

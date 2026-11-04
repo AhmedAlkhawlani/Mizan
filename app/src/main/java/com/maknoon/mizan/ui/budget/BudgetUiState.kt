@@ -1,6 +1,7 @@
 package com.maknoon.mizan.ui.budget
 
 import com.maknoon.mizan.core.data.db.BudgetEntity
+import com.maknoon.mizan.core.data.settings.StatusBarSpeedMode
 import com.maknoon.mizan.core.domain.budget.BudgetPeriod
 import com.maknoon.mizan.core.domain.budget.BudgetScope
 import com.maknoon.mizan.core.domain.cycle.BillingCycleCalculator
@@ -13,11 +14,12 @@ data class BudgetFieldUi(
     val error: Boolean = false,
 )
 
-/** Everything the Budget screen draws: the two device caps and the billing-cycle start day. */
+/** Everything the Budget screen draws: the two device caps, the cycle day and the icon style. */
 data class BudgetUiState(
     val daily: BudgetFieldUi = BudgetFieldUi(),
     val monthly: BudgetFieldUi = BudgetFieldUi(),
     val cycleStartDay: Int = BillingCycleCalculator.MIN_START_DAY,
+    val statusBarIcon: StatusBarSpeedMode = StatusBarSpeedMode.DOWNLOAD,
 )
 
 /**
@@ -33,12 +35,14 @@ internal fun budgetUiState(
     cycleStartDay: Int,
     dailyText: String? = null,
     monthlyText: String? = null,
+    statusBarIcon: StatusBarSpeedMode = StatusBarSpeedMode.DOWNLOAD,
 ): BudgetUiState {
     val deviceRows = budgets.filter { it.scope == BudgetScope.DEVICE }
     return BudgetUiState(
         daily = fieldUi(deviceRows.firstOrNull { it.period == BudgetPeriod.DAILY }, dailyText),
         monthly = fieldUi(deviceRows.firstOrNull { it.period == BudgetPeriod.MONTHLY }, monthlyText),
         cycleStartDay = BillingCycleCalculator.normalizedStartDay(cycleStartDay),
+        statusBarIcon = statusBarIcon,
     )
 }
 

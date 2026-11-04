@@ -5,14 +5,18 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -21,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -30,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.maknoon.mizan.R
+import com.maknoon.mizan.core.data.settings.StatusBarSpeedMode
 import com.maknoon.mizan.core.designsystem.theme.MizanTheme
 import com.maknoon.mizan.ui.component.AppTopBar
 import com.maknoon.mizan.ui.component.AppTopBarRow
@@ -58,6 +64,7 @@ fun BudgetScreen(
         onMonthlyLimitChange = viewModel::onMonthlyLimitChange,
         onMonthlyEnabledChange = viewModel::onMonthlyEnabledChange,
         onCycleStartDayChange = viewModel::setCycleStartDay,
+        onStatusBarSpeedModeChange = viewModel::setStatusBarSpeedMode,
         onBack = onBack,
         modifier = modifier,
     )
@@ -71,6 +78,7 @@ internal fun BudgetContent(
     onMonthlyLimitChange: (String) -> Unit,
     onMonthlyEnabledChange: (Boolean) -> Unit,
     onCycleStartDayChange: (Int) -> Unit,
+    onStatusBarSpeedModeChange: (StatusBarSpeedMode) -> Unit,
     modifier: Modifier = Modifier,
     onBack: () -> Unit = {},
 ) {
@@ -128,6 +136,12 @@ internal fun BudgetContent(
             }
             item(key = "cycle") {
                 CycleCard(cycleStartDay = uiState.cycleStartDay, onCycleStartDayChange = onCycleStartDayChange)
+            }
+            item(key = "statusBarIcon") {
+                StatusBarIconCard(
+                    mode = uiState.statusBarIcon,
+                    onModeChange = onStatusBarSpeedModeChange,
+                )
             }
         }
     }
@@ -196,6 +210,75 @@ private fun CycleCard(
     }
 }
 
+@Composable
+private fun StatusBarIconCard(
+    mode: StatusBarSpeedMode,
+    onModeChange: (StatusBarSpeedMode) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Card(modifier = modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier.padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            Text(
+                text = stringResource(R.string.settings_status_icon_title),
+                style = MaterialTheme.typography.titleMedium,
+            )
+            Text(
+                text = stringResource(R.string.settings_status_icon_note),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(bottom = 8.dp),
+            )
+            StatusBarOption(
+                mode = StatusBarSpeedMode.DOWNLOAD,
+                label = stringResource(R.string.settings_status_icon_download),
+                selected = mode == StatusBarSpeedMode.DOWNLOAD,
+                onSelect = onModeChange,
+            )
+            StatusBarOption(
+                mode = StatusBarSpeedMode.UPLOAD,
+                label = stringResource(R.string.settings_status_icon_upload),
+                selected = mode == StatusBarSpeedMode.UPLOAD,
+                onSelect = onModeChange,
+            )
+            StatusBarOption(
+                mode = StatusBarSpeedMode.OFF,
+                label = stringResource(R.string.settings_status_icon_off),
+                selected = mode == StatusBarSpeedMode.OFF,
+                onSelect = onModeChange,
+            )
+        }
+    }
+}
+
+@Composable
+private fun StatusBarOption(
+    mode: StatusBarSpeedMode,
+    label: String,
+    selected: Boolean,
+    onSelect: (StatusBarSpeedMode) -> Unit,
+) {
+    // The whole row is the radio target; the button itself has no listener so TalkBack
+    // announces one selectable item instead of a row and a control.
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .selectable(
+                selected = selected,
+                role = Role.RadioButton,
+                onClick = { onSelect(mode) },
+            )
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        RadioButton(selected = selected, onClick = null)
+        Spacer(modifier = Modifier.width(12.dp))
+        Text(text = label, style = MaterialTheme.typography.bodyMedium)
+    }
+}
+
 @Preview(name = "Budget — Arabic RTL", locale = "ar", showBackground = true)
 @Composable
 private fun BudgetPreview() {
@@ -211,6 +294,7 @@ private fun BudgetPreview() {
             onMonthlyLimitChange = {},
             onMonthlyEnabledChange = {},
             onCycleStartDayChange = {},
+            onStatusBarSpeedModeChange = {},
         )
     }
 }

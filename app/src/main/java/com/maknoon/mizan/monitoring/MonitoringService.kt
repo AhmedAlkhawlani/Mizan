@@ -1,6 +1,7 @@
 package com.maknoon.mizan.monitoring
 
 import android.Manifest
+import android.app.Notification
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
@@ -15,6 +16,8 @@ import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
 import com.maknoon.mizan.MainActivity
 import com.maknoon.mizan.alerts.BudgetAlerts
+import com.maknoon.mizan.core.data.settings.MizanSettings
+import com.maknoon.mizan.core.data.settings.StatusBarSpeedMode
 import com.maknoon.mizan.core.data.usage.DeviceUsageRepository
 import com.maknoon.mizan.core.platform.traffic.AndroidTrafficSource
 import com.maknoon.mizan.core.platform.traffic.TrafficSource
@@ -28,6 +31,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
@@ -49,6 +53,12 @@ class MonitoringService : Service() {
     private val repository by lazy { DeviceUsageRepository.create(this) }
 
     private val notificationManager by lazy { getSystemService(NotificationManager::class.java) }
+
+    private val settings by lazy { MizanSettings(this) }
+
+    /** Read once into a field so a notification rebuild never waits on DataStore. */
+    @Volatile
+    private var statusBarMode: StatusBarSpeedMode = StatusBarSpeedMode.DOWNLOAD
 
     private val openIntent by lazy {
         PendingIntent.getActivity(
@@ -85,6 +95,9 @@ class MonitoringService : Service() {
         MonitoringStateHolder.publish(MonitoringState(running = true))
         startAsForeground()
         samplingJob = scope.launch { sampleContinuously() }
+        scope.launch {
+            settings.statusBarSpeedMode.collect { mode -> statusBarMode = mode }
+        }
     }
 
     /**
@@ -202,8 +215,18 @@ class MonitoringService : Service() {
         }
     }
 
-    private fun buildNotification(state: MonitoringState) = MonitoringNotifications
-        .monitoringNotification(this, state, openIntent, stopIntent)
+    private fun buildNotification(state: MonitoringState): Notification {
+        val usage = state.usage
+        val icon = when {
+            usage == null || statusBarMode == StatusBarSpeedMode.OFF -> null
+            statusBarMode == StatusBarSpeedMode.UPLOAD ->
+                SpeedIconGenerator.icon(usage.upBytesPerSecond)
+
+            else -> SpeedIconGenerator.icon(usage.downBytesPerSecond)
+        }
+        return MonitoringNotifications
+            .monitoringNotification(this, state, openIntent, stopIntent, icon)
+    }
 
     companion object {
         const val SAMPLE_INTERVAL_MILLIS = 1_000L

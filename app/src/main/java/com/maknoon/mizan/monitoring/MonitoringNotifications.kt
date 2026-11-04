@@ -6,6 +6,7 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import androidx.core.app.NotificationCompat
+import androidx.core.graphics.drawable.IconCompat
 import com.maknoon.mizan.R
 import com.maknoon.mizan.core.domain.format.ByteFormatter
 import com.maknoon.mizan.core.domain.format.isolateLtr
@@ -45,6 +46,7 @@ object MonitoringNotifications {
         state: MonitoringState,
         openIntent: PendingIntent,
         stopIntent: PendingIntent,
+        statusIcon: IconCompat? = null,
     ): Notification {
         val usage = state.usage
 
@@ -71,7 +73,11 @@ object MonitoringNotifications {
         }
 
         return NotificationCompat.Builder(context, MONITORING_CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_notification_monitor)
+            .apply {
+                // The generated bitmap is tinted by the system like any status icon; without
+                // one (mode off, or no reading yet) the static monitor glyph stands in.
+                if (statusIcon != null) setSmallIcon(statusIcon) else setSmallIcon(R.drawable.ic_notification_monitor)
+            }
             .setContentTitle(context.getString(R.string.app_name))
             .setContentText(speedLine)
             .setSubText(todayLine)

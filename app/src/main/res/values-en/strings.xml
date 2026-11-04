@@ -173,6 +173,12 @@
     <string name="budget_cycle_start_day">Cycle start day</string>
     <string name="budget_cycle_note">The monthly budget starts with the billing cycle and ends before the next one begins.</string>
 
+    <string name="settings_status_icon_title">Status bar icon</string>
+    <string name="settings_status_icon_note">A small figure next to the clock shows the rate while monitoring runs. Some launchers draw notification icons in a single colour.</string>
+    <string name="settings_status_icon_download">Download speed</string>
+    <string name="settings_status_icon_upload">Upload speed</string>
+    <string name="settings_status_icon_off">No figure (static icon)</string>
+
     <string name="history_export_title">Export data</string>
     <string name="history_export_body">A CSV of every recorded day. The system picks where it is saved, so the app needs no storage permission.</string>
     <string name="history_export_action">Save CSV file</string>

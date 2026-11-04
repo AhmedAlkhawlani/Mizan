@@ -29,6 +29,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,12 +38,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -221,19 +224,41 @@ private fun SpeedFigure(
     tint: Color,
     modifier: Modifier = Modifier,
 ) {
+    // The unit is split off so a three-digit speed shrinks its unit instead of wrapping mid-token.
+    val number = value.substringBeforeLast(' ', value)
+    val unit = value.substringAfterLast(' ', "")
     Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
             text = "$arrow $label",
             style = MaterialTheme.typography.labelLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        Text(
-            text = value,
-            style = MaterialTheme.typography.headlineLarge,
-            fontWeight = FontWeight.ExtraBold,
-            color = tint,
-            textAlign = TextAlign.Center,
-        )
+        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+            Row {
+                Text(
+                    text = number,
+                    modifier = Modifier.alignByBaseline(),
+                    style = MaterialTheme.typography.headlineMedium.copy(
+                        textDirection = TextDirection.Ltr,
+                    ),
+                    fontWeight = FontWeight.ExtraBold,
+                    color = tint,
+                    maxLines = 1,
+                )
+                if (unit.isNotEmpty()) {
+                    Text(
+                        text = " $unit",
+                        modifier = Modifier.alignByBaseline(),
+                        style = MaterialTheme.typography.labelLarge.copy(
+                            textDirection = TextDirection.Ltr,
+                        ),
+                        fontWeight = FontWeight.SemiBold,
+                        color = tint,
+                        maxLines = 1,
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -326,7 +351,9 @@ private fun TodayCard(uiState: DashboardUiState, modifier: Modifier = Modifier) 
                 )
                 Text(
                     text = uiState.todayTotal,
-                    style = MaterialTheme.typography.titleLarge,
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        textDirection = TextDirection.Ltr,
+                    ),
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                     ChannelFigure(

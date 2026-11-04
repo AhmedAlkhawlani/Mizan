@@ -146,7 +146,9 @@ internal fun AppsContent(
                 )
                 Text(
                     text = ByteFormatter.data(uiState.totalBytes),
-                    style = MaterialTheme.typography.headlineMedium,
+                    style = MaterialTheme.typography.headlineMedium.copy(
+                        textDirection = TextDirection.Ltr,
+                    ),
                     fontWeight = FontWeight.ExtraBold,
                     color = MaterialTheme.colorScheme.primary,
                 )

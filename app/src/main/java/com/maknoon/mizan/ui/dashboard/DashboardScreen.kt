@@ -41,6 +41,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.ProgressBarRangeInfo
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.progressBarRangeInfo
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDirection
@@ -118,6 +121,7 @@ internal fun DashboardContent(
             AppTopBarRow {
                 Text(
                     text = stringResource(R.string.app_name),
+                    modifier = Modifier.semantics { heading() },
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.ExtraBold,
                 )
@@ -275,7 +279,9 @@ private fun BudgetBarCard(uiState: DashboardUiState, modifier: Modifier = Modifi
 
     Card(modifier = modifier
         .fillMaxWidth()
-        .semantics(mergeDescendants = true) {}) {
+        .semantics(mergeDescendants = true) {
+            progressBarRangeInfo = ProgressBarRangeInfo(fraction, 0f..1f)
+        }) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()

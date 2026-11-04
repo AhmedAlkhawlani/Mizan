@@ -38,6 +38,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDirection
@@ -123,6 +125,7 @@ internal fun HistoryContent(
                         text = stringResource(R.string.nav_history),
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.ExtraBold,
+                        modifier = Modifier.semantics { heading() },
                     )
                     if (uiState.cycleStartEpochDay > 0L &&
                         uiState.cycleEndEpochDay >= uiState.cycleStartEpochDay

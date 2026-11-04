@@ -41,6 +41,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.text.style.TextOverflow
@@ -56,6 +57,8 @@ import com.maknoon.mizan.core.designsystem.theme.statusColors
 import com.maknoon.mizan.core.domain.format.ByteFormatter
 import com.maknoon.mizan.core.platform.usage.UsageAccess
 import com.maknoon.mizan.sync.AppUsageSyncScheduler
+import com.maknoon.mizan.ui.component.AppTopBar
+import com.maknoon.mizan.ui.component.AppTopBarRow
 import com.maknoon.mizan.ui.component.BudgetLimitField
 import java.time.Instant
 import java.time.ZoneId
@@ -119,6 +122,10 @@ fun AppsScreen(
     }
 }
 
+/**
+ * The period selector and the recorded total live in the screen's own header (concept board), so
+ * the list below starts with the apps themselves.
+ */
 @Composable
 internal fun AppsContent(
     uiState: AppsUiState,
@@ -129,27 +136,51 @@ internal fun AppsContent(
     onBudgetClick: (AppUsageRowUi) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    LazyColumn(
-        modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        if (!granted) {
-            item(key = "access") { AccessRequestCard(onOpenSettings = onOpenSettings) }
-            return@LazyColumn
+    Column(modifier = modifier.fillMaxSize()) {
+        AppTopBar {
+            if (granted) {
+                Text(
+                    text = stringResource(R.string.apps_total_label),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Text(
+                    text = ByteFormatter.data(uiState.totalBytes),
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+                PeriodChips(selected = uiState.period, onSelect = onPeriodChange)
+            } else {
+                Text(
+                    text = stringResource(R.string.nav_apps),
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.ExtraBold,
+                )
+            }
         }
 
-        item(key = "periods") { PeriodChips(selected = uiState.period, onSelect = onPeriodChange) }
-        item(key = "summary") { SummaryCard(uiState) }
-        if (uiState.rows.isEmpty()) {
-            item(key = "empty") { EmptyCard() }
-        } else {
-            items(items = uiState.rows, key = { it.packageName }) { row ->
-                AppUsageRow(
-                    row = row,
-                    onClick = { onAppClick(row.packageName) },
-                    onBudgetClick = { onBudgetClick(row) },
-                )
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            if (!granted) {
+                item(key = "access") { AccessRequestCard(onOpenSettings = onOpenSettings) }
+                return@LazyColumn
+            }
+
+            item(key = "summary") { SyncNoteCard(uiState) }
+            if (uiState.rows.isEmpty()) {
+                item(key = "empty") { EmptyCard() }
+            } else {
+                items(items = uiState.rows, key = { it.packageName }) { row ->
+                    AppUsageRow(
+                        row = row,
+                        onClick = { onAppClick(row.packageName) },
+                        onBudgetClick = { onBudgetClick(row) },
+                    )
+                }
             }
         }
     }
@@ -181,20 +212,14 @@ private fun AppsPeriod.labelRes(): Int = when (this) {
     AppsPeriod.CYCLE -> R.string.apps_period_cycle
 }
 
+/** NetworkStatsManager is not a live counter, so the list still states how old its figures are. */
 @Composable
-private fun SummaryCard(uiState: AppsUiState, modifier: Modifier = Modifier) {
+private fun SyncNoteCard(uiState: AppsUiState, modifier: Modifier = Modifier) {
     Card(modifier = modifier.fillMaxWidth()) {
         Column(
-            modifier = Modifier.padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp),
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
-            Text(
-                text = stringResource(
-                    R.string.apps_recorded_total,
-                    ByteFormatter.data(uiState.totalBytes),
-                ),
-                style = MaterialTheme.typography.titleMedium,
-            )
             uiState.lastSyncedAtMillis?.let { syncedAt ->
                 Text(
                     text = stringResource(R.string.apps_last_sync, formatTime(syncedAt)),
@@ -477,7 +502,7 @@ private fun formatTime(millis: Long): String =
 @Preview(name = "Apps — access missing", locale = "ar", showBackground = true)
 @Composable
 private fun AppsAccessPreview() {
-    MizanTheme(dynamicColor = false) {
+    MizanTheme(darkTheme = true, dynamicColor = false) {
         AppsContent(
             uiState = AppsUiState(),
             granted = false,
@@ -492,7 +517,7 @@ private fun AppsAccessPreview() {
 @Preview(name = "Apps — list", locale = "ar", showBackground = true)
 @Composable
 private fun AppsListPreview() {
-    MizanTheme(dynamicColor = false) {
+    MizanTheme(darkTheme = true, dynamicColor = false) {
         AppsContent(
             uiState = AppsUiState(
                 period = AppsPeriod.WEEK,
@@ -531,7 +556,7 @@ private fun AppsListPreview() {
 @Preview(name = "App budget — Arabic RTL", locale = "ar", showBackground = true)
 @Composable
 private fun AppBudgetPreview() {
-    MizanTheme(dynamicColor = false) {
+    MizanTheme(darkTheme = true, dynamicColor = false) {
         AppBudgetDialog(
             uiState = AppBudgetUiState(
                 packageName = "com.google.android.youtube",

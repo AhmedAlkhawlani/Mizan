@@ -16,16 +16,20 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -34,7 +38,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
@@ -45,6 +51,8 @@ import com.maknoon.mizan.core.designsystem.component.UsageBar
 import com.maknoon.mizan.core.designsystem.component.UsageBarChart
 import com.maknoon.mizan.core.designsystem.theme.MizanTheme
 import com.maknoon.mizan.core.designsystem.theme.statusColors
+import com.maknoon.mizan.ui.component.AppTopBar
+import com.maknoon.mizan.ui.component.AppTopBarRow
 import com.maknoon.mizan.ui.component.CycleStartDayStepper
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -89,6 +97,10 @@ fun HistoryScreen(
     )
 }
 
+/**
+ * The header owns the cycle and the export (concept board): the range and its total sit under
+ * the title, and the two icon buttons replace the cards that used to occupy the top of the list.
+ */
 @Composable
 internal fun HistoryContent(
     uiState: HistoryUiState,
@@ -96,23 +108,86 @@ internal fun HistoryContent(
     onExportRequest: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    LazyColumn(
-        modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        item(key = "cycle") {
-            CycleCard(uiState = uiState, onCycleStartDayChange = onCycleStartDayChange)
+    var cycleDialogOpen by remember { mutableStateOf(false) }
+
+    Column(modifier = modifier.fillMaxSize()) {
+        AppTopBar {
+            AppTopBarRow {
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(2.dp),
+                ) {
+                    Text(
+                        text = stringResource(R.string.nav_history),
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.ExtraBold,
+                    )
+                    if (uiState.cycleStartEpochDay > 0L &&
+                        uiState.cycleEndEpochDay >= uiState.cycleStartEpochDay
+                    ) {
+                        Text(
+                            text = stringResource(
+                                R.string.history_cycle_summary,
+                                cycleRangeLabel(
+                                    uiState.cycleStartEpochDay,
+                                    uiState.cycleEndEpochDay,
+                                ),
+                                uiState.cycleTotalLabel,
+                            ),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+                }
+                IconButton(onClick = { cycleDialogOpen = true }) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_cycle),
+                        contentDescription = stringResource(R.string.history_cycle_edit),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                IconButton(
+                    onClick = onExportRequest,
+                    enabled = uiState.hasData,
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_export),
+                        contentDescription = stringResource(R.string.history_export_action),
+                        tint = if (uiState.hasData) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        },
+                    )
+                }
+            }
         }
-        if (!uiState.hasData) {
-            item(key = "empty") { EmptyHistoryCard() }
-        } else {
-            item(key = "days") { DailyChartCard(uiState) }
-            item(key = "hours") { HourlyChartCard(uiState) }
-            if (uiState.anyPartial) item(key = "partial") { PartialLegend() }
-            item(key = "note") { ObservationNote() }
-            item(key = "export") { ExportCard(onExportRequest = onExportRequest) }
+
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            if (!uiState.hasData) {
+                item(key = "empty") { EmptyHistoryCard() }
+            } else {
+                item(key = "days") { DailyChartCard(uiState) }
+                item(key = "hours") { HourlyChartCard(uiState) }
+                if (uiState.anyPartial) item(key = "partial") { PartialLegend() }
+                item(key = "note") { ObservationNote() }
+                item(key = "export") { ExportNote() }
+            }
         }
+    }
+
+    if (cycleDialogOpen) {
+        CycleDialog(
+            uiState = uiState,
+            onCycleStartDayChange = onCycleStartDayChange,
+            onDismiss = { cycleDialogOpen = false },
+        )
     }
 }
 
@@ -121,62 +196,54 @@ internal fun HistoryContent(
  * the operator chooses a folder, and the file belongs to them.
  */
 @Composable
-private fun ExportCard(onExportRequest: () -> Unit, modifier: Modifier = Modifier) {
+private fun ExportNote(modifier: Modifier = Modifier) {
     Card(modifier = modifier.fillMaxWidth()) {
         Column(
-            modifier = Modifier.padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
             Text(
                 text = stringResource(R.string.history_export_title),
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.titleSmall,
             )
             Text(
                 text = stringResource(R.string.history_export_body),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            OutlinedButton(
-                onClick = onExportRequest,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text(text = stringResource(R.string.history_export_action))
-            }
         }
     }
 }
 
 /**
- * The operator's billing period: its date range, the traffic recorded inside it, and the
- * day-of-month it starts on. Changing the start day re-reads the cycle from Room.
+ * The operator's billing period. Changing the start day re-reads the cycle from Room, so the
+ * header summary above updates as soon as the dialog is dismissed.
  */
 @Composable
-private fun CycleCard(
+private fun CycleDialog(
     uiState: HistoryUiState,
     onCycleStartDayChange: (Int) -> Unit,
-    modifier: Modifier = Modifier,
+    onDismiss: () -> Unit,
 ) {
-    Card(modifier = modifier.fillMaxWidth()) {
-        Column(
-            modifier = Modifier.padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            Text(
-                text = stringResource(R.string.history_cycle_title),
-                style = MaterialTheme.typography.titleMedium,
-            )
-            if (uiState.cycleStartEpochDay > 0L && uiState.cycleEndEpochDay >= uiState.cycleStartEpochDay) {
-                Text(
-                    text = cycleRangeLabel(uiState.cycleStartEpochDay, uiState.cycleEndEpochDay),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(text = stringResource(R.string.history_cycle_title)) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = stringResource(R.string.history_cycle_start_day),
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                    CycleStartDayStepper(
+                        day = uiState.cycleStartDay,
+                        onDayChange = onCycleStartDayChange,
+                    )
+                }
                 Text(
                     text = stringResource(R.string.history_cycle_total),
                     style = MaterialTheme.typography.bodyMedium,
@@ -187,30 +254,21 @@ private fun CycleCard(
                     style = MaterialTheme.typography.headlineSmall,
                     color = MaterialTheme.colorScheme.primary,
                 )
+                if (uiState.cyclePartial) {
+                    Text(
+                        text = stringResource(R.string.history_cycle_partial),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.statusColors.warning,
+                    )
+                }
             }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = stringResource(R.string.history_cycle_start_day),
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-                CycleStartDayStepper(
-                    day = uiState.cycleStartDay,
-                    onDayChange = onCycleStartDayChange,
-                )
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text(text = stringResource(R.string.common_done))
             }
-            if (uiState.cyclePartial) {
-                Text(
-                    text = stringResource(R.string.history_cycle_partial),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.statusColors.warning,
-                )
-            }
-        }
-    }
+        },
+    )
 }
 
 /**
@@ -477,7 +535,7 @@ private fun HistoryPreview() {
         anyPartial = true,
         hasData = true,
     )
-    MizanTheme(dynamicColor = false) {
+    MizanTheme(darkTheme = true, dynamicColor = false) {
         HistoryContent(uiState = preview, onCycleStartDayChange = {}, onExportRequest = {})
     }
 }

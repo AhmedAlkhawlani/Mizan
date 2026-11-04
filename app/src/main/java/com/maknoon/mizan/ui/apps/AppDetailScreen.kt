@@ -43,6 +43,8 @@ import com.maknoon.mizan.core.designsystem.component.UsageBarChart
 import com.maknoon.mizan.core.designsystem.theme.MizanTheme
 import com.maknoon.mizan.core.designsystem.theme.statusColors
 import com.maknoon.mizan.core.domain.format.ByteFormatter
+import com.maknoon.mizan.ui.component.AppTopBar
+import com.maknoon.mizan.ui.component.AppTopBarRow
 import java.time.LocalDate
 
 /**
@@ -67,72 +69,66 @@ fun AppDetailScreen(
     AppDetailContent(uiState = uiState, onBack = onBack, modifier = modifier)
 }
 
+/** The back affordance and the app's identity form this screen's own top bar. */
 @Composable
 internal fun AppDetailContent(
     uiState: AppDetailUiState,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    LazyColumn(
-        modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        item(key = "header") { DetailHeader(uiState = uiState, onBack = onBack) }
-        if (!uiState.hasData) {
-            item(key = "empty") { EmptyDetailCard() }
-        } else {
-            item(key = "chart") { DetailChartCard(uiState) }
-            item(key = "split") { SplitCard(uiState.split) }
-            item(key = "note") {
-                Text(
-                    text = stringResource(R.string.app_detail_note),
-                    modifier = Modifier.padding(horizontal = 4.dp),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+    Column(modifier = modifier.fillMaxSize()) {
+        AppTopBar {
+            AppTopBarRow {
+                IconButton(onClick = onBack) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_arrow_back),
+                        contentDescription = stringResource(R.string.app_detail_back),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                AppIcon(packageName = uiState.packageName)
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(2.dp),
+                ) {
+                    Text(
+                        text = uiState.label,
+                        style = MaterialTheme.typography.titleLarge,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    Text(
+                        text = uiState.packageName,
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            textDirection = TextDirection.Ltr,
+                        ),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
             }
         }
-    }
-}
 
-@Composable
-private fun DetailHeader(
-    uiState: AppDetailUiState,
-    onBack: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        IconButton(onClick = onBack) {
-            Icon(
-                painter = painterResource(R.drawable.ic_arrow_back),
-                contentDescription = stringResource(R.string.app_detail_back),
-            )
-        }
-        AppIcon(packageName = uiState.packageName)
-        Column(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(2.dp),
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            Text(
-                text = uiState.label,
-                style = MaterialTheme.typography.titleLarge,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-            Text(
-                text = uiState.packageName,
-                style = MaterialTheme.typography.bodySmall.copy(
-                    textDirection = TextDirection.Ltr,
-                ),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
+            if (!uiState.hasData) {
+                item(key = "empty") { EmptyDetailCard() }
+            } else {
+                item(key = "chart") { DetailChartCard(uiState) }
+                item(key = "split") { SplitCard(uiState.split) }
+                item(key = "note") {
+                    Text(
+                        text = stringResource(R.string.app_detail_note),
+                        modifier = Modifier.padding(horizontal = 4.dp),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
         }
     }
 }
@@ -336,7 +332,7 @@ private fun AppDetailPreview() {
         totalBytes = 32_500_000,
         lastSyncedAtMillis = 1_762_000_000_000,
     )
-    MizanTheme(dynamicColor = false) {
+    MizanTheme(darkTheme = true, dynamicColor = false) {
         AppDetailContent(uiState = preview, onBack = {})
     }
 }

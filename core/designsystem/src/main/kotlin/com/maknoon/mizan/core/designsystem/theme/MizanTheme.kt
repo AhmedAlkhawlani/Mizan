@@ -27,6 +27,10 @@ private val LightColorScheme = lightColorScheme(
     onError = Color.White,
 )
 
+/**
+ * The concept board's chrome: near-black background, graphite panels and hairline borders, so
+ * every screen — not only the Guard tab — reads as one dark instrument panel.
+ */
 private val DarkColorScheme = darkColorScheme(
     primary = MizanPalette.DataDown,
     onPrimary = Color(0xFF083344),
@@ -34,8 +38,22 @@ private val DarkColorScheme = darkColorScheme(
     onPrimaryContainer = Color(0xFFCFFAFE),
     secondary = MizanPalette.DataUp,
     onSecondary = Color(0xFF500724),
+    secondaryContainer = Color(0xFF831843),
+    onSecondaryContainer = Color(0xFFFCE7F3),
     tertiary = MizanPalette.Guard,
     onTertiary = Color(0xFF022C22),
+    background = Color(0xFF07090D),
+    onBackground = Color(0xFFF5F7FA),
+    surface = Color(0xFF11151C),
+    onSurface = Color(0xFFF5F7FA),
+    surfaceVariant = Color(0xFF161C25),
+    onSurfaceVariant = Color(0xFF8A93A6),
+    outline = Color(0x1FFFFFFF),
+    surfaceContainerLowest = Color(0xFF05070A),
+    surfaceContainerLow = Color(0xFF0B0E13),
+    surfaceContainer = Color(0xFF0B0E13),
+    surfaceContainerHigh = Color(0xFF11151C),
+    surfaceContainerHighest = Color(0xFF161C25),
     error = MizanPalette.Danger,
     onError = Color(0xFF450A0A),
 )

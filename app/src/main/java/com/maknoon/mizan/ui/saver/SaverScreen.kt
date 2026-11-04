@@ -37,7 +37,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -47,7 +46,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -75,6 +73,7 @@ import com.maknoon.mizan.core.domain.network.ResolvedNetwork
 import com.maknoon.mizan.core.domain.saver.BlockedTrafficSnapshot
 import com.maknoon.mizan.saver.SaverFailure
 import com.maknoon.mizan.ui.apps.AppIcon
+import com.maknoon.mizan.ui.component.AppTopBar
 import java.util.LinkedHashSet
 
 /**
@@ -85,9 +84,8 @@ import java.util.LinkedHashSet
  * claims protection is active unless the service reports an established tunnel, and the traffic
  * card only shows what the tunnel actually dropped.
  *
- * The section runs on a fixed dark brand palette even when the rest of the app follows Material
- * You: the concept board presents this tab as a dark, neon-accented shield, and the status
- * colours must keep their meaning over any wallpaper.
+ * The section draws its own header — shield, title and enable switch — because the app-wide
+ * chrome is now the concept board's dark palette, so nothing else needs to be scoped here.
  */
 @Composable
 fun SaverScreen(
@@ -138,86 +136,37 @@ fun SaverScreen(
         onPauseOrDispose { }
     }
 
-    GuardTheme {
-        SaverContent(
-            uiState = uiState,
-            consentGranted = consentGranted,
-            onRequestConsent = launchConsent,
-            onEnabledChange = { enabled ->
-                if (enabled) {
-                    if (consentGranted) {
-                        viewModel.setEnabled(true)
-                    } else {
-                        // Ask for consent first, then turn the switch on if the user grants it.
-                        pendingEnable = true
-                        launchConsent()
-                    }
+    SaverContent(
+        uiState = uiState,
+        consentGranted = consentGranted,
+        onRequestConsent = launchConsent,
+        onEnabledChange = { enabled ->
+            if (enabled) {
+                if (consentGranted) {
+                    viewModel.setEnabled(true)
                 } else {
-                    pendingEnable = false
-                    viewModel.setEnabled(false)
+                    // Ask for consent first, then turn the switch on if the user grants it.
+                    pendingEnable = true
+                    launchConsent()
                 }
-            },
-            onChooseApps = { showingPicker = true },
-            onAppBlockedChange = viewModel::setAppBlocked,
-            modifier = modifier,
+            } else {
+                pendingEnable = false
+                viewModel.setEnabled(false)
+            }
+        },
+        onChooseApps = { showingPicker = true },
+        onAppBlockedChange = viewModel::setAppBlocked,
+        modifier = modifier,
+    )
+
+    if (showingPicker) {
+        SaverAppPickerDialog(
+            apps = uiState.apps,
+            loading = uiState.appsLoading,
+            blockedPackages = uiState.blockedPackages,
+            onBlockedChange = viewModel::setAppBlocked,
+            onDismiss = { showingPicker = false },
         )
-
-        if (showingPicker) {
-            SaverAppPickerDialog(
-                apps = uiState.apps,
-                loading = uiState.appsLoading,
-                blockedPackages = uiState.blockedPackages,
-                onBlockedChange = viewModel::setAppBlocked,
-                onDismiss = { showingPicker = false },
-            )
-        }
-    }
-}
-
-/**
- * A fixed dark scheme for the Guard tab, matching the concept board: near-black background,
- * graphite panels and cyan/pink/green neon accents. The status colours come from [MizanTheme],
- * which this wraps so the shield stays green in both light and dark system themes.
- */
-private val GuardColorScheme = darkColorScheme(
-    primary = MizanPalette.DataDown,
-    onPrimary = Color(0xFF083344),
-    primaryContainer = Color(0xFF155E75),
-    onPrimaryContainer = Color(0xFFCFFAFE),
-    secondary = MizanPalette.DataUp,
-    onSecondary = Color(0xFF500724),
-    secondaryContainer = Color(0xFF831843),
-    onSecondaryContainer = Color(0xFFFCE7F3),
-    tertiary = MizanPalette.Guard,
-    onTertiary = Color(0xFF022C22),
-    background = Color(0xFF07090D),
-    onBackground = Color(0xFFF5F7FA),
-    surface = Color(0xFF11151C),
-    onSurface = Color(0xFFF5F7FA),
-    surfaceVariant = Color(0xFF161C25),
-    onSurfaceVariant = Color(0xFF8A93A6),
-    outline = Color(0x1FFFFFFF),
-    surfaceContainerLowest = Color(0xFF05070A),
-    surfaceContainerLow = Color(0xFF0B0E13),
-    surfaceContainer = Color(0xFF0B0E13),
-    surfaceContainerHigh = Color(0xFF11151C),
-    surfaceContainerHighest = Color(0xFF161C25),
-    error = MizanPalette.Danger,
-    onError = Color(0xFF450A0A),
-)
-
-/**
- * Scopes the Guard palette, including the app bars when [enabled] is set by the shell, so the
- * top bar and bottom navigation stay on the same near-black chrome as the screen behind them.
- */
-@Composable
-internal fun GuardTheme(enabled: Boolean = true, content: @Composable () -> Unit) {
-    if (!enabled) {
-        content()
-        return
-    }
-    MizanTheme(darkTheme = true, dynamicColor = false) {
-        MaterialTheme(colorScheme = GuardColorScheme, content = content)
     }
 }
 
@@ -234,92 +183,94 @@ internal fun SaverContent(
     val blockedApps = uiState.apps.filter { it.packageName in uiState.blockedPackages }
     val allowedApps = uiState.apps.filter { it.packageName !in uiState.blockedPackages }
 
-    LazyColumn(
+    Column(
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background),
-        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
-        item { SaverHero() }
-        item {
-            ConsentCard(
-                consentGranted = consentGranted,
-                onRequestConsent = onRequestConsent,
-            )
-        }
-        item {
-            StatusCard(
-                uiState = uiState,
-                consentGranted = consentGranted,
-                onEnabledChange = onEnabledChange,
-            )
-        }
-        item { NetworkCard(uiState = uiState) }
-        item { TrafficCard(uiState = uiState) }
+        GuardHeader(
+            uiState = uiState,
+            consentGranted = consentGranted,
+            onEnabledChange = onEnabledChange,
+        )
 
-        if (uiState.appsLoading) {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp),
+        ) {
+            item {
+                ConsentCard(
+                    consentGranted = consentGranted,
+                    onRequestConsent = onRequestConsent,
+                )
+            }
+            item { NetworkCard(uiState = uiState) }
+            item { TrafficCard(uiState = uiState) }
+
+            if (uiState.appsLoading) {
+                item {
+                    Text(
+                        text = stringResource(R.string.saver_picker_loading),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            } else {
+                item {
+                    AppsHeader(
+                        blockedCount = blockedApps.size,
+                        allowedCount = allowedApps.size,
+                    )
+                }
+                items(blockedApps, key = { it.packageName }) { app ->
+                    AppRow(
+                        app = app,
+                        blocked = true,
+                        onBlockedChange = onAppBlockedChange,
+                    )
+                }
+                items(allowedApps, key = { it.packageName }) { app ->
+                    AppRow(
+                        app = app,
+                        blocked = false,
+                        onBlockedChange = onAppBlockedChange,
+                    )
+                }
+            }
+
+            item {
+                AppsFooter(
+                    appsLoading = uiState.appsLoading,
+                    onChooseApps = onChooseApps,
+                )
+            }
+            item {
+                ExplanationCard(
+                    titleRes = R.string.saver_how_title,
+                    bodyRes = R.string.saver_how_body,
+                )
+            }
+            item {
+                ExplanationCard(
+                    titleRes = R.string.saver_privacy_title,
+                    bodyRes = R.string.saver_privacy_body,
+                )
+            }
+            item {
+                ExplanationCard(
+                    titleRes = R.string.saver_limits_title,
+                    bodyRes = R.string.saver_limits_body,
+                    warn = true,
+                )
+            }
             item {
                 Text(
-                    text = stringResource(R.string.saver_picker_loading),
-                    style = MaterialTheme.typography.bodyMedium,
+                    text = stringResource(R.string.saver_revoke_note),
+                    style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-        } else {
-            item {
-                AppsHeader(
-                    blockedCount = blockedApps.size,
-                    allowedCount = allowedApps.size,
-                )
-            }
-            items(blockedApps, key = { it.packageName }) { app ->
-                AppRow(
-                    app = app,
-                    blocked = true,
-                    onBlockedChange = onAppBlockedChange,
-                )
-            }
-            items(allowedApps, key = { it.packageName }) { app ->
-                AppRow(
-                    app = app,
-                    blocked = false,
-                    onBlockedChange = onAppBlockedChange,
-                )
-            }
-        }
-
-        item {
-            AppsFooter(
-                appsLoading = uiState.appsLoading,
-                onChooseApps = onChooseApps,
-            )
-        }
-        item {
-            ExplanationCard(
-                titleRes = R.string.saver_how_title,
-                bodyRes = R.string.saver_how_body,
-            )
-        }
-        item {
-            ExplanationCard(
-                titleRes = R.string.saver_privacy_title,
-                bodyRes = R.string.saver_privacy_body,
-            )
-        }
-        item {
-            ExplanationCard(
-                titleRes = R.string.saver_limits_title,
-                bodyRes = R.string.saver_limits_body,
-                warn = true,
-            )
-        }
-        item {
-            Text(
-                text = stringResource(R.string.saver_revoke_note),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
         }
     }
 }
@@ -346,75 +297,133 @@ private fun GuardCard(
     }
 }
 
+/**
+ * The Guard header is this screen's top bar (concept board): the shield, the title and the
+ * enable switch on one row, the live firewall status and the local-VPN note under them. Nothing
+ * else sits above it, so the switch is the first thing the operator reaches.
+ */
 @Composable
-private fun SaverHero(modifier: Modifier = Modifier) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(22.dp))
-            .background(
-                Brush.linearGradient(
-                    listOf(Color(0xFF16202B), Color(0xFF0B0F14)),
-                ),
-            )
-            .border(
-                width = 1.dp,
-                color = MaterialTheme.colorScheme.outline,
-                shape = RoundedCornerShape(22.dp),
-            )
-            .padding(18.dp),
-        horizontalArrangement = Arrangement.spacedBy(14.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Box(
+private fun GuardHeader(
+    uiState: SaverUiState,
+    consentGranted: Boolean,
+    onEnabledChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val blockedCount = uiState.blockedPackages.size
+    val canToggle = consentGranted && (blockedCount > 0 || uiState.enabled)
+    val failure = uiState.failure
+    val statusText = when {
+        failure != null -> stringResource(failure.messageRes())
+        uiState.active -> pluralStringResource(
+            R.plurals.saver_active_status,
+            uiState.activeBlockedCount,
+            uiState.activeBlockedCount,
+        )
+
+        uiState.unmetered -> stringResource(R.string.saver_status_unmetered)
+        uiState.enabled -> stringResource(R.string.saver_status_starting)
+        else -> stringResource(R.string.saver_status_stopped)
+    }
+    val statusColor = when {
+        failure != null -> MaterialTheme.colorScheme.error
+        uiState.active -> MaterialTheme.statusColors.guard
+        uiState.unmetered -> MaterialTheme.colorScheme.primary
+        else -> MaterialTheme.colorScheme.onSurfaceVariant
+    }
+    val hintRes = when {
+        !consentGranted -> R.string.saver_need_consent
+        blockedCount == 0 -> R.string.saver_need_apps
+        else -> null
+    }
+
+    AppTopBar(modifier = modifier) {
+        Row(
             modifier = Modifier
-                .size(46.dp)
-                .clip(RoundedCornerShape(14.dp))
-                .background(MizanPalette.Guard.copy(alpha = 0.14f))
-                .border(
-                    width = 1.dp,
-                    color = MizanPalette.Guard.copy(alpha = 0.35f),
-                    shape = RoundedCornerShape(14.dp),
+                .fillMaxWidth()
+                .toggleable(
+                    value = uiState.enabled,
+                    enabled = canToggle,
+                    role = Role.Switch,
+                    onValueChange = onEnabledChange,
                 ),
-            contentAlignment = Alignment.Center,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Icon(
-                painter = painterResource(R.drawable.ic_shield),
-                contentDescription = null,
-                modifier = Modifier.size(24.dp),
-                tint = MizanPalette.Guard,
+            Box(
+                modifier = Modifier
+                    .size(44.dp)
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(MizanPalette.Guard.copy(alpha = 0.14f))
+                    .border(
+                        width = 1.dp,
+                        color = MizanPalette.Guard.copy(alpha = 0.35f),
+                        shape = RoundedCornerShape(14.dp),
+                    ),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_shield),
+                    contentDescription = null,
+                    modifier = Modifier.size(22.dp),
+                    tint = MizanPalette.Guard,
+                )
+            }
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(2.dp),
+            ) {
+                Text(
+                    text = stringResource(R.string.saver_title),
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.semantics { heading() },
+                )
+                Text(
+                    text = stringResource(R.string.saver_subtitle),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+            Switch(
+                checked = uiState.enabled,
+                onCheckedChange = null,
+                enabled = canToggle,
             )
         }
-        Column(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(3.dp),
-        ) {
+        StatusLine(text = statusText, color = statusColor)
+        if (hintRes != null) {
             Text(
-                text = stringResource(R.string.saver_title),
-                style = MaterialTheme.typography.titleLarge,
-            )
-            Text(
-                text = stringResource(R.string.saver_subtitle),
+                text = stringResource(hintRes),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
             )
         }
-        Text(
-            text = stringResource(R.string.saver_local_vpn_pill),
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier
-                .clip(RoundedCornerShape(999.dp))
-                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.10f))
-                .border(
-                    width = 1.dp,
-                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.25f),
-                    shape = RoundedCornerShape(999.dp),
-                )
-                .padding(horizontal = 9.dp, vertical = 4.dp),
-        )
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = stringResource(R.string.saver_local_vpn_pill),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(999.dp))
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.10f))
+                    .border(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.25f),
+                        shape = RoundedCornerShape(999.dp),
+                    )
+                    .padding(horizontal = 9.dp, vertical = 4.dp),
+            )
+            Text(
+                text = stringResource(R.string.saver_vpn_note),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.weight(1f),
+            )
+        }
     }
 }
 
@@ -469,101 +478,6 @@ private fun ConsentCard(
             ) {
                 Text(text = stringResource(R.string.saver_consent_action))
             }
-        }
-    }
-}
-
-@Composable
-private fun StatusCard(
-    uiState: SaverUiState,
-    consentGranted: Boolean,
-    onEnabledChange: (Boolean) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val blockedCount = uiState.blockedPackages.size
-    val canToggle = consentGranted && (blockedCount > 0 || uiState.enabled)
-    val failure = uiState.failure
-    val statusText = when {
-        failure != null -> stringResource(failure.messageRes())
-        uiState.active -> pluralStringResource(
-            R.plurals.saver_active_status,
-            uiState.activeBlockedCount,
-            uiState.activeBlockedCount,
-        )
-
-        uiState.unmetered -> stringResource(R.string.saver_status_unmetered)
-        uiState.enabled -> stringResource(R.string.saver_status_starting)
-        else -> stringResource(R.string.saver_status_stopped)
-    }
-    val statusColor = when {
-        failure != null -> MaterialTheme.colorScheme.error
-        uiState.active -> MaterialTheme.statusColors.guard
-        uiState.unmetered -> MaterialTheme.colorScheme.primary
-        else -> MaterialTheme.colorScheme.onSurfaceVariant
-    }
-    val hintRes = when {
-        !consentGranted -> R.string.saver_need_consent
-        blockedCount == 0 -> R.string.saver_need_apps
-        else -> null
-    }
-
-    GuardCard(modifier = modifier) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .toggleable(
-                    value = uiState.enabled,
-                    enabled = canToggle,
-                    role = Role.Switch,
-                    onValueChange = onEnabledChange,
-                ),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(2.dp),
-            ) {
-                Text(
-                    text = stringResource(R.string.saver_firewall_title),
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.semantics { heading() },
-                )
-                Text(
-                    text = stringResource(R.string.saver_firewall_switch),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-            Switch(
-                checked = uiState.enabled,
-                onCheckedChange = null,
-                enabled = canToggle,
-            )
-        }
-        StatusLine(text = statusText, color = statusColor)
-        if (hintRes != null) {
-            Text(
-                text = stringResource(hintRes),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Icon(
-                painter = painterResource(R.drawable.ic_shield),
-                contentDescription = null,
-                modifier = Modifier.size(16.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Text(
-                text = stringResource(R.string.saver_vpn_note),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
         }
     }
 }
@@ -1209,7 +1123,7 @@ private fun SaverFailure.messageRes(): Int = when (this) {
 @Preview(name = "Guard — consent needed", locale = "ar", showBackground = true)
 @Composable
 private fun SaverConsentPreview() {
-    GuardTheme {
+    MizanTheme(darkTheme = true, dynamicColor = false) {
         SaverContent(
             uiState = SaverUiState(
                 network = ResolvedNetwork(
@@ -1237,7 +1151,7 @@ private fun SaverActivePreview() {
         SaverApp(packageName = "com.example.social", label = "شبكة اجتماعية"),
     )
     val blocked = apps.mapTo(LinkedHashSet()) { it.packageName }
-    GuardTheme {
+    MizanTheme(darkTheme = true, dynamicColor = false) {
         SaverContent(
             uiState = SaverUiState(
                 enabled = true,

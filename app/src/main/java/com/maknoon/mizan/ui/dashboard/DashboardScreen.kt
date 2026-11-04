@@ -1,33 +1,46 @@
 package com.maknoon.mizan.ui.dashboard
 
 import android.Manifest
+import android.app.Application
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -38,15 +51,28 @@ import com.maknoon.mizan.R
 import com.maknoon.mizan.core.designsystem.theme.MizanTheme
 import com.maknoon.mizan.core.designsystem.theme.statusColors
 import com.maknoon.mizan.monitoring.MonitoringControl
+import com.maknoon.mizan.ui.component.AppTopBar
+import com.maknoon.mizan.ui.component.AppTopBarRow
+
+private val NeonDown = Color(0xFF00E5FF)
+private val NeonUp = Color(0xFFFF4081)
 
 /**
  * The live dashboard from docs/04: download and upload rates, today's total, the status of the
  * monitor and a single start/stop control.
+ *
+ * The header belongs to the screen (concept board): the app name, a glowing metered/unmetered
+ * chip and the budget-settings shortcut replace the old global top bar.
  */
 @Composable
 fun DashboardScreen(
     modifier: Modifier = Modifier,
-    viewModel: DashboardViewModel = viewModel(),
+    onOpenBudget: () -> Unit = {},
+    viewModel: DashboardViewModel = viewModel(
+        factory = DashboardViewModel.factory(
+            LocalContext.current.applicationContext as Application,
+        ),
+    ),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -70,6 +96,7 @@ fun DashboardScreen(
             }
         },
         onStop = { MonitoringControl.stop(context) },
+        onOpenBudget = onOpenBudget,
         modifier = modifier,
     )
 }
@@ -80,29 +107,79 @@ internal fun DashboardContent(
     onStart: () -> Unit,
     onStop: () -> Unit,
     modifier: Modifier = Modifier,
+    onOpenBudget: () -> Unit = {},
 ) {
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(horizontal = 24.dp, vertical = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        SpeedCard(uiState)
-        TodayCard(uiState)
-        StatusText(uiState)
-        Spacer(Modifier.weight(1f))
-        Button(
-            onClick = if (uiState.running) onStop else onStart,
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(min = 48.dp),
-        ) {
-            Text(
-                text = stringResource(
-                    if (uiState.running) R.string.dashboard_stop else R.string.dashboard_start,
-                ),
-            )
+    Column(modifier = modifier.fillMaxSize()) {
+        AppTopBar {
+            AppTopBarRow {
+                Text(
+                    text = stringResource(R.string.app_name),
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.ExtraBold,
+                )
+                Spacer(Modifier.size(8.dp))
+                NetworkChip(metered = uiState.networkMetered)
+                Spacer(Modifier.weight(1f))
+                IconButton(onClick = onOpenBudget) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_settings),
+                        contentDescription = stringResource(R.string.dashboard_budget_settings),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
         }
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 20.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            SpeedCard(uiState)
+            if (uiState.dailyBudgetLimit != null) {
+                BudgetBarCard(uiState)
+            }
+            TodayCard(uiState)
+            StatusText(uiState)
+            Spacer(Modifier.weight(1f))
+            Button(
+                onClick = if (uiState.running) onStop else onStart,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 48.dp),
+            ) {
+                Text(
+                    text = stringResource(
+                        if (uiState.running) R.string.dashboard_stop else R.string.dashboard_start,
+                    ),
+                )
+            }
+        }
+    }
+}
+
+/** docs/02 §4.6: the chip reports the resolved profile of the current default network. */
+@Composable
+private fun NetworkChip(metered: Boolean?, modifier: Modifier = Modifier) {
+    val (labelRes, tint) = when (metered) {
+        true -> R.string.network_chip_metered to MaterialTheme.statusColors.warning
+        false -> R.string.network_chip_unmetered to MaterialTheme.statusColors.guard
+        null -> R.string.saver_network_disconnected to MaterialTheme.colorScheme.onSurfaceVariant
+    }
+    val shape = RoundedCornerShape(999.dp)
+    Box(
+        modifier = modifier
+            .border(1.dp, tint.copy(alpha = 0.45f), shape)
+            .background(tint.copy(alpha = 0.10f), shape)
+            .padding(horizontal = 12.dp, vertical = 6.dp),
+    ) {
+        Text(
+            text = stringResource(labelRes),
+            style = MaterialTheme.typography.labelSmall,
+            fontWeight = FontWeight.SemiBold,
+            color = tint,
+        )
     }
 }
 
@@ -122,14 +199,14 @@ private fun SpeedCard(uiState: DashboardUiState, modifier: Modifier = Modifier) 
                 label = stringResource(R.string.dashboard_speed_down),
                 arrow = "↓",
                 value = uiState.downSpeed,
-                tint = MaterialTheme.statusColors.dataDown,
+                tint = NeonDown,
                 modifier = Modifier.weight(1f),
             )
             SpeedFigure(
                 label = stringResource(R.string.dashboard_speed_up),
                 arrow = "↑",
                 value = uiState.upSpeed,
-                tint = MaterialTheme.statusColors.dataUp,
+                tint = NeonUp,
                 modifier = Modifier.weight(1f),
             )
         }
@@ -141,7 +218,7 @@ private fun SpeedFigure(
     label: String,
     arrow: String,
     value: String,
-    tint: androidx.compose.ui.graphics.Color,
+    tint: Color,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
@@ -152,10 +229,80 @@ private fun SpeedFigure(
         )
         Text(
             text = value,
-            style = MaterialTheme.typography.headlineMedium,
+            style = MaterialTheme.typography.headlineLarge,
+            fontWeight = FontWeight.ExtraBold,
             color = tint,
             textAlign = TextAlign.Center,
         )
+    }
+}
+
+/** The concept board's glowing budget bar: today's total against the enabled daily limit. */
+@Composable
+private fun BudgetBarCard(uiState: DashboardUiState, modifier: Modifier = Modifier) {
+    val limit = uiState.dailyBudgetLimit ?: return
+    val fraction = uiState.dailyBudgetFraction.coerceIn(0f, 1f)
+    val fill = Brush.horizontalGradient(
+        listOf(MaterialTheme.colorScheme.primary, NeonDown),
+    )
+    val barShape = RoundedCornerShape(999.dp)
+
+    Card(modifier = modifier
+        .fillMaxWidth()
+        .semantics(mergeDescendants = true) {}) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Text(
+                    text = stringResource(R.string.dashboard_today),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Text(
+                    text = stringResource(
+                        R.string.dashboard_budget_line,
+                        uiState.todayTotal,
+                        limit,
+                    ),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(10.dp),
+            ) {
+                // A blurred duplicate behind the bar produces the neon glow from the board.
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(fraction)
+                        .fillMaxHeight()
+                        .blur(6.dp)
+                        .background(fill),
+                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(barShape)
+                        .background(Color.White.copy(alpha = 0.07f)),
+                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(fraction)
+                        .fillMaxHeight()
+                        .clip(barShape)
+                        .background(fill),
+                )
+            }
+        }
     }
 }
 
@@ -252,7 +399,7 @@ private fun needsNotificationPermission(context: Context): Boolean =
 @Preview(name = "Dashboard — running, Arabic", locale = "ar", showBackground = true)
 @Composable
 private fun DashboardRunningPreview() {
-    MizanTheme(dynamicColor = false) {
+    MizanTheme(darkTheme = true, dynamicColor = false) {
         DashboardContent(
             uiState = DashboardUiState(
                 running = true,
@@ -262,6 +409,9 @@ private fun DashboardRunningPreview() {
                 todayTotal = "1.24 GB",
                 mobileTotal = "120 MB",
                 wifiTotal = "1.12 GB",
+                networkMetered = true,
+                dailyBudgetLimit = "2.00 GB",
+                dailyBudgetFraction = 0.62f,
             ),
             onStart = {},
             onStop = {},

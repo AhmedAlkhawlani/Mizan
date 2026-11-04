@@ -1,20 +1,13 @@
 package com.maknoon.mizan.ui.saver
 
 import android.app.Application
-import android.net.ConnectivityManager
-import android.net.Network
-import android.net.NetworkCapabilities
-import android.net.NetworkRequest
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.maknoon.mizan.core.data.db.MizanDatabaseProvider
-import com.maknoon.mizan.core.data.network.NetworkProfilesRepository
 import com.maknoon.mizan.core.data.settings.MizanSettings
-import com.maknoon.mizan.core.domain.network.NetworkSnapshot
 import com.maknoon.mizan.core.domain.network.ResolvedNetwork
 import com.maknoon.mizan.core.domain.saver.BlockedTrafficSnapshot
-import com.maknoon.mizan.core.platform.network.AndroidNetworkStateSource
 import com.maknoon.mizan.core.platform.usage.AndroidInstalledAppsSource
+import com.maknoon.mizan.network.ResolvedNetworkHolder
 import com.maknoon.mizan.saver.SaverControl
 import com.maknoon.mizan.saver.SaverFailure
 import com.maknoon.mizan.saver.SaverStateHolder
@@ -72,37 +65,12 @@ class SaverViewModel(application: Application) : AndroidViewModel(application) {
     private val settings = MizanSettings(app)
     private val installed = MutableStateFlow(InstalledApps())
 
-    private val networkSource = AndroidNetworkStateSource(app)
-    private val networkProfiles = NetworkProfilesRepository(
-        MizanDatabaseProvider.networkProfileDao(app),
-    )
-    private val network = MutableStateFlow<ResolvedNetwork?>(null)
-    private val connectivityManager = app.getSystemService(ConnectivityManager::class.java)
-
-    @Volatile
-    private var lastSnapshot: NetworkSnapshot? = null
-
-    private val networkRequest = NetworkRequest.Builder()
-        .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
-        .addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR)
-        .addTransportType(NetworkCapabilities.TRANSPORT_ETHERNET)
-        .build()
-
-    private val networkCallback = object : ConnectivityManager.NetworkCallback() {
-        override fun onAvailable(network: Network) = refreshNetworkIfChanged()
-
-        override fun onLost(network: Network) = refreshNetworkIfChanged()
-
-        override fun onCapabilitiesChanged(network: Network, capabilities: NetworkCapabilities) =
-            refreshNetworkIfChanged()
-    }
-
     // Read-then-write of a String set is not atomic; every selection change shares one lock.
     private val writeMutex = Mutex()
     private var applyJob: Job? = null
 
     private val networkAndTraffic = combine(
-        network,
+        ResolvedNetworkHolder.state,
         SaverTrafficHolder.snapshot,
     ) { resolved, traffic -> resolved to traffic }
 
@@ -135,8 +103,8 @@ class SaverViewModel(application: Application) : AndroidViewModel(application) {
     )
 
     init {
-        connectivityManager?.registerNetworkCallback(networkRequest, networkCallback)
-        refreshNetwork()
+        ResolvedNetworkHolder.start(app)
+        ResolvedNetworkHolder.refresh()
 
         viewModelScope.launch {
             val self = app.packageName
@@ -153,31 +121,8 @@ class SaverViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    override fun onCleared() {
-        runCatching { connectivityManager?.unregisterNetworkCallback(networkCallback) }
-        super.onCleared()
-    }
-
     /** Re-reads the connection when the screen resumes, in case the callback was too early. */
-    fun refreshNetwork() {
-        val snapshot = snapshotOrNull() ?: return
-        lastSnapshot = snapshot
-        viewModelScope.launch {
-            network.value = networkProfiles.resolve(snapshot)
-        }
-    }
-
-    private fun refreshNetworkIfChanged() {
-        val snapshot = snapshotOrNull() ?: return
-        if (snapshot == lastSnapshot && network.value != null) return
-        lastSnapshot = snapshot
-        viewModelScope.launch {
-            network.value = networkProfiles.resolve(snapshot)
-        }
-    }
-
-    private fun snapshotOrNull(): NetworkSnapshot? =
-        runCatching { networkSource.snapshot() }.getOrNull()
+    fun refreshNetwork() = ResolvedNetworkHolder.refresh()
 
     fun setEnabled(enabled: Boolean) {
         viewModelScope.launch {

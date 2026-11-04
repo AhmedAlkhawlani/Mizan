@@ -18,6 +18,10 @@ data class DashboardUiState(
     val mobileTotal: String = UNKNOWN,
     val wifiTotal: String = UNKNOWN,
     val partial: Boolean = false,
+    /** null while the connection is unknown or absent; the chip then says so instead of guessing. */
+    val networkMetered: Boolean? = null,
+    val dailyBudgetLimit: String? = null,
+    val dailyBudgetFraction: Float = 0f,
 ) {
     companion object {
         /** docs/02 §9: an unavailable figure is shown as a dash, never guessed. */

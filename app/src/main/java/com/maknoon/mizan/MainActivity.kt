@@ -2,8 +2,10 @@ package com.maknoon.mizan
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.collectAsState
@@ -40,7 +42,11 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        // The chrome is dark in every system theme, so the bar icons stay light unconditionally.
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
+            navigationBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
+        )
         val stoppedByShortcut = handleShortcutIntent(intent)
         if (savedInstanceState == null) {
             // A stop shortcut has just written "off"; resuming in the same breath would race
@@ -53,7 +59,9 @@ class MainActivity : ComponentActivity() {
             AppUsageSyncScheduler.syncNow(applicationContext)
         }
         setContent {
-            MizanTheme {
+            // The concept board's identity is dark-only: one neon instrument panel across the
+            // app, independent of the wallpaper and of the system light/dark switch.
+            MizanTheme(darkTheme = true, dynamicColor = false) {
                 val destination by shortcutDestination.collectAsState()
                 MizanApp(
                     shortcutDestination = destination,

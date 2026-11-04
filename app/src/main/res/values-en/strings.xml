@@ -27,13 +27,17 @@
     <string name="dashboard_status_unavailable">This device does not report network counters.</string>
     <string name="dashboard_start">Start measuring</string>
     <string name="dashboard_stop">Stop measuring</string>
+    <string name="dashboard_budget_settings">Budget settings</string>
+    <string name="dashboard_budget_line">%1$s of %2$s</string>
+    <string name="network_chip_metered">Metered</string>
+    <string name="network_chip_unmetered">Unmetered</string>
     <string name="apps_access_title">Usage access</string>
     <string name="apps_access_body">To measure each app\u2019s data use, Mizan needs the Usage access permission from system settings. Android grants broader access than that (which apps you use), but Mizan reads byte counters only and never sends anything off the device.</string>
     <string name="apps_access_action">Open access settings</string>
     <string name="apps_period_today">Today</string>
     <string name="apps_period_week">7 days</string>
     <string name="apps_period_cycle">Cycle</string>
-    <string name="apps_recorded_total">Total for listed apps %1$s</string>
+    <string name="apps_total_label">Total for listed apps</string>
     <string name="apps_last_sync">Last sync %1$s</string>
     <string name="apps_sync_note">Figures come from Android\u2019s counters as of the last sync and can trail the current moment by minutes.</string>
     <string name="apps_empty_title">No data yet</string>
@@ -68,8 +72,6 @@
     <string name="saver_limits_title">Limits to know</string>
     <string name="saver_limits_body">One VPN at a time: enabling Mizan\u2019s guard disconnects any other VPN. A VPN icon appears in the status bar. Blocked apps are blocked on metered networks only (usually mobile); on unmetered Wi-Fi they work normally.</string>
     <string name="saver_revoke_note">You can revoke consent from the system\u2019s VPN settings at any time.</string>
-    <string name="saver_firewall_title">Firewall</string>
-    <string name="saver_firewall_switch">Keep blocked apps off the network</string>
     <string name="saver_status_starting">Starting protection…</string>
     <string name="saver_status_stopped">Protection is off.</string>
     <string name="saver_status_unmetered">On an unmetered network — blocked apps are allowed for now.</string>
@@ -151,11 +153,13 @@
     <string name="history_cycle_range">%1$s – %2$s</string>
     <string name="history_cycle_total">Cycle total</string>
     <string name="history_cycle_start_day">Cycle start day</string>
+    <string name="history_cycle_edit">Edit billing cycle</string>
+    <string name="history_cycle_summary">%1$s · total %2$s</string>
     <string name="cycle_start_decrease">Earlier cycle start day</string>
     <string name="cycle_start_increase">Later cycle start day</string>
     <string name="history_cycle_partial">Not every elapsed day of the cycle was observed; the total covers recorded days only.</string>
 
-    <string name="settings_open">Settings</string>
+    <string name="common_done">Done</string>
     <string name="budget_back">Back</string>
     <string name="budget_title">Budget and cycle</string>
     <string name="budget_subtitle">A daily and a monthly cap for the whole device, plus the billing-cycle start day the monthly budget follows.</string>

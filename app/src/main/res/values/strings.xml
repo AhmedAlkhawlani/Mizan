@@ -29,13 +29,17 @@
     <string name="dashboard_status_unavailable">تعذّر قراءة عدّادات الشبكة على هذا الجهاز.</string>
     <string name="dashboard_start">بدء القياس</string>
     <string name="dashboard_stop">إيقاف القياس</string>
+    <string name="dashboard_budget_settings">إعدادات الميزانية</string>
+    <string name="dashboard_budget_line">%1$s من %2$s</string>
+    <string name="network_chip_metered">مقنّن</string>
+    <string name="network_chip_unmetered">غير مقنّن</string>
     <string name="apps_access_title">الوصول إلى بيانات الاستخدام</string>
     <string name="apps_access_body">ليعرف ميزان استهلاك كل تطبيق، يحتاج إذن «الوصول إلى بيانات الاستخدام» من إعدادات النظام. يمنح هذا الإذن أندرويد صلاحية أوسع (معرفة التطبيقات التي تستخدمها)، لكن ميزان لا يقرأ إلا عدّادات البايتات، ولا يرسل شيئاً خارج الجهاز.</string>
     <string name="apps_access_action">فتح إعدادات الوصول</string>
     <string name="apps_period_today">اليوم</string>
     <string name="apps_period_week">7 أيام</string>
     <string name="apps_period_cycle">الدورة</string>
-    <string name="apps_recorded_total">مجموع التطبيقات المدرجة %1$s</string>
+    <string name="apps_total_label">مجموع التطبيقات المدرجة</string>
     <string name="apps_last_sync">آخر مزامنة %1$s</string>
     <string name="apps_sync_note">الأرقام من عدّادات أندرويد كما كانت عند آخر مزامنة، وقد تتأخر دقائق عن اللحظة الحالية.</string>
     <string name="apps_empty_title">لا توجد بيانات بعد</string>
@@ -70,8 +74,6 @@
     <string name="saver_limits_title">قيود يجب معرفتها</string>
     <string name="saver_limits_body">VPN واحد فقط: تفعيل حماية ميزان يقطع أي VPN آخر. ستظهر أيقونة VPN في شريط الحالة. التطبيقات المحظورة تُحجب على الشبكات المقنّنة فقط (الخلوي غالباً)؛ على Wi-Fi غير المقنّن تعمل طبيعياً.</string>
     <string name="saver_revoke_note">يمكنك سحب الموافقة من إعدادات VPN في النظام في أي وقت.</string>
-    <string name="saver_firewall_title">جدار الحماية</string>
-    <string name="saver_firewall_switch">منع التطبيقات المحظورة من الشبكة</string>
     <string name="saver_status_starting">جارٍ تشغيل الحماية…</string>
     <string name="saver_status_stopped">الحماية متوقفة.</string>
     <string name="saver_status_unmetered">متصل بشبكة غير مقنّنة — التطبيقات المحظورة مسموحة الآن.</string>
@@ -161,11 +163,13 @@
     <string name="history_cycle_range">%1$s – %2$s</string>
     <string name="history_cycle_total">إجمالي الدورة</string>
     <string name="history_cycle_start_day">يوم بداية الدورة</string>
+    <string name="history_cycle_edit">تعديل دورة الفاتورة</string>
+    <string name="history_cycle_summary">%1$s · الإجمالي %2$s</string>
     <string name="cycle_start_decrease">تقديم بداية الدورة يوماً واحداً</string>
     <string name="cycle_start_increase">تأخير بداية الدورة يوماً واحداً</string>
     <string name="history_cycle_partial">لم تُراقَب كل أيام الدورة المنقضية؛ الإجمالي يغطي الأيام المسجَّلة فقط.</string>
 
-    <string name="settings_open">الإعدادات</string>
+    <string name="common_done">تم</string>
     <string name="budget_back">رجوع</string>
     <string name="budget_title">الميزانية والدورة</string>
     <string name="budget_subtitle">سقف لاستهلاك الجهاز يومياً وشهرياً، ويوم بداية دورة الفاتورة التي تتبعها الميزانية الشهرية.</string>

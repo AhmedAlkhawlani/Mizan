@@ -1,19 +1,17 @@
 package com.maknoon.mizan.core.domain.format
 
-import java.util.Locale
-
 /**
- * The two lines of the status-bar speed icon: a value short enough for a 24dp slot and a
- * single-letter unit, for example `45` + `K` or `2.4` + `M`.
+ * The two glyphs of the status-bar speed icon: a whole number and a single-letter unit,
+ * for example `45` + `K` or `345` + `B`.
  */
 data class SpeedBadge(val value: String, val unit: String)
 
 /**
  * Compresses a transfer rate into the fewest glyphs that still read as a speed.
  *
- * The notification icon is drawn as a bitmap, so the value must fit roughly three characters:
- * two decimals only below 10, a whole number from 10 up, and a unit carry at 999.5 so the icon
- * never shows `1000 K`. Units are letters instead of `KB/s` because the icon is too narrow.
+ * The badge is a few pixels tall in the status bar, so it carries a whole number and one unit
+ * letter: no decimal point and no grouping separator, because at that size a dot reads as a
+ * smudge rather than a figure. A unit carry at 999.5 keeps `1000 K` off the bar.
  */
 object SpeedBadgeFormatter {
 
@@ -30,12 +28,7 @@ object SpeedBadgeFormatter {
             value = 1.0
             unit++
         }
-        val text = when {
-            unit == 0 -> value.toLong().toString()
-            value >= 10.0 -> value.toLong().toString()
-            else -> trimTrailingZero(String.format(Locale.US, "%.1f", value))
-        }
-        return SpeedBadge(text, UNITS[unit])
+        return SpeedBadge(value.toLong().toString(), UNITS[unit])
     }
 
     /**
@@ -50,7 +43,4 @@ object SpeedBadgeFormatter {
         val badge = of(bytesPerSecond)
         return badge.takeIf { showBytes || it.unit != UNITS.first() }
     }
-
-    private fun trimTrailingZero(text: String): String =
-        if (text.endsWith(".0")) text.dropLast(2) else text
 }

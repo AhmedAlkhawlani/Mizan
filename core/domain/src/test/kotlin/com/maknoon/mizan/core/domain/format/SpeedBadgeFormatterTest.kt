@@ -21,13 +21,21 @@ class SpeedBadgeFormatterTest {
     }
 
     @Test
-    fun `megabytes below ten keep one decimal`() {
-        assertThat(SpeedBadgeFormatter.of(2_400_000.0)).isEqualTo(SpeedBadge("2.4", "M"))
+    fun `megabytes round down to a whole number`() {
+        assertThat(SpeedBadgeFormatter.of(2_400_000.0)).isEqualTo(SpeedBadge("2", "M"))
+        assertThat(SpeedBadgeFormatter.of(2_900_000.0)).isEqualTo(SpeedBadge("2", "M"))
     }
 
     @Test
-    fun `a whole megabyte drops the decimal`() {
-        assertThat(SpeedBadgeFormatter.of(2_000_000.0)).isEqualTo(SpeedBadge("2", "M"))
+    fun `sub-kilobyte rates stay in bytes`() {
+        assertThat(SpeedBadgeFormatter.of(345.0)).isEqualTo(SpeedBadge("345", "B"))
+    }
+
+    @Test
+    fun `a badge never carries a decimal point or a grouping separator`() {
+        val rates = listOf(0.0, 9.0, 345.0, 999.6, 45_000.0, 2_400_000.0, 12_000_000_000.0)
+        assertThat(rates.map { SpeedBadgeFormatter.of(it).value })
+            .containsExactly("0", "9", "345", "1", "45", "2", "12").inOrder()
     }
 
     @Test
@@ -63,7 +71,7 @@ class SpeedBadgeFormatterTest {
         assertThat(SpeedBadgeFormatter.iconBadge(45_000.0, showBytes = false))
             .isEqualTo(SpeedBadge("45", "K"))
         assertThat(SpeedBadgeFormatter.iconBadge(2_400_000.0, showBytes = false))
-            .isEqualTo(SpeedBadge("2.4", "M"))
+            .isEqualTo(SpeedBadge("2", "M"))
     }
 
     @Test

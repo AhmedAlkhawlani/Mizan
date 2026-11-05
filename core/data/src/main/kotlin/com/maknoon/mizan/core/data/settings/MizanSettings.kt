@@ -113,6 +113,22 @@ class MizanSettings(context: Context) {
         store.edit { preferences -> preferences[STATUS_BAR_SHOW_BYTES] = showBytes }
     }
 
+    /**
+     * Which template the badge draws. Raised is the default because it gives the digits the full
+     * height of the slot; an unknown stored value falls back to it rather than crashing.
+     */
+    val statusBarBadgeStyle: Flow<SpeedBadgeStyle> = store.data
+        .map { preferences ->
+            preferences[STATUS_BAR_BADGE_STYLE]
+                ?.let { stored -> SpeedBadgeStyle.entries.firstOrNull { it.name == stored } }
+                ?: SpeedBadgeStyle.RAISED
+        }
+        .distinctUntilChanged()
+
+    suspend fun setStatusBarBadgeStyle(style: SpeedBadgeStyle) {
+        store.edit { preferences -> preferences[STATUS_BAR_BADGE_STYLE] = style.name }
+    }
+
     private companion object {
         val MONITORING_ENABLED = booleanPreferencesKey("monitoring_enabled")
         val CYCLE_START_DAY = intPreferencesKey("cycle_start_day")
@@ -121,6 +137,7 @@ class MizanSettings(context: Context) {
         val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
         val STATUS_BAR_SPEED_MODE = stringPreferencesKey("status_bar_speed_mode")
         val STATUS_BAR_SHOW_BYTES = booleanPreferencesKey("status_bar_show_bytes")
+        val STATUS_BAR_BADGE_STYLE = stringPreferencesKey("status_bar_badge_style")
         const val DEFAULT_CYCLE_START_DAY = BillingCycleCalculator.MIN_START_DAY
     }
 }

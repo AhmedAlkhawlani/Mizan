@@ -190,6 +190,10 @@
     <string name="settings_status_icon_off">بدون رقم (أيقونة ثابتة)</string>
     <string name="settings_status_icon_bytes">إظهار السرعة بالبايت</string>
     <string name="settings_status_icon_bytes_note">عند الإيقاف يبقى الرقم ساكناً حتى تتجاوز السرعة الكيلوبايت، فلا ينبض الشريط خلف حركة صغيرة في الخلفية.</string>
+    <string name="settings_status_icon_style_title">شكل العدّاد</string>
+    <string name="settings_status_icon_style_raised">الوحدة مرفوعة بجانب الرقم</string>
+    <string name="settings_status_icon_style_under">الوحدة تحت الرقم</string>
+    <string name="settings_status_icon_style_uniform">الرقم والوحدة بحجم واحد</string>
 
     <string name="history_export_title">تصدير البيانات</string>
     <string name="history_export_body">ملف CSV بكل الأيام المسجّلة. يختار النظام مكان الحفظ، فلا يحتاج التطبيق إلى صلاحية تخزين.</string>

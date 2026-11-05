@@ -10,6 +10,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.maknoon.mizan.core.data.db.BudgetEntity
 import com.maknoon.mizan.core.data.db.MizanDatabaseProvider
 import com.maknoon.mizan.core.data.settings.MizanSettings
+import com.maknoon.mizan.core.data.settings.SpeedBadgeStyle
 import com.maknoon.mizan.core.data.settings.StatusBarSpeedMode
 import com.maknoon.mizan.core.domain.budget.BudgetPeriod
 import com.maknoon.mizan.core.domain.budget.BudgetScope
@@ -54,9 +55,12 @@ class BudgetViewModel(application: Application) : AndroidViewModel(application) 
         ) { budgets, cycleStartDay, daily, monthly, statusBarIcon ->
             budgetUiState(budgets, cycleStartDay, daily, monthly, statusBarIcon)
         },
-        // combine tops out at five flows, so the bytes switch joins the state afterwards.
+        // combine tops out at five flows, so the two icon settings join the state afterwards.
         settings.statusBarShowBytes,
-    ) { state, showBytes -> state.copy(statusBarShowBytes = showBytes) }.stateIn(
+        settings.statusBarBadgeStyle,
+    ) { state, showBytes, style ->
+        state.copy(statusBarShowBytes = showBytes, statusBarStyle = style)
+    }.stateIn(
         scope = viewModelScope,
         // Keep the last value briefly so a rotation does not flash an empty screen.
         started = SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS),
@@ -92,6 +96,10 @@ class BudgetViewModel(application: Application) : AndroidViewModel(application) 
 
     fun setStatusBarShowBytes(showBytes: Boolean) {
         viewModelScope.launch { settings.setStatusBarShowBytes(showBytes) }
+    }
+
+    fun setStatusBarBadgeStyle(style: SpeedBadgeStyle) {
+        viewModelScope.launch { settings.setStatusBarBadgeStyle(style) }
     }
 
     /** An unparsable keystroke is ignored: the stored limit keeps its last valid value. */

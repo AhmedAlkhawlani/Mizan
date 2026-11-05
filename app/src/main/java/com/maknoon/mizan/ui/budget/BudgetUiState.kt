@@ -1,6 +1,7 @@
 package com.maknoon.mizan.ui.budget
 
 import com.maknoon.mizan.core.data.db.BudgetEntity
+import com.maknoon.mizan.core.data.settings.SpeedBadgeStyle
 import com.maknoon.mizan.core.data.settings.StatusBarSpeedMode
 import com.maknoon.mizan.core.domain.budget.BudgetPeriod
 import com.maknoon.mizan.core.domain.budget.BudgetScope
@@ -21,6 +22,7 @@ data class BudgetUiState(
     val cycleStartDay: Int = BillingCycleCalculator.MIN_START_DAY,
     val statusBarIcon: StatusBarSpeedMode = StatusBarSpeedMode.DOWNLOAD,
     val statusBarShowBytes: Boolean = false,
+    val statusBarStyle: SpeedBadgeStyle = SpeedBadgeStyle.RAISED,
 )
 
 /**

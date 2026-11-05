@@ -7,71 +7,119 @@ import android.graphics.Paint
 import android.graphics.Typeface
 import android.util.LruCache
 import androidx.core.graphics.drawable.IconCompat
+import com.maknoon.mizan.core.data.settings.SpeedBadgeStyle
 import com.maknoon.mizan.core.domain.format.SpeedBadge
 import com.maknoon.mizan.core.domain.format.SpeedBadgeFormatter
 
 /**
  * Draws the live rate into the notification's status-bar icon: the value and its single-letter
- * unit on one line, white on transparent so the system can tint it like any other status icon.
- * Returns null when the reading is too small to show, which leaves the caller on its static icon.
+ * unit, white on transparent so the system can tint it like any other status icon. Returns null
+ * when the reading is too small to show, which leaves the caller on its static icon.
  *
- * The slot is barely 24dp, so the digits take all the width they can and are then thickened with
- * a stroke: a plain bold outline at that size reads as a smudge beside the system glyphs. The
- * unit rides beside the number rather than under it because a second line would halve the height
- * of the digits, which is exactly what made them unreadable.
+ * Everything is drawn in a [CANVAS_SIZE] square and shrinks only to fit, because the slot is
+ * barely 24dp: a plain bold outline at that size reads as a smudge beside the system glyphs, so
+ * each glyph is filled and stroked to thicken it. [draw] is public so the settings screen can
+ * preview the very same code path instead of a hand-drawn approximation.
  *
  * A bitmap per distinct reading is cached, because the notification refreshes every second and
  * allocating a new bitmap for an unchanged value (idle traffic) would be pure garbage.
  */
 object SpeedIconGenerator {
 
-    private const val SIZE = 96
+    /** The square every template draws into; callers scale it to whatever slot they fill. */
+    const val CANVAS_SIZE = 96
+
     private const val MAX_TEXT_WIDTH = 94f
     private const val UNIT_GAP = 2f
-    private const val UNIT_RATIO = 0.56f
     private const val STROKE_RATIO = 0.07f
-    private const val MAX_NUMBER_SIZE = 68f
     private const val MIN_NUMBER_SIZE = 24f
+
+    // Raised and uniform keep the number on one line, so it may fill the whole height.
+    private const val INLINE_MAX_NUMBER_SIZE = 68f
+    private const val RAISED_UNIT_RATIO = 0.56f
+
+    // Two lines need vertical room: 42 keeps the number's cap inside the square once stroked.
+    private const val UNDER_MAX_NUMBER_SIZE = 42f
+    private const val UNDER_UNIT_RATIO = 0.46f
+    private const val UNDER_NUMBER_CENTRE_Y = 34f
+    private const val UNDER_UNIT_CENTRE_Y = 74f
 
     private val cache = LruCache<String, IconCompat>(32)
 
     private val font: Typeface =
         Typeface.create("sans-serif-condensed", Typeface.BOLD)
 
-    fun icon(bytesPerSecond: Double, showBytes: Boolean): IconCompat? {
+    fun icon(bytesPerSecond: Double, showBytes: Boolean, style: SpeedBadgeStyle): IconCompat? {
         val badge = SpeedBadgeFormatter.iconBadge(bytesPerSecond, showBytes) ?: return null
-        val key = badge.value + badge.unit
+        val key = badge.value + badge.unit + style.name
         cache.get(key)?.let { return it }
-        val created = IconCompat.createWithBitmap(render(badge))
+        val bitmap = Bitmap.createBitmap(CANVAS_SIZE, CANVAS_SIZE, Bitmap.Config.ARGB_8888)
+        draw(Canvas(bitmap), badge, style)
+        val created = IconCompat.createWithBitmap(bitmap)
         cache.put(key, created)
         return created
     }
 
-    private fun render(badge: SpeedBadge): Bitmap {
-        val bitmap = Bitmap.createBitmap(SIZE, SIZE, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(bitmap)
+    /** Draws [badge] into a [CANVAS_SIZE] square already scaled onto [canvas]. */
+    fun draw(canvas: Canvas, badge: SpeedBadge, style: SpeedBadgeStyle) {
+        when (style) {
+            SpeedBadgeStyle.UNDER -> drawStacked(canvas, badge)
+            SpeedBadgeStyle.UNIFORM -> drawInline(canvas, badge, unitRatio = 1f)
+            SpeedBadgeStyle.RAISED -> drawInline(canvas, badge, unitRatio = RAISED_UNIT_RATIO)
+        }
+    }
+
+    /** One baseline: the number, a gap, then the unit at [unitRatio] of its size. */
+    private fun drawInline(canvas: Canvas, badge: SpeedBadge, unitRatio: Float) {
         val number = glyphPaint()
         val unit = glyphPaint()
-
-        var numberSize = MAX_NUMBER_SIZE
+        var numberSize = INLINE_MAX_NUMBER_SIZE
         while (numberSize > MIN_NUMBER_SIZE &&
-            totalWidth(number, unit, badge, numberSize) > MAX_TEXT_WIDTH
+            inlineWidth(number, unit, badge, numberSize, unitRatio) > MAX_TEXT_WIDTH
         ) {
             numberSize -= 2f
         }
         applySize(number, numberSize)
-        applySize(unit, numberSize * UNIT_RATIO)
+        applySize(unit, numberSize * unitRatio)
 
         val numberWidth = number.measureText(badge.value) + number.strokeWidth
         val unitWidth = unit.measureText(badge.unit) + unit.strokeWidth
-        val startX = (SIZE - (numberWidth + UNIT_GAP + unitWidth)) / 2f
-        val baseline = centreBaseline(number, SIZE / 2f)
-        // The unit shares the number's cap line rather than its baseline, so it reads as `345K`.
-        val unitBaseline = baseline + number.ascent() - unit.ascent()
+        val startX = (CANVAS_SIZE - (numberWidth + UNIT_GAP + unitWidth)) / 2f
+        val baseline = centreBaseline(number, CANVAS_SIZE / 2f)
+        // A smaller unit shares the number's cap line rather than its baseline: `345K` with a
+        // raised K. At full size both sit on the same baseline.
+        val unitBaseline =
+            if (unitRatio == 1f) baseline else baseline + number.ascent() - unit.ascent()
 
         canvas.drawText(badge.value, startX, baseline, number)
         canvas.drawText(badge.unit, startX + numberWidth + UNIT_GAP, unitBaseline, unit)
-        return bitmap
+    }
+
+    /** Two lines: the number above, the unit centred underneath it. */
+    private fun drawStacked(canvas: Canvas, badge: SpeedBadge) {
+        val number = glyphPaint()
+        val unit = glyphPaint()
+        var numberSize = UNDER_MAX_NUMBER_SIZE
+        while (numberSize > MIN_NUMBER_SIZE &&
+            stackedWidth(number, unit, badge, numberSize) > MAX_TEXT_WIDTH
+        ) {
+            numberSize -= 2f
+        }
+        applySize(number, numberSize)
+        applySize(unit, numberSize * UNDER_UNIT_RATIO)
+
+        canvas.drawText(
+            badge.value,
+            centredX(number, badge.value),
+            centreBaseline(number, UNDER_NUMBER_CENTRE_Y),
+            number,
+        )
+        canvas.drawText(
+            badge.unit,
+            centredX(unit, badge.unit),
+            centreBaseline(unit, UNDER_UNIT_CENTRE_Y),
+            unit,
+        )
     }
 
     private fun glyphPaint(): Paint =
@@ -88,17 +136,36 @@ object SpeedIconGenerator {
         paint.strokeWidth = textSize * STROKE_RATIO
     }
 
-    private fun totalWidth(
+    private fun inlineWidth(
+        number: Paint,
+        unit: Paint,
+        badge: SpeedBadge,
+        numberSize: Float,
+        unitRatio: Float,
+    ): Float {
+        applySize(number, numberSize)
+        applySize(unit, numberSize * unitRatio)
+        return number.measureText(badge.value) + number.strokeWidth + UNIT_GAP +
+            unit.measureText(badge.unit) + unit.strokeWidth
+    }
+
+    /** Stacked lines are only as wide as their longest one. */
+    private fun stackedWidth(
         number: Paint,
         unit: Paint,
         badge: SpeedBadge,
         numberSize: Float,
     ): Float {
         applySize(number, numberSize)
-        applySize(unit, numberSize * UNIT_RATIO)
-        return number.measureText(badge.value) + number.strokeWidth + UNIT_GAP +
-            unit.measureText(badge.unit) + unit.strokeWidth
+        applySize(unit, numberSize * UNDER_UNIT_RATIO)
+        return maxOf(
+            number.measureText(badge.value) + number.strokeWidth,
+            unit.measureText(badge.unit) + unit.strokeWidth,
+        )
     }
+
+    private fun centredX(paint: Paint, text: String): Float =
+        (CANVAS_SIZE - paint.measureText(text) - paint.strokeWidth) / 2f
 
     /** The baseline that places the text's visual centre on [centreY]. */
     private fun centreBaseline(paint: Paint, centreY: Float): Float =

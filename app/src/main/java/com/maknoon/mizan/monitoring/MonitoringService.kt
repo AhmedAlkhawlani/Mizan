@@ -17,6 +17,7 @@ import androidx.core.content.ContextCompat
 import com.maknoon.mizan.MainActivity
 import com.maknoon.mizan.alerts.BudgetAlerts
 import com.maknoon.mizan.core.data.settings.MizanSettings
+import com.maknoon.mizan.core.data.settings.SpeedBadgeStyle
 import com.maknoon.mizan.core.data.settings.StatusBarSpeedMode
 import com.maknoon.mizan.core.data.usage.DeviceUsageRepository
 import com.maknoon.mizan.core.platform.traffic.AndroidTrafficSource
@@ -63,6 +64,9 @@ class MonitoringService : Service() {
     @Volatile
     private var statusBarShowBytes: Boolean = false
 
+    @Volatile
+    private var statusBarStyle: SpeedBadgeStyle = SpeedBadgeStyle.RAISED
+
     private val openIntent by lazy {
         PendingIntent.getActivity(
             this,
@@ -103,6 +107,9 @@ class MonitoringService : Service() {
         }
         scope.launch {
             settings.statusBarShowBytes.collect { showBytes -> statusBarShowBytes = showBytes }
+        }
+        scope.launch {
+            settings.statusBarBadgeStyle.collect { style -> statusBarStyle = style }
         }
     }
 
@@ -229,7 +236,7 @@ class MonitoringService : Service() {
             else -> usage.downBytesPerSecond
         }
         // A rate below the quiet gate has no badge, so the notification keeps the static glyph.
-        val icon = rate?.let { SpeedIconGenerator.icon(it, statusBarShowBytes) }
+        val icon = rate?.let { SpeedIconGenerator.icon(it, statusBarShowBytes, statusBarStyle) }
         return MonitoringNotifications
             .monitoringNotification(this, state, openIntent, stopIntent, icon)
     }

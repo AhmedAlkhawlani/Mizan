@@ -38,10 +38,10 @@ object SpeedIconGenerator {
     private const val INLINE_MAX_NUMBER_SIZE = 68f
     private const val RAISED_UNIT_RATIO = 0.56f
 
-    // Two lines share the square, so the number stops at 58: that keeps its cap inside once
-    // stroked and still leaves a 15-unit gap above a unit that is large enough to read.
-    private const val UNDER_MAX_NUMBER_SIZE = 58f
-    private const val UNDER_UNIT_RATIO = 0.50f
+    // Two lines share the square: the number stops at 60 so it keeps its cap inside once stroked,
+    // and the spelled-out unit takes 60% of it, which is what makes `KB/s` readable at 24dp.
+    private const val UNDER_MAX_NUMBER_SIZE = 60f
+    private const val UNDER_UNIT_RATIO = 0.60f
     private const val UNDER_NUMBER_CENTRE_Y = 30f
     private const val UNDER_UNIT_CENTRE_Y = 78f
 
@@ -96,7 +96,7 @@ object SpeedIconGenerator {
         canvas.drawText(badge.unit, startX + numberWidth + UNIT_GAP, unitBaseline, unit)
     }
 
-    /** Two lines: the number above, the unit centred underneath it. */
+    /** Two lines: the number above, the spelled-out unit centred underneath it. */
     private fun drawStacked(canvas: Canvas, badge: SpeedBadge) {
         val number = glyphPaint()
         val unit = glyphPaint()
@@ -116,8 +116,8 @@ object SpeedIconGenerator {
             number,
         )
         canvas.drawText(
-            badge.unit,
-            centredX(unit, badge.unit),
+            badge.fullUnit,
+            centredX(unit, badge.fullUnit),
             centreBaseline(unit, UNDER_UNIT_CENTRE_Y),
             unit,
         )
@@ -161,7 +161,7 @@ object SpeedIconGenerator {
         applySize(unit, numberSize * UNDER_UNIT_RATIO)
         return maxOf(
             number.measureText(badge.value) + number.strokeWidth,
-            unit.measureText(badge.unit) + unit.strokeWidth,
+            unit.measureText(badge.fullUnit) + unit.strokeWidth,
         )
     }
 

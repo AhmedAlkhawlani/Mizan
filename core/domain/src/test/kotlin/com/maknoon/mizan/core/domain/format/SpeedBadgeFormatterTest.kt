@@ -55,6 +55,13 @@ class SpeedBadgeFormatterTest {
     }
 
     @Test
+    fun `the spelled-out unit keeps the byte case literal`() {
+        assertThat(listOf(345.0, 45_000.0, 2_400_000.0, 12_000_000_000.0)
+            .map { SpeedBadgeFormatter.of(it).fullUnit })
+            .containsExactly("B/s", "KB/s", "MB/s", "GB/s").inOrder()
+    }
+
+    @Test
     fun `quiet mode hides a bytes-only reading`() {
         assertThat(SpeedBadgeFormatter.iconBadge(320.0, showBytes = false)).isNull()
         assertThat(SpeedBadgeFormatter.iconBadge(0.0, showBytes = false)).isNull()

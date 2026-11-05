@@ -38,11 +38,12 @@ object SpeedIconGenerator {
     private const val INLINE_MAX_NUMBER_SIZE = 68f
     private const val RAISED_UNIT_RATIO = 0.56f
 
-    // Two lines need vertical room: 42 keeps the number's cap inside the square once stroked.
-    private const val UNDER_MAX_NUMBER_SIZE = 42f
-    private const val UNDER_UNIT_RATIO = 0.46f
-    private const val UNDER_NUMBER_CENTRE_Y = 34f
-    private const val UNDER_UNIT_CENTRE_Y = 74f
+    // Two lines share the square, so the number stops at 58: that keeps its cap inside once
+    // stroked and still leaves a 15-unit gap above a unit that is large enough to read.
+    private const val UNDER_MAX_NUMBER_SIZE = 58f
+    private const val UNDER_UNIT_RATIO = 0.50f
+    private const val UNDER_NUMBER_CENTRE_Y = 30f
+    private const val UNDER_UNIT_CENTRE_Y = 78f
 
     private val cache = LruCache<String, IconCompat>(32)
 

@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The scale from design/concept-board.html, redrawn on the 24-unit grid and scaled to 2.2
-     so the whole mark stays inside the 72dp safe zone of the 108dp adaptive icon. Three
-     strokes: two translucent wide passes for the neon halo and one solid cyan pass. -->
+<!-- The scale, rebuilt as solid mass. The previous mark was a 1.5-unit hairline stroke that
+     turned into grey noise by 32dp; every shape here carries ink, so the silhouette survives the
+     launcher, the settings list and the Play Store thumbnail. Drawn on the 24-unit grid and scaled
+     2.2 to stay inside the 72dp safe zone of the 108dp adaptive icon. The beam rests tipped seven
+     degrees while both pans hang plumb from their own chain length, which is how a balance looks
+     while it is weighing. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
@@ -15,22 +18,16 @@
         android:translateY="27.6">
 
         <path
-            android:pathData="M12,4v16M6,20h12M4,8h16M4,8l-2,5a3.5,3.5 0 0,0 7,0L7,8M20,8l2,5a3.5,3.5 0 0,1 -7,0L17,8"
-            android:strokeWidth="4.4"
-            android:strokeColor="#1F22D3EE"
-            android:strokeLineCap="round"
+            android:pathData="M6.4,21.4L17.6,21.4L15.8,18.9L8.2,18.9ZM11.1,4.6L12.9,4.6L12.9,19.1L11.1,19.1ZM3.255,7.567L20.525,5.446L20.745,7.233L3.475,9.354ZM3.095,8.308L3.635,8.613L1.035,13.213L0.495,12.908ZM3.095,8.613L3.635,8.308L6.235,12.908L5.695,13.213ZM0.765,13.06a2.6,2.9 0 0,0 5.2,0ZM20.365,6.187L20.905,6.492L18.305,11.092L17.765,10.787ZM20.365,6.492L20.905,6.187L23.505,10.787L22.965,11.092ZM18.035,10.94a2.6,2.9 0 0,0 5.2,0Z"
+            android:fillColor="#22D3EE"
+            android:strokeColor="#3322D3EE"
+            android:strokeWidth="2.4"
             android:strokeLineJoin="round" />
         <path
-            android:pathData="M12,4v16M6,20h12M4,8h16M4,8l-2,5a3.5,3.5 0 0,0 7,0L7,8M20,8l2,5a3.5,3.5 0 0,1 -7,0L17,8"
-            android:strokeWidth="3"
-            android:strokeColor="#4D22D3EE"
-            android:strokeLineCap="round"
-            android:strokeLineJoin="round" />
+            android:pathData="M6.4,21.4L17.6,21.4L15.8,18.9L8.2,18.9ZM11.1,4.6L12.9,4.6L12.9,19.1L11.1,19.1ZM3.255,7.567L20.525,5.446L20.745,7.233L3.475,9.354ZM3.095,8.308L3.635,8.613L1.035,13.213L0.495,12.908ZM3.095,8.613L3.635,8.308L6.235,12.908L5.695,13.213ZM0.765,13.06a2.6,2.9 0 0,0 5.2,0ZM20.365,6.187L20.905,6.492L18.305,11.092L17.765,10.787ZM20.365,6.492L20.905,6.187L23.505,10.787L22.965,11.092ZM18.035,10.94a2.6,2.9 0 0,0 5.2,0Z"
+            android:fillColor="#22D3EE" />
         <path
-            android:pathData="M12,4v16M6,20h12M4,8h16M4,8l-2,5a3.5,3.5 0 0,0 7,0L7,8M20,8l2,5a3.5,3.5 0 0,1 -7,0L17,8"
-            android:strokeWidth="1.5"
-            android:strokeColor="#22D3EE"
-            android:strokeLineCap="round"
-            android:strokeLineJoin="round" />
+            android:pathData="M10.6,4.2a1.4,1.4 0 1,0 2.8,0a1.4,1.4 0 1,0 -2.8,0Z"
+            android:fillColor="#F0478D" />
     </group>
 </vector>

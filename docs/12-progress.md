@@ -93,6 +93,8 @@
 | 61 | `f917f8b` | `feat(monitoring): keep the status bar still below a kilobyte` |
 | 62 | `8cb57f5` | `docs: record the sub-kilobyte status bar gate` |
 | 63 | `3e7e0a3` | `fix(monitoring): draw the status bar badge big enough to read` |
+| 64 | `1b5e8ba` | `docs: record the readable status bar badge` |
+| 65 | `1967911` | `feat(monitoring): offer three status bar badge templates` |
 
 > ⚠️ **لم يُدفع أي شيء إلى GitHub**: كل الكومتات محلية. `git push origin main` يفشل بـ
 > `could not read Username for 'https://github.com'` — لا بيانات اعتماد HTTPS على الجهاز.
@@ -497,6 +499,19 @@
     وأُصلح خطأ صامت: داخل `Paint.apply { typeface = typeface }` كان الاسم يُحلّ على متلقي `apply`
     لا على خاصية الكائن، فخط condensed المكثّف لم يُطبَّق قط؛ سُمّي الخط `font` وصار الإسناد
     صريحاً. البوابـة والاختبارات: 309.
+
+45. **قوالب العدّاد الثلاثة (طلب المستخدم)**: `SpeedBadgeStyle` في `:core:data` بثلاث قيم —
+    `RAISED` (الرقم يملأ الموضع والوحدة مرفوعة إلى رأسه، `345ᴋ`)، `UNDER` (سطران: الرقم فوق
+    الوحدة، وهو القالب القديم لكن بحروف صحيحة وبمثخّنة)، و`UNIFORM` (سطر واحد والرقم والوحدة
+    بنفس الارتفاع). الثابت `CANVAS_SIZE=96` صار عاماً و`draw(canvas, badge, style)` عاماً، لذلك
+    **معاينة الإعدادات ترسم نفس كود الإشعار حرفياً** عبر `nativeCanvas` بعد تحجيمه إلى 28dp، لا
+    رسمة تقريبية: ما تراه في البطاقة هو ما يظهر في الشريط، والثلاثة تعرض القراءة نفسها `345 K`
+    كي تكون المقارنة شريفة. حدود الأحجام: السطر الواحد يبدأ 68px، والسطران 42px لأن 68 مع سطر
+    ثانٍ يتجاوز مربّع 96 بعد السماكة. التفضيل `status_bar_badge_style` (RAISED افتراضياً لأنه
+    الأشدّ وضوحاً) يُجمع مع البايت في `combine` خارجي ثلاثي لأن `combine` يقف عند خمسة تدفقات.
+    المفتاح يُخزَّن كما هو في DataStore والتغيير يسري في العيّنة التالية. **بلا اختبارات وحدة
+    للرسّام**: لا Robolectric في المشروع (§6)، فالوضوح تحقّق بصرياً على الجهاز لا بدقّة بكسلية
+    — §9.
 
 ---
 

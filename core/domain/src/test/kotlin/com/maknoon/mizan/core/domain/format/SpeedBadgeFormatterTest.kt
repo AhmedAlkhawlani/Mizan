@@ -45,4 +45,30 @@ class SpeedBadgeFormatterTest {
         assertThat(SpeedBadgeFormatter.of(12_000_000_000.0)).isEqualTo(SpeedBadge("12", "G"))
         assertThat(SpeedBadgeFormatter.of(9_999_000_000_000.0)).isEqualTo(SpeedBadge("9999", "G"))
     }
+
+    @Test
+    fun `quiet mode hides a bytes-only reading`() {
+        assertThat(SpeedBadgeFormatter.iconBadge(320.0, showBytes = false)).isNull()
+        assertThat(SpeedBadgeFormatter.iconBadge(0.0, showBytes = false)).isNull()
+    }
+
+    @Test
+    fun `showing bytes keeps the byte badge`() {
+        assertThat(SpeedBadgeFormatter.iconBadge(320.0, showBytes = true))
+            .isEqualTo(SpeedBadge("320", "B"))
+    }
+
+    @Test
+    fun `quiet mode still shows anything at a kilobyte or above`() {
+        assertThat(SpeedBadgeFormatter.iconBadge(45_000.0, showBytes = false))
+            .isEqualTo(SpeedBadge("45", "K"))
+        assertThat(SpeedBadgeFormatter.iconBadge(2_400_000.0, showBytes = false))
+            .isEqualTo(SpeedBadge("2.4", "M"))
+    }
+
+    @Test
+    fun `a byte rate that carries into kilobytes is shown`() {
+        assertThat(SpeedBadgeFormatter.iconBadge(999.6, showBytes = false))
+            .isEqualTo(SpeedBadge("1", "K"))
+    }
 }

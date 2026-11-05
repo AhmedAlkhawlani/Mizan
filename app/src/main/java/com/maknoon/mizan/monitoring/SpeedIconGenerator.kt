@@ -13,6 +13,7 @@ import com.maknoon.mizan.core.domain.format.SpeedBadgeFormatter
 /**
  * Draws the live rate into the notification's status-bar icon: the value on one line and the
  * unit underneath, white on transparent so the system can tint it like any other status icon.
+ * Returns null when the reading is too small to show, which leaves the caller on its static icon.
  *
  * A bitmap per distinct reading is cached, because the notification refreshes every second and
  * allocating a new bitmap for an unchanged value (idle traffic) would be pure garbage.
@@ -27,8 +28,8 @@ object SpeedIconGenerator {
     private val typeface: Typeface =
         Typeface.create("sans-serif-condensed", Typeface.BOLD)
 
-    fun icon(bytesPerSecond: Double): IconCompat {
-        val badge = SpeedBadgeFormatter.of(bytesPerSecond)
+    fun icon(bytesPerSecond: Double, showBytes: Boolean): IconCompat? {
+        val badge = SpeedBadgeFormatter.iconBadge(bytesPerSecond, showBytes) ?: return null
         val key = badge.value + badge.unit
         cache.get(key)?.let { return it }
         val created = IconCompat.createWithBitmap(render(badge))

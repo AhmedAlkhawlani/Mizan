@@ -178,6 +178,8 @@
     <string name="settings_status_icon_download">Download speed</string>
     <string name="settings_status_icon_upload">Upload speed</string>
     <string name="settings_status_icon_off">No figure (static icon)</string>
+    <string name="settings_status_icon_bytes">Show speed in bytes</string>
+    <string name="settings_status_icon_bytes_note">When off, the figure stays still until the rate passes a kilobyte, so the bar never pulses over small background traffic.</string>
 
     <string name="history_export_title">Export data</string>
     <string name="history_export_body">A CSV of every recorded day. The system picks where it is saved, so the app needs no storage permission.</string>

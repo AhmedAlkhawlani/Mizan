@@ -20,6 +20,7 @@ data class BudgetUiState(
     val monthly: BudgetFieldUi = BudgetFieldUi(),
     val cycleStartDay: Int = BillingCycleCalculator.MIN_START_DAY,
     val statusBarIcon: StatusBarSpeedMode = StatusBarSpeedMode.DOWNLOAD,
+    val statusBarShowBytes: Boolean = false,
 )
 
 /**

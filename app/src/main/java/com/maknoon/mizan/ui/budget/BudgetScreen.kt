@@ -13,10 +13,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.material3.Card
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -65,6 +67,7 @@ fun BudgetScreen(
         onMonthlyEnabledChange = viewModel::onMonthlyEnabledChange,
         onCycleStartDayChange = viewModel::setCycleStartDay,
         onStatusBarSpeedModeChange = viewModel::setStatusBarSpeedMode,
+        onStatusBarShowBytesChange = viewModel::setStatusBarShowBytes,
         onBack = onBack,
         modifier = modifier,
     )
@@ -79,6 +82,7 @@ internal fun BudgetContent(
     onMonthlyEnabledChange: (Boolean) -> Unit,
     onCycleStartDayChange: (Int) -> Unit,
     onStatusBarSpeedModeChange: (StatusBarSpeedMode) -> Unit,
+    onStatusBarShowBytesChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
     onBack: () -> Unit = {},
 ) {
@@ -140,7 +144,9 @@ internal fun BudgetContent(
             item(key = "statusBarIcon") {
                 StatusBarIconCard(
                     mode = uiState.statusBarIcon,
+                    showBytes = uiState.statusBarShowBytes,
                     onModeChange = onStatusBarSpeedModeChange,
+                    onShowBytesChange = onStatusBarShowBytesChange,
                 )
             }
         }
@@ -213,7 +219,9 @@ private fun CycleCard(
 @Composable
 private fun StatusBarIconCard(
     mode: StatusBarSpeedMode,
+    showBytes: Boolean,
     onModeChange: (StatusBarSpeedMode) -> Unit,
+    onShowBytesChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Card(modifier = modifier.fillMaxWidth()) {
@@ -249,7 +257,45 @@ private fun StatusBarIconCard(
                 selected = mode == StatusBarSpeedMode.OFF,
                 onSelect = onModeChange,
             )
+            HorizontalDivider(
+                modifier = Modifier.padding(top = 8.dp, bottom = 4.dp),
+                color = MaterialTheme.colorScheme.outlineVariant,
+            )
+            StatusBarBytesOption(showBytes = showBytes, onShowBytesChange = onShowBytesChange)
         }
+    }
+}
+
+@Composable
+private fun StatusBarBytesOption(
+    showBytes: Boolean,
+    onShowBytesChange: (Boolean) -> Unit,
+) {
+    // One selectable row like the radio options above, so TalkBack reads a single switch.
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .selectable(
+                selected = showBytes,
+                role = Role.Switch,
+                onClick = { onShowBytesChange(!showBytes) },
+            )
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = stringResource(R.string.settings_status_icon_bytes),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            Text(
+                text = stringResource(R.string.settings_status_icon_bytes_note),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        Spacer(modifier = Modifier.width(12.dp))
+        Switch(checked = showBytes, onCheckedChange = null)
     }
 }
 
@@ -295,6 +341,7 @@ private fun BudgetPreview() {
             onMonthlyEnabledChange = {},
             onCycleStartDayChange = {},
             onStatusBarSpeedModeChange = {},
+            onStatusBarShowBytesChange = {},
         )
     }
 }

@@ -188,6 +188,8 @@
     <string name="settings_status_icon_download">سرعة التنزيل</string>
     <string name="settings_status_icon_upload">سرعة الرفع</string>
     <string name="settings_status_icon_off">بدون رقم (أيقونة ثابتة)</string>
+    <string name="settings_status_icon_bytes">إظهار السرعة بالبايت</string>
+    <string name="settings_status_icon_bytes_note">عند الإيقاف يبقى الرقم ساكناً حتى تتجاوز السرعة الكيلوبايت، فلا ينبض الشريط خلف حركة صغيرة في الخلفية.</string>
 
     <string name="history_export_title">تصدير البيانات</string>
     <string name="history_export_body">ملف CSV بكل الأيام المسجّلة. يختار النظام مكان الحفظ، فلا يحتاج التطبيق إلى صلاحية تخزين.</string>

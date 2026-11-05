@@ -60,6 +60,9 @@ class MonitoringService : Service() {
     @Volatile
     private var statusBarMode: StatusBarSpeedMode = StatusBarSpeedMode.DOWNLOAD
 
+    @Volatile
+    private var statusBarShowBytes: Boolean = false
+
     private val openIntent by lazy {
         PendingIntent.getActivity(
             this,
@@ -97,6 +100,9 @@ class MonitoringService : Service() {
         samplingJob = scope.launch { sampleContinuously() }
         scope.launch {
             settings.statusBarSpeedMode.collect { mode -> statusBarMode = mode }
+        }
+        scope.launch {
+            settings.statusBarShowBytes.collect { showBytes -> statusBarShowBytes = showBytes }
         }
     }
 
@@ -217,13 +223,13 @@ class MonitoringService : Service() {
 
     private fun buildNotification(state: MonitoringState): Notification {
         val usage = state.usage
-        val icon = when {
+        val rate = when {
             usage == null || statusBarMode == StatusBarSpeedMode.OFF -> null
-            statusBarMode == StatusBarSpeedMode.UPLOAD ->
-                SpeedIconGenerator.icon(usage.upBytesPerSecond)
-
-            else -> SpeedIconGenerator.icon(usage.downBytesPerSecond)
+            statusBarMode == StatusBarSpeedMode.UPLOAD -> usage.upBytesPerSecond
+            else -> usage.downBytesPerSecond
         }
+        // A rate below the quiet gate has no badge, so the notification keeps the static glyph.
+        val icon = rate?.let { SpeedIconGenerator.icon(it, statusBarShowBytes) }
         return MonitoringNotifications
             .monitoringNotification(this, state, openIntent, stopIntent, icon)
     }

@@ -100,6 +100,19 @@ class MizanSettings(context: Context) {
         store.edit { preferences -> preferences[STATUS_BAR_SPEED_MODE] = mode.name }
     }
 
+    /**
+     * Whether the status-bar icon may drop to the bytes unit. Off by default: a number that
+     * changes every second over a few hundred bytes looks like an alarm for background chatter,
+     * so the bar stays static until the rate is worth a kilobyte.
+     */
+    val statusBarShowBytes: Flow<Boolean> = store.data
+        .map { preferences -> preferences[STATUS_BAR_SHOW_BYTES] ?: false }
+        .distinctUntilChanged()
+
+    suspend fun setStatusBarShowBytes(showBytes: Boolean) {
+        store.edit { preferences -> preferences[STATUS_BAR_SHOW_BYTES] = showBytes }
+    }
+
     private companion object {
         val MONITORING_ENABLED = booleanPreferencesKey("monitoring_enabled")
         val CYCLE_START_DAY = intPreferencesKey("cycle_start_day")
@@ -107,6 +120,7 @@ class MizanSettings(context: Context) {
         val BLOCKED_PACKAGES = stringSetPreferencesKey("data_saver_blocked_packages")
         val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
         val STATUS_BAR_SPEED_MODE = stringPreferencesKey("status_bar_speed_mode")
+        val STATUS_BAR_SHOW_BYTES = booleanPreferencesKey("status_bar_show_bytes")
         const val DEFAULT_CYCLE_START_DAY = BillingCycleCalculator.MIN_START_DAY
     }
 }

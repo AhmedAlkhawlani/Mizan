@@ -45,14 +45,18 @@ class BudgetViewModel(application: Application) : AndroidViewModel(application) 
     private val persistMutex = Mutex()
 
     val uiState: StateFlow<BudgetUiState> = combine(
-        dao.observeDevice(),
-        settings.cycleStartDay,
-        dailyText,
-        monthlyText,
-        settings.statusBarSpeedMode,
-    ) { budgets, cycleStartDay, daily, monthly, statusBarIcon ->
-        budgetUiState(budgets, cycleStartDay, daily, monthly, statusBarIcon)
-    }.stateIn(
+        combine(
+            dao.observeDevice(),
+            settings.cycleStartDay,
+            dailyText,
+            monthlyText,
+            settings.statusBarSpeedMode,
+        ) { budgets, cycleStartDay, daily, monthly, statusBarIcon ->
+            budgetUiState(budgets, cycleStartDay, daily, monthly, statusBarIcon)
+        },
+        // combine tops out at five flows, so the bytes switch joins the state afterwards.
+        settings.statusBarShowBytes,
+    ) { state, showBytes -> state.copy(statusBarShowBytes = showBytes) }.stateIn(
         scope = viewModelScope,
         // Keep the last value briefly so a rotation does not flash an empty screen.
         started = SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS),
@@ -84,6 +88,10 @@ class BudgetViewModel(application: Application) : AndroidViewModel(application) 
     /** The service reads this preference and redraws its icon on the next sample. */
     fun setStatusBarSpeedMode(mode: StatusBarSpeedMode) {
         viewModelScope.launch { settings.setStatusBarSpeedMode(mode) }
+    }
+
+    fun setStatusBarShowBytes(showBytes: Boolean) {
+        viewModelScope.launch { settings.setStatusBarShowBytes(showBytes) }
     }
 
     /** An unparsable keystroke is ignored: the stored limit keeps its last valid value. */

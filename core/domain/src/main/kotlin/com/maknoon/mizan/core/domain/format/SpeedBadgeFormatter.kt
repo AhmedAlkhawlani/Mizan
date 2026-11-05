@@ -38,6 +38,19 @@ object SpeedBadgeFormatter {
         return SpeedBadge(text, UNITS[unit])
     }
 
+    /**
+     * The badge for the status bar, or null when the reading is too small to be worth a digit.
+     *
+     * Quiet mode (showBytes = false) leaves the bar still while traffic only moves bytes: a number
+     * that changes every second over a few hundred bytes reads like an alarm for nothing. The gate
+     * sits on the formatted unit rather than the raw rate so 999.6 B/s, which already displays as
+     * `1 K`, counts as worth showing.
+     */
+    fun iconBadge(bytesPerSecond: Double, showBytes: Boolean): SpeedBadge? {
+        val badge = of(bytesPerSecond)
+        return badge.takeIf { showBytes || it.unit != UNITS.first() }
+    }
+
     private fun trimTrailingZero(text: String): String =
         if (text.endsWith(".0")) text.dropLast(2) else text
 }

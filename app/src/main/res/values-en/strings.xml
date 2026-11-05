@@ -28,6 +28,7 @@
     <string name="dashboard_start">Start measuring</string>
     <string name="dashboard_stop">Stop measuring</string>
     <string name="dashboard_budget_settings">Budget settings</string>
+    <string name="dashboard_about">About Mizan</string>
     <string name="dashboard_budget_line">%1$s of %2$s</string>
     <string name="network_chip_metered">Metered</string>
     <string name="network_chip_unmetered">Unmetered</string>
@@ -249,6 +250,33 @@
     <string name="widget_config_cancel">Cancel</string>
     <string name="widget_config_save">Done</string>
     <string name="widget_config_save_failed">Couldn\'t save settings. Try again.</string>
+
+    <string name="about_title">About Mizan</string>
+    <string name="about_subtitle">How it works, and who we are</string>
+    <string name="about_back">Back</string>
+    <string name="about_how_title">How does Mizan work?</string>
+    <string name="about_how_lead">Everything happens inside your phone: no server, no account, and not a single figure leaves the device.</string>
+    <string name="about_measure_title">Measured by Android itself</string>
+    <string name="about_measure_body">Mizan reads Android\'s own network counters: TrafficStats for the live rate, and NetworkStatsManager for daily and per-app usage. It neither estimates nor guesses; it shows what the system recorded, which is why the figures match your device settings.</string>
+    <string name="about_firewall_title">A firewall inside your phone</string>
+    <string name="about_firewall_body">When protection is on, Mizan creates a local VpnService tunnel on the device itself. Traffic passes through it to be decided: what you allowed goes through, and packets from blocked apps are dropped before they leave. The app opens no outside connection, needs no root, and does not hold the Internet permission at all.</string>
+    <string name="about_pillars_title">The three firm pillars</string>
+    <string name="about_pillar_privacy_title">🛡️ 100% local independence and safety</string>
+    <string name="about_pillar_privacy_body">Built from scratch: no servers, no middlemen, and your data never leaves your device.</string>
+    <string name="about_pillar_free_title">🆓 Free and completely ad-free, forever</string>
+    <string name="about_pillar_free_body">Made to serve the individual and protect their privacy, with no commercial goals or tracking.</string>
+    <string name="about_pillar_saving_title">⚡ Real data and battery savings</string>
+    <string name="about_pillar_saving_body">Stop background drain and fully control which apps may reach the network.</string>
+    <string name="about_team_open">Who we are — Maknoon Team</string>
+    <string name="about_team_title">Maknoon Team</string>
+    <string name="about_team_identity">We are the Maknoon Team — young people from Al-Salam neighbourhood, building and engineering independent software and apps.</string>
+    <string name="about_team_mission_label">Our mission</string>
+    <string name="about_team_mission">To build safe, free software from scratch, without relying on middlemen or external servers, serving and protecting the user\'s data.</string>
+    <string name="about_team_contact_title">Direct contact</string>
+    <string name="about_team_phone_label">📞 Phone call (Yemen)</string>
+    <string name="about_team_telegram_label">📢 Official Telegram channel</string>
+    <string name="about_team_website_label">🌐 Website</string>
+    <string name="about_team_close">Close</string>
 
     <string name="onboarding_tagline">First run</string>
     <string name="onboarding_title">Welcome to Mizan</string>

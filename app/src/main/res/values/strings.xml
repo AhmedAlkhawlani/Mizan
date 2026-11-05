@@ -30,6 +30,7 @@
     <string name="dashboard_start">بدء القياس</string>
     <string name="dashboard_stop">إيقاف القياس</string>
     <string name="dashboard_budget_settings">إعدادات الميزانية</string>
+    <string name="dashboard_about">عن ميزان</string>
     <string name="dashboard_budget_line">%1$s من %2$s</string>
     <string name="network_chip_metered">مقنّن</string>
     <string name="network_chip_unmetered">غير مقنّن</string>
@@ -259,6 +260,36 @@
     <string name="widget_config_cancel">إلغاء</string>
     <string name="widget_config_save">تم</string>
     <string name="widget_config_save_failed">تعذّر حفظ الإعدادات، حاول مرة أخرى.</string>
+
+    <string name="about_title">عن ميزان</string>
+    <string name="about_subtitle">كيف يعمل، ومن نحن</string>
+    <string name="about_back">رجوع</string>
+    <string name="about_how_title">كيف يعمل ميزان؟</string>
+    <string name="about_how_lead">كل شيء يحدث داخل هاتفك: لا خادم، ولا حساب، ولا يخرج أي رقم من الجهاز.</string>
+    <string name="about_measure_title">القياس من أندرويد نفسه</string>
+    <string name="about_measure_body">يقرأ ميزان عدّادات الشبكة الرسمية في أندرويد: TrafficStats للسرعة اللحظية، وNetworkStatsManager للاستهلاك اليومي ولكل تطبيق. لا يُقدّر الأرقام ولا يخمّنها، بل يعرض ما سجّله النظام، ولذلك يطابق ما تراه في إعدادات الجهاز.</string>
+    <string name="about_firewall_title">جدار حماية داخل جهازك</string>
+    <string name="about_firewall_body">عند تفعيل الحماية ينشئ ميزان نفق VpnService محلياً على الجهاز نفسه. يمرّ به الاتصال ليُقرَّر فيه: ما اخترته يُسمح له، وحزم التطبيقات المحظورة تُسقط قبل خروجها. لا يفتح التطبيق أي اتصال خارجي، ولا يحتاج روت، ولا يملك صلاحية الإنترنت أصلاً.</string>
+    <string name="about_pillars_title">المبادئ الثلاثة الراسخة</string>
+    <string name="about_pillar_privacy_title">🛡️ استقلال وأمان محلي 100%</string>
+    <string name="about_pillar_privacy_body">مبني من الصفر: لا سيرفرات، ولا أطراف وسيطة، وبياناتك لا تغادر جهازك نهائياً.</string>
+    <string name="about_pillar_free_title">🆓 مجاني وخالٍ تماماً من الإعلانات للأبد</string>
+    <string name="about_pillar_free_body">صُنع لخدمة الفرد وحماية خصوصيته، دون أي أهداف تجارية أو تتبّع.</string>
+    <string name="about_pillar_saving_title">⚡ توفير حقيقي للبيانات والبطارية</string>
+    <string name="about_pillar_saving_body">منع استنزاف الخلفية والتحكم الكامل في وصول التطبيقات للشبكة.</string>
+    <string name="about_team_open">من نحن — فريق مَكْنُون</string>
+    <string name="about_team_title">فريق مَكْنُون</string>
+    <string name="about_team_identity">نحن فريق مَكْنُون — شباب حارة السلام لهندسة وتطوير البرمجيات والتطبيقات المستقلة.</string>
+    <string name="about_team_mission_label">رسالتنا</string>
+    <string name="about_team_mission">بناء تطبيقات برمجية آمنة ومجانية من الصفر، دون الاعتماد على مصادر وسيطة أو خوادم خارجية، لخدمة وحماية بيانات المستخدم.</string>
+    <string name="about_team_contact_title">تواصل مباشر</string>
+    <string name="about_team_phone_label">📞 اتصال هاتفي (اليمن)</string>
+    <string name="about_team_telegram_label">📢 قناة التلجرام الرسمية</string>
+    <string name="about_team_website_label">🌐 الموقع الإلكتروني</string>
+    <string name="about_team_close">إغلاق</string>
+    <string name="about_team_phone_number" translatable="false">775057134</string>
+    <string name="about_team_telegram_handle" translatable="false">t.me/maknoonsoft</string>
+    <string name="about_team_website_handle" translatable="false">ahmedalkhwlany.github.io/maknoonApp</string>
 
     <string name="onboarding_tagline">الإعداد الأولي</string>
     <string name="onboarding_title">مرحباً في ميزان</string>

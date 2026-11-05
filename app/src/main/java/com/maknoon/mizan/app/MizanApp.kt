@@ -29,6 +29,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.maknoon.mizan.R
 import com.maknoon.mizan.core.designsystem.theme.MizanTheme
+import com.maknoon.mizan.ui.about.AboutScreen
 import com.maknoon.mizan.ui.apps.AppDetailScreen
 import com.maknoon.mizan.ui.apps.AppsScreen
 import com.maknoon.mizan.ui.budget.BudgetScreen
@@ -56,6 +57,9 @@ private const val APP_DETAIL_ROUTE = "apps/detail/{packageName}"
 
 /** The budget and cycle editor, reached from the dashboard's budget action (docs/04). */
 internal const val BUDGET_ROUTE = "budget"
+
+/** The about screen, reached from the dashboard header beside the budget action. */
+internal const val ABOUT_ROUTE = "about"
 
 private fun appDetailRoute(packageName: String): String =
     "apps/detail/${Uri.encode(packageName)}"
@@ -141,6 +145,9 @@ fun MizanApp(
                     onOpenBudget = {
                         navController.navigate(BUDGET_ROUTE) { launchSingleTop = true }
                     },
+                    onOpenAbout = {
+                        navController.navigate(ABOUT_ROUTE) { launchSingleTop = true }
+                    },
                 )
             }
             composable(MizanDestination.Apps.route) {
@@ -160,6 +167,7 @@ fun MizanApp(
             composable(MizanDestination.History.route) { HistoryScreen() }
             composable(MizanDestination.Saver.route) { SaverScreen() }
             composable(BUDGET_ROUTE) { BudgetScreen(onBack = { navController.popBackStack() }) }
+            composable(ABOUT_ROUTE) { AboutScreen(onBack = { navController.popBackStack() }) }
         }
     }
 }

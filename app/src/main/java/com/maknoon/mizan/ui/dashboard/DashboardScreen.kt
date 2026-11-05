@@ -75,6 +75,7 @@ private val NeonUp = Color(0xFFFF4081)
 fun DashboardScreen(
     modifier: Modifier = Modifier,
     onOpenBudget: () -> Unit = {},
+    onOpenAbout: () -> Unit = {},
     viewModel: DashboardViewModel = viewModel(
         factory = DashboardViewModel.factory(
             LocalContext.current.applicationContext as Application,
@@ -104,6 +105,7 @@ fun DashboardScreen(
         },
         onStop = { MonitoringControl.stop(context) },
         onOpenBudget = onOpenBudget,
+        onOpenAbout = onOpenAbout,
         modifier = modifier,
     )
 }
@@ -115,6 +117,7 @@ internal fun DashboardContent(
     onStop: () -> Unit,
     modifier: Modifier = Modifier,
     onOpenBudget: () -> Unit = {},
+    onOpenAbout: () -> Unit = {},
 ) {
     Column(modifier = modifier.fillMaxSize()) {
         AppTopBar {
@@ -132,6 +135,13 @@ internal fun DashboardContent(
                     Icon(
                         painter = painterResource(R.drawable.ic_settings),
                         contentDescription = stringResource(R.string.dashboard_budget_settings),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                IconButton(onClick = onOpenAbout) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_info),
+                        contentDescription = stringResource(R.string.dashboard_about),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }

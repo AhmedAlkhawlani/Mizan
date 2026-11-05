@@ -129,6 +129,19 @@ class MizanSettings(context: Context) {
         store.edit { preferences -> preferences[STATUS_BAR_BADGE_STYLE] = style.name }
     }
 
+    /**
+     * Whether the badge glyphs are drawn heavy. Bold is the default because a regular weight
+     * thins into the system icons beside it at 24dp; the light option is for whoever finds the
+     * badge louder than the rest of the bar.
+     */
+    val statusBarBoldGlyphs: Flow<Boolean> = store.data
+        .map { preferences -> preferences[STATUS_BAR_BOLD_GLYPHS] ?: true }
+        .distinctUntilChanged()
+
+    suspend fun setStatusBarBoldGlyphs(bold: Boolean) {
+        store.edit { preferences -> preferences[STATUS_BAR_BOLD_GLYPHS] = bold }
+    }
+
     private companion object {
         val MONITORING_ENABLED = booleanPreferencesKey("monitoring_enabled")
         val CYCLE_START_DAY = intPreferencesKey("cycle_start_day")
@@ -138,6 +151,7 @@ class MizanSettings(context: Context) {
         val STATUS_BAR_SPEED_MODE = stringPreferencesKey("status_bar_speed_mode")
         val STATUS_BAR_SHOW_BYTES = booleanPreferencesKey("status_bar_show_bytes")
         val STATUS_BAR_BADGE_STYLE = stringPreferencesKey("status_bar_badge_style")
+        val STATUS_BAR_BOLD_GLYPHS = booleanPreferencesKey("status_bar_bold_glyphs")
         const val DEFAULT_CYCLE_START_DAY = BillingCycleCalculator.MIN_START_DAY
     }
 }

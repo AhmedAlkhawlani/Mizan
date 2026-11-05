@@ -194,6 +194,8 @@
     <string name="settings_status_icon_style_raised">الوحدة مرفوعة بجانب الرقم</string>
     <string name="settings_status_icon_style_under">الوحدة تحت الرقم</string>
     <string name="settings_status_icon_style_uniform">الرقم والوحدة بحجم واحد</string>
+    <string name="settings_status_icon_weight">خط غامق</string>
+    <string name="settings_status_icon_weight_note">عند الإيقاف يصبح الخط نحيفاً وأهدأ، لكنه أقل وضوحاً بجانب أيقونات الشريط.</string>
 
     <string name="history_export_title">تصدير البيانات</string>
     <string name="history_export_body">ملف CSV بكل الأيام المسجّلة. يختار النظام مكان الحفظ، فلا يحتاج التطبيق إلى صلاحية تخزين.</string>

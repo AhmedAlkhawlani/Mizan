@@ -47,33 +47,46 @@ object SpeedIconGenerator {
 
     private val cache = LruCache<String, IconCompat>(32)
 
-    private val font: Typeface =
+    private val boldFont: Typeface =
         Typeface.create("sans-serif-condensed", Typeface.BOLD)
 
-    fun icon(bytesPerSecond: Double, showBytes: Boolean, style: SpeedBadgeStyle): IconCompat? {
+    private val regularFont: Typeface =
+        Typeface.create("sans-serif-condensed", Typeface.NORMAL)
+
+    fun icon(
+        bytesPerSecond: Double,
+        showBytes: Boolean,
+        style: SpeedBadgeStyle,
+        bold: Boolean = true,
+    ): IconCompat? {
         val badge = SpeedBadgeFormatter.iconBadge(bytesPerSecond, showBytes) ?: return null
-        val key = badge.value + badge.unit + style.name
+        val key = badge.value + badge.unit + style.name + bold
         cache.get(key)?.let { return it }
         val bitmap = Bitmap.createBitmap(CANVAS_SIZE, CANVAS_SIZE, Bitmap.Config.ARGB_8888)
-        draw(Canvas(bitmap), badge, style)
+        draw(Canvas(bitmap), badge, style, bold)
         val created = IconCompat.createWithBitmap(bitmap)
         cache.put(key, created)
         return created
     }
 
     /** Draws [badge] into a [CANVAS_SIZE] square already scaled onto [canvas]. */
-    fun draw(canvas: Canvas, badge: SpeedBadge, style: SpeedBadgeStyle) {
+    fun draw(
+        canvas: Canvas,
+        badge: SpeedBadge,
+        style: SpeedBadgeStyle,
+        bold: Boolean = true,
+    ) {
         when (style) {
-            SpeedBadgeStyle.UNDER -> drawStacked(canvas, badge)
-            SpeedBadgeStyle.UNIFORM -> drawInline(canvas, badge, unitRatio = 1f)
-            SpeedBadgeStyle.RAISED -> drawInline(canvas, badge, unitRatio = RAISED_UNIT_RATIO)
+            SpeedBadgeStyle.UNDER -> drawStacked(canvas, badge, bold)
+            SpeedBadgeStyle.UNIFORM -> drawInline(canvas, badge, unitRatio = 1f, bold = bold)
+            SpeedBadgeStyle.RAISED -> drawInline(canvas, badge, unitRatio = RAISED_UNIT_RATIO, bold = bold)
         }
     }
 
     /** One baseline: the number, a gap, then the unit at [unitRatio] of its size. */
-    private fun drawInline(canvas: Canvas, badge: SpeedBadge, unitRatio: Float) {
-        val number = glyphPaint()
-        val unit = glyphPaint()
+    private fun drawInline(canvas: Canvas, badge: SpeedBadge, unitRatio: Float, bold: Boolean) {
+        val number = glyphPaint(bold)
+        val unit = glyphPaint(bold)
         var numberSize = INLINE_MAX_NUMBER_SIZE
         while (numberSize > MIN_NUMBER_SIZE &&
             inlineWidth(number, unit, badge, numberSize, unitRatio) > MAX_TEXT_WIDTH
@@ -97,9 +110,9 @@ object SpeedIconGenerator {
     }
 
     /** Two lines: the number above, the spelled-out unit centred underneath it. */
-    private fun drawStacked(canvas: Canvas, badge: SpeedBadge) {
-        val number = glyphPaint()
-        val unit = glyphPaint()
+    private fun drawStacked(canvas: Canvas, badge: SpeedBadge, bold: Boolean) {
+        val number = glyphPaint(bold)
+        val unit = glyphPaint(bold)
         var numberSize = UNDER_MAX_NUMBER_SIZE
         while (numberSize > MIN_NUMBER_SIZE &&
             stackedWidth(number, unit, badge, numberSize) > MAX_TEXT_WIDTH
@@ -123,18 +136,20 @@ object SpeedIconGenerator {
         )
     }
 
-    private fun glyphPaint(): Paint =
+    private fun glyphPaint(bold: Boolean): Paint =
         Paint(Paint.ANTI_ALIAS_FLAG or Paint.SUBPIXEL_TEXT_FLAG).apply {
             color = Color.WHITE
-            typeface = font
+            typeface = if (bold) boldFont else regularFont
             textAlign = Paint.Align.LEFT
-            style = Paint.Style.FILL_AND_STROKE
+            // Only the heavy face is stroked: a stroke on a regular weight closes the counters.
+            style = if (bold) Paint.Style.FILL_AND_STROKE else Paint.Style.FILL
         }
 
     /** The stroke is what thickens the glyph, so it always travels with the text size. */
     private fun applySize(paint: Paint, textSize: Float) {
         paint.textSize = textSize
-        paint.strokeWidth = textSize * STROKE_RATIO
+        paint.strokeWidth =
+            if (paint.style == Paint.Style.FILL_AND_STROKE) textSize * STROKE_RATIO else 0f
     }
 
     private fun inlineWidth(

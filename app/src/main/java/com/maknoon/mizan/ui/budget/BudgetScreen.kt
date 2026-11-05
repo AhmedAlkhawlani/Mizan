@@ -80,6 +80,7 @@ fun BudgetScreen(
         onStatusBarSpeedModeChange = viewModel::setStatusBarSpeedMode,
         onStatusBarShowBytesChange = viewModel::setStatusBarShowBytes,
         onStatusBarStyleChange = viewModel::setStatusBarBadgeStyle,
+        onStatusBarBoldGlyphsChange = viewModel::setStatusBarBoldGlyphs,
         onBack = onBack,
         modifier = modifier,
     )
@@ -96,6 +97,7 @@ internal fun BudgetContent(
     onStatusBarSpeedModeChange: (StatusBarSpeedMode) -> Unit,
     onStatusBarShowBytesChange: (Boolean) -> Unit,
     onStatusBarStyleChange: (SpeedBadgeStyle) -> Unit,
+    onStatusBarBoldGlyphsChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
     onBack: () -> Unit = {},
 ) {
@@ -159,9 +161,11 @@ internal fun BudgetContent(
                     mode = uiState.statusBarIcon,
                     showBytes = uiState.statusBarShowBytes,
                     style = uiState.statusBarStyle,
+                    bold = uiState.statusBarBoldGlyphs,
                     onModeChange = onStatusBarSpeedModeChange,
                     onShowBytesChange = onStatusBarShowBytesChange,
                     onStyleChange = onStatusBarStyleChange,
+                    onBoldChange = onStatusBarBoldGlyphsChange,
                 )
             }
         }
@@ -236,9 +240,11 @@ private fun StatusBarIconCard(
     mode: StatusBarSpeedMode,
     showBytes: Boolean,
     style: SpeedBadgeStyle,
+    bold: Boolean,
     onModeChange: (StatusBarSpeedMode) -> Unit,
     onShowBytesChange: (Boolean) -> Unit,
     onStyleChange: (SpeedBadgeStyle) -> Unit,
+    onBoldChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Card(modifier = modifier.fillMaxWidth()) {
@@ -288,6 +294,7 @@ private fun StatusBarIconCard(
                     style = option,
                     label = stringResource(option.labelRes),
                     selected = option == style,
+                    bold = bold,
                     onSelect = onStyleChange,
                 )
             }
@@ -295,8 +302,41 @@ private fun StatusBarIconCard(
                 modifier = Modifier.padding(top = 8.dp, bottom = 4.dp),
                 color = MaterialTheme.colorScheme.outlineVariant,
             )
+            StatusBarWeightOption(bold = bold, onBoldChange = onBoldChange)
             StatusBarBytesOption(showBytes = showBytes, onShowBytesChange = onShowBytesChange)
         }
+    }
+}
+
+@Composable
+private fun StatusBarWeightOption(
+    bold: Boolean,
+    onBoldChange: (Boolean) -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .selectable(
+                selected = bold,
+                role = Role.Switch,
+                onClick = { onBoldChange(!bold) },
+            )
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = stringResource(R.string.settings_status_icon_weight),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            Text(
+                text = stringResource(R.string.settings_status_icon_weight_note),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        Spacer(modifier = Modifier.width(12.dp))
+        Switch(checked = bold, onCheckedChange = null)
     }
 }
 
@@ -370,6 +410,7 @@ private fun BadgeStyleOption(
     style: SpeedBadgeStyle,
     label: String,
     selected: Boolean,
+    bold: Boolean,
     onSelect: (SpeedBadgeStyle) -> Unit,
 ) {
     Row(
@@ -383,7 +424,7 @@ private fun BadgeStyleOption(
             .padding(vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        SpeedBadgePreview(style)
+        SpeedBadgePreview(style, bold)
         Spacer(modifier = Modifier.width(12.dp))
         RadioButton(selected = selected, onClick = null)
         Spacer(modifier = Modifier.width(12.dp))
@@ -396,7 +437,7 @@ private fun BadgeStyleOption(
  * actually see in the bar rather than an approximation of it.
  */
 @Composable
-private fun SpeedBadgePreview(style: SpeedBadgeStyle, modifier: Modifier = Modifier) {
+private fun SpeedBadgePreview(style: SpeedBadgeStyle, bold: Boolean, modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
             .size(28.dp)
@@ -410,7 +451,7 @@ private fun SpeedBadgePreview(style: SpeedBadgeStyle, modifier: Modifier = Modif
                 size.width / SpeedIconGenerator.CANVAS_SIZE,
                 size.height / SpeedIconGenerator.CANVAS_SIZE,
             )
-            SpeedIconGenerator.draw(native, PREVIEW_BADGE, style)
+            SpeedIconGenerator.draw(native, PREVIEW_BADGE, style, bold)
             native.restoreToCount(saved)
         }
     }
@@ -442,6 +483,7 @@ private fun BudgetPreview() {
             onStatusBarSpeedModeChange = {},
             onStatusBarShowBytesChange = {},
             onStatusBarStyleChange = {},
+            onStatusBarBoldGlyphsChange = {},
         )
     }
 }

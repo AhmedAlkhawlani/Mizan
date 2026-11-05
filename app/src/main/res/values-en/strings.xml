@@ -184,6 +184,8 @@
     <string name="settings_status_icon_style_raised">Unit raised beside the figure</string>
     <string name="settings_status_icon_style_under">Unit under the figure</string>
     <string name="settings_status_icon_style_uniform">Figure and unit the same size</string>
+    <string name="settings_status_icon_weight">Bold glyphs</string>
+    <string name="settings_status_icon_weight_note">When off, the glyphs turn thin and quieter, but read less clearly beside the bar\'s other icons.</string>
 
     <string name="history_export_title">Export data</string>
     <string name="history_export_body">A CSV of every recorded day. The system picks where it is saved, so the app needs no storage permission.</string>

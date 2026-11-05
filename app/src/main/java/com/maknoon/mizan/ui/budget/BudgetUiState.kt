@@ -23,6 +23,7 @@ data class BudgetUiState(
     val statusBarIcon: StatusBarSpeedMode = StatusBarSpeedMode.DOWNLOAD,
     val statusBarShowBytes: Boolean = false,
     val statusBarStyle: SpeedBadgeStyle = SpeedBadgeStyle.RAISED,
+    val statusBarBoldGlyphs: Boolean = true,
 )
 
 /**

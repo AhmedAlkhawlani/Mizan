@@ -55,11 +55,16 @@ class BudgetViewModel(application: Application) : AndroidViewModel(application) 
         ) { budgets, cycleStartDay, daily, monthly, statusBarIcon ->
             budgetUiState(budgets, cycleStartDay, daily, monthly, statusBarIcon)
         },
-        // combine tops out at five flows, so the two icon settings join the state afterwards.
+        // combine tops out at five flows, so the three icon settings join the state afterwards.
         settings.statusBarShowBytes,
         settings.statusBarBadgeStyle,
-    ) { state, showBytes, style ->
-        state.copy(statusBarShowBytes = showBytes, statusBarStyle = style)
+        settings.statusBarBoldGlyphs,
+    ) { state, showBytes, style, bold ->
+        state.copy(
+            statusBarShowBytes = showBytes,
+            statusBarStyle = style,
+            statusBarBoldGlyphs = bold,
+        )
     }.stateIn(
         scope = viewModelScope,
         // Keep the last value briefly so a rotation does not flash an empty screen.
@@ -100,6 +105,10 @@ class BudgetViewModel(application: Application) : AndroidViewModel(application) 
 
     fun setStatusBarBadgeStyle(style: SpeedBadgeStyle) {
         viewModelScope.launch { settings.setStatusBarBadgeStyle(style) }
+    }
+
+    fun setStatusBarBoldGlyphs(bold: Boolean) {
+        viewModelScope.launch { settings.setStatusBarBoldGlyphs(bold) }
     }
 
     /** An unparsable keystroke is ignored: the stored limit keeps its last valid value. */

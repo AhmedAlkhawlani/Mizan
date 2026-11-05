@@ -316,19 +316,22 @@ class DeviceUsageRepositoryTest {
             dailyWrites++
         }
 
-        override suspend fun addHourly(
+        override suspend fun openHourBucket(epochDay: Long, hour: Int) {
+            val key = epochDay to hour
+            if (key !in hourlyRows) hourlyRows[key] = DeviceHourlyEntity(epochDay, hour, 0L, 0L)
+        }
+
+        override suspend fun accumulateHour(
             epochDay: Long,
             hour: Int,
             rxBytes: Long,
             txBytes: Long,
         ) {
             val key = epochDay to hour
-            val existing = hourlyRows[key]
-            hourlyRows[key] = DeviceHourlyEntity(
-                epochDay = epochDay,
-                hour = hour,
-                rxBytes = (existing?.rxBytes ?: 0L) + rxBytes,
-                txBytes = (existing?.txBytes ?: 0L) + txBytes,
+            val existing = hourlyRows[key] ?: DeviceHourlyEntity(epochDay, hour, 0L, 0L)
+            hourlyRows[key] = existing.copy(
+                rxBytes = existing.rxBytes + rxBytes,
+                txBytes = existing.txBytes + txBytes,
             )
         }
 

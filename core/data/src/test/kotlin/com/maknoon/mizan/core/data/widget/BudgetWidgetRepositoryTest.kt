@@ -161,7 +161,9 @@ private class FakeDeviceUsageDao : DeviceUsageDao {
 
     override suspend fun upsertDaily(entity: DeviceDailyEntity) = error("not used")
 
-    override suspend fun addHourly(epochDay: Long, hour: Int, rxBytes: Long, txBytes: Long) =
+    override suspend fun openHourBucket(epochDay: Long, hour: Int) = error("not used")
+
+    override suspend fun accumulateHour(epochDay: Long, hour: Int, rxBytes: Long, txBytes: Long) =
         error("not used")
 
     override fun observeHourly(epochDay: Long): Flow<List<DeviceHourlyEntity>> = error("not used")

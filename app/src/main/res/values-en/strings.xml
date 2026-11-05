@@ -261,11 +261,14 @@
     <string name="about_firewall_title">A firewall inside your phone</string>
     <string name="about_firewall_body">When protection is on, Mizan creates a local VpnService tunnel on the device itself. Traffic passes through it to be decided: what you allowed goes through, and packets from blocked apps are dropped before they leave. The app opens no outside connection, needs no root, and does not hold the Internet permission at all.</string>
     <string name="about_pillars_title">The three firm pillars</string>
-    <string name="about_pillar_privacy_title">🛡️ 100% local independence and safety</string>
+    <string name="about_pillar_privacy_mark">🛡️</string>
+    <string name="about_pillar_privacy_title">%1$s local independence and safety</string>
     <string name="about_pillar_privacy_body">Built from scratch: no servers, no middlemen, and your data never leaves your device.</string>
-    <string name="about_pillar_free_title">🆓 Free and completely ad-free, forever</string>
+    <string name="about_pillar_free_mark">🆓</string>
+    <string name="about_pillar_free_title">Free and completely ad-free, forever</string>
     <string name="about_pillar_free_body">Made to serve the individual and protect their privacy, with no commercial goals or tracking.</string>
-    <string name="about_pillar_saving_title">⚡ Real data and battery savings</string>
+    <string name="about_pillar_saving_mark">⚡</string>
+    <string name="about_pillar_saving_title">Real data and battery savings</string>
     <string name="about_pillar_saving_body">Stop background drain and fully control which apps may reach the network.</string>
     <string name="about_team_open">Who we are — Maknoon Team</string>
     <string name="about_team_title">Maknoon Team</string>

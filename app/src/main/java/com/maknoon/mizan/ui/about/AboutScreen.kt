@@ -29,7 +29,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
@@ -45,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import com.maknoon.mizan.R
 import com.maknoon.mizan.core.designsystem.theme.MizanTheme
+import com.maknoon.mizan.core.domain.format.isolateLtr
 import com.maknoon.mizan.ui.component.AppTopBar
 import com.maknoon.mizan.ui.component.AppTopBarRow
 
@@ -142,19 +142,25 @@ internal fun AboutContent(
                 LazyHeader(title = stringResource(R.string.about_pillars_title))
             }
             item(key = "privacy") {
-                ExplanationCard(
-                    title = stringResource(R.string.about_pillar_privacy_title),
+                PillarCard(
+                    mark = stringResource(R.string.about_pillar_privacy_mark),
+                    title = stringResource(
+                        R.string.about_pillar_privacy_title,
+                        isolateLtr(stringResource(R.string.about_percent_full)),
+                    ),
                     body = stringResource(R.string.about_pillar_privacy_body),
                 )
             }
             item(key = "free") {
-                ExplanationCard(
+                PillarCard(
+                    mark = stringResource(R.string.about_pillar_free_mark),
                     title = stringResource(R.string.about_pillar_free_title),
                     body = stringResource(R.string.about_pillar_free_body),
                 )
             }
             item(key = "saving") {
-                ExplanationCard(
+                PillarCard(
+                    mark = stringResource(R.string.about_pillar_saving_mark),
                     title = stringResource(R.string.about_pillar_saving_title),
                     body = stringResource(R.string.about_pillar_saving_body),
                 )
@@ -198,6 +204,33 @@ private fun ExplanationCard(title: String, body: String) {
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+        }
+    }
+}
+
+/**
+ * One pillar: its mark leads the row so the emoji never lands mid-sentence, and the numeral in
+ * the first title is isolated so Arabic bidi cannot split `100%`.
+ */
+@Composable
+private fun PillarCard(mark: String, title: String, body: String) {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier.padding(20.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Text(text = mark, style = MaterialTheme.typography.titleLarge)
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                Text(text = title, style = MaterialTheme.typography.titleSmall)
+                Text(
+                    text = body,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
         }
     }
 }
@@ -267,6 +300,10 @@ private fun TeamDialog(onDismiss: () -> Unit) {
     )
 }
 
+/**
+ * The address sits under its label rather than beside it: the site handle is long enough to
+ * squeeze the Arabic label into a single letter per line when the two share a row.
+ */
 @Composable
 private fun ContactButton(label: String, value: String, onClick: () -> Unit) {
     OutlinedButton(
@@ -274,20 +311,17 @@ private fun ContactButton(label: String, value: String, onClick: () -> Unit) {
         modifier = Modifier.fillMaxWidth(),
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp),
     ) {
-        Row(
+        Column(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
+            verticalArrangement = Arrangement.spacedBy(2.dp),
         ) {
             Text(
                 text = label,
                 style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.weight(1f),
             )
-            Spacer(modifier = Modifier.width(12.dp))
             Text(
                 text = value,
-                style = MaterialTheme.typography.labelSmall.copy(
+                style = MaterialTheme.typography.labelMedium.copy(
                     textDirection = TextDirection.Ltr,
                 ),
                 color = MaterialTheme.colorScheme.primary,

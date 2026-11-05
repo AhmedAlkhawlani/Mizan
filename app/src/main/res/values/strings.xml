@@ -271,11 +271,15 @@
     <string name="about_firewall_title">جدار حماية داخل جهازك</string>
     <string name="about_firewall_body">عند تفعيل الحماية ينشئ ميزان نفق VpnService محلياً على الجهاز نفسه. يمرّ به الاتصال ليُقرَّر فيه: ما اخترته يُسمح له، وحزم التطبيقات المحظورة تُسقط قبل خروجها. لا يفتح التطبيق أي اتصال خارجي، ولا يحتاج روت، ولا يملك صلاحية الإنترنت أصلاً.</string>
     <string name="about_pillars_title">المبادئ الثلاثة الراسخة</string>
-    <string name="about_pillar_privacy_title">🛡️ استقلال وأمان محلي 100%</string>
+    <string name="about_percent_full" translatable="false">100%</string>
+    <string name="about_pillar_privacy_mark">🛡️</string>
+    <string name="about_pillar_privacy_title">استقلال وأمان محلي %1$s</string>
     <string name="about_pillar_privacy_body">مبني من الصفر: لا سيرفرات، ولا أطراف وسيطة، وبياناتك لا تغادر جهازك نهائياً.</string>
-    <string name="about_pillar_free_title">🆓 مجاني وخالٍ تماماً من الإعلانات للأبد</string>
+    <string name="about_pillar_free_mark">🆓</string>
+    <string name="about_pillar_free_title">مجاني وخالٍ تماماً من الإعلانات للأبد</string>
     <string name="about_pillar_free_body">صُنع لخدمة الفرد وحماية خصوصيته، دون أي أهداف تجارية أو تتبّع.</string>
-    <string name="about_pillar_saving_title">⚡ توفير حقيقي للبيانات والبطارية</string>
+    <string name="about_pillar_saving_mark">⚡</string>
+    <string name="about_pillar_saving_title">توفير حقيقي للبيانات والبطارية</string>
     <string name="about_pillar_saving_body">منع استنزاف الخلفية والتحكم الكامل في وصول التطبيقات للشبكة.</string>
     <string name="about_team_open">من نحن — فريق مَكْنُون</string>
     <string name="about_team_title">فريق مَكْنُون</string>

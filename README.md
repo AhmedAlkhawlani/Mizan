@@ -106,6 +106,7 @@
 | [docs/08-decisions.md](docs/08-decisions.md) | قرارات معمارية |
 | [docs/12-progress.md](docs/12-progress.md) | سجل التقدّم والأدلة والقيود |
 | [docs/14-user-guide.md](docs/14-user-guide.md) | دليل المستخدم |
+| [docs/14-user-guide-en.md](docs/14-user-guide-en.md) | User guide (English) |
 | [docs/15-privacy.md](docs/15-privacy.md) | سياسة الخصوصية |
 | [docs/16-feature-pack-v2.md](docs/16-feature-pack-v2.md) | مخطط المرحلة 8 (حظر مزدوج، اسأل عند الاتصال، الهوتسبوت) |
 

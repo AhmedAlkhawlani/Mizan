@@ -49,7 +49,7 @@ import com.maknoon.mizan.ui.component.AppTopBar
 import com.maknoon.mizan.ui.component.AppTopBarRow
 
 private const val TELEGRAM_URL = "https://t.me/maknoonsoft"
-private const val WEBSITE_URL = "https://ahmedalkhwlany.github.io/maknoonApp/"
+private const val WEBSITE_URL = "https://ahmedalkhawlani.github.io/maknoonApp/"
 
 /**
  * The About screen from the operator's brief: how the measurement and the local firewall work,

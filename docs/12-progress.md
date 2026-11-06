@@ -1,6 +1,6 @@
 # 12 — سجل التقدّم: ما بُني فعلاً حتى الآن
 
-> آخر تحديث: 2026-11-07 · الفرع: `main` · آخر كومت: `dd4b29f`
+> آخر تحديث: 2026-11-07 · الفرع: `main` · آخر كومت: `0773dce`
 > المرجع: `docs/05-roadmap.md`. القاعدة المتّبعة: **خطوة = كومت واحد**، وقبل كل كومت تُشغَّل البوابة
 > `./gradlew testDebugUnitTest test lintDebug assembleDebug`.
 
@@ -114,6 +114,7 @@
 | 80 | `6aa20f4` | `docs: record the resilience fix and the status-bar icon question` |
 | 81 | `14e5737` | `docs(user-guide): write the English guide and finish the badge card` |
 | 82 | `dd4b29f` | `feat(budget): let limits be edited in megabytes or gigabytes` |
+| 83 | `0773dce` | `fix(about): point the website card at the real pages host` |
 
 > ⚠️ **لم يُدفع أي شيء إلى GitHub**: كل الكومتات محلية. `git push origin main` يفشل بـ
 > `could not read Username for 'https://github.com'` — لا بيانات اعتماد HTTPS على الجهاز.
@@ -620,7 +621,7 @@
     جعلت المحايد يُحسم بالاتجاه الخاطئ، فصار الرقم معزولاً بـ`isolateLtr` عبر وسيط `%1$s`
     ومفتاح `about_percent_full` غير المترجم — وهي نفس قاعدة §7/35؛ (ب) الإيموجي داخل عنوان المبدأ
     هاجر إلى وسط الجملة، فانتقل إلى `Text` مستقل يقود الصف (`about_pillar_*_mark`)، وعنوان المبدأ
-    صار نصاً خالصاً. وفي الدايلوك ضغط `ahmedalkhwlany.github.io/maknoonApp` تسميةَ زرّه حتى صارت
+    صار نصاً خالصاً. وفي الدايلوك ضغط `ahmedalkhawlani.github.io/maknoonApp` تسميةَ زرّه حتى صارت
     حرفاً في كل سطر وتمدّد الحدّ البيضاوي؛ صار العنوان فوق العنوان الفرعي في عمود.
     **الإثبات أن الأزرار تعمل**: `cmd package resolve-activity` على الجهاز رجّعت
     `com.samsung.android.dialer/.DialtactsActivity` لـ`tel:`، و`ResolverActivity` لرابط التلجرام،
@@ -692,6 +693,16 @@
     وفي حوار TikTok حدث التحويلان نفسهما، وقراءة جدول `budgets` من قاعدة الجهاز قبل التبديلين
     وبعدهما أظهرت `2500000000` لصفّي DEVICE وAPP في الحالتين — أي أن التبديل لم يمسّ السقف المخزون.
     التوثيق المحدَّث: §5 في الدليلين العربي والإنجليزي.
+
+57. **تصحيح مضيف الموقع في بطاقة الفريق (`0773dce`)**: كان زرّ «🌐 الموقع الإلكتروني» في دايلوك
+    «فريق مَكْنُون» يفتح `ahmedalkhwlany.github.io/maknoonApp` (بلام إضافية بعد kh)، وصحّحه المشغّل
+    إلى `ahmedalkhawlani.github.io/maknoonApp`. عُدِّل الموضعان فقط: ثابت `WEBSITE_URL` في
+    `AboutScreen.kt` ونصّ الزرّ `about_team_website_handle` في `values/` (غير قابل للترجمة، فلا نسخة
+    إنجليزية منه). البحث عن `khwlany` في المستودع لم يُبقِ إلا مسار المستودع المحلي في `docs/13`
+    وهو اسم مجلد على القرص لا رابط. البوابة بعد التعديل: BUILD SUCCESSFUL (3m29s)، 317 اختباراً
+    بلا فشل، lint بلا أخطاء، debug وrelease مبنيّان. **لم يُتحقَّق**: أن الرابط الجديد يستجيب من
+    الشبكة الحالية (طلبا `curl` إلى المضيفين انتهيا بمهلة، فليس في ذلك دليل على أيّهما)، وأن
+    المتصفح يفتحه من الجهاز — يلزم تثبيت بإذن المشغّل وفتح الزرّ فعلياً (§9/28).
 
 ---
 

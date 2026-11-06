@@ -282,6 +282,34 @@
     <string name="about_team_telegram_label">📢 Official Telegram channel</string>
     <string name="about_team_website_label">🌐 Website</string>
     <string name="about_team_close">Close</string>
+    <string name="about_help_open">User guide</string>
+
+    <string name="help_title">User guide</string>
+    <string name="help_subtitle">What every screen and figure means</string>
+    <string name="help_back">Back</string>
+    <string name="help_quick_title">Quick start</string>
+    <string name="help_quick_body">Tap Start on the dashboard and the meter runs in the background. A persistent notification shows the live speed and today\'s total, with a pause action. While monitoring is stopped no new figures are recorded.</string>
+    <string name="help_dashboard_title">Dashboard</string>
+    <string name="help_dashboard_body">The speed card shows download and upload live. The today card shows usage since midnight, and \u201cpartial\u201d means the day was not fully monitored. The budget bar appears only when a cap exists. The status line says whether measurement is running, stopped, or unable to read the counters.</string>
+    <string name="help_notification_title">Notification, widgets and badge</string>
+    <string name="help_notification_body">The ongoing notification is silent and refreshes every second; tapping it opens the app. Both widgets are optional: a 2\u00d71 speed widget and a 2\u00d72 budget ring, added from the launcher, each with its own settings. The status-bar badge shows the rate next to the clock in the template you pick.</string>
+    <string name="help_history_title">History</string>
+    <string name="help_history_body">The chart covers the last seven days (download over upload), and below it the 24 hours of today. A day without monitoring stays an empty column rather than a zero, and the amber dot marks a partial day. Export writes a CSV to Downloads through the system picker.</string>
+    <string name="help_apps_title">Apps</string>
+    <string name="help_apps_body">This screen needs Usage Access from system settings. The figures come from Android\'s counters and can lag a few minutes behind usage. Pick Today, 7 days, or the billing cycle; tap an app for its chart and its mobile/Wi-Fi split. System apps are not listed.</string>
+    <string name="help_budget_title">Budgets and billing cycle</string>
+    <string name="help_budget_body">Set a daily or monthly cap for the device and for each app, in MB or GB; switching the unit only rewrites the number and never the cap (2 GB = 2000 MB). At 80% one \u201capproaching\u201d alert arrives, at 100% one \u201cexceeded\u201d alert, once per level per period, and it stays until you tap \u201cOK\u201d. The billing cycle starts on the day you choose, 1\u201328.</string>
+    <string name="help_saver_title">Protection</string>
+    <string name="help_saver_body">Protection blocks chosen apps from the network through a local tunnel inside your phone, with no server and no Internet permission. Blocking applies on metered networks; on unmetered Wi-Fi traffic passes. Stop protection any time from its switch or the notification.</string>
+    <string name="help_faq_title">Common questions</string>
+    <string name="help_faq_no_internet_title">Why does the app ask for no Internet permission?</string>
+    <string name="help_faq_no_internet_body">Because every measurement happens on the device: Mizan reads Android\'s own counters and sends nothing anywhere, so it needs no Internet permission at all.</string>
+    <string name="help_faq_less_title">Why is my figure lower than the operator\'s?</string>
+    <string name="help_faq_less_body">The difference may be traffic from devices connected to your hotspot (not counted here yet), traffic Android\'s counters do not expose, or the operator\'s own billing method. Mizan shows what the system recorded, not an estimate.</string>
+    <string name="help_faq_dash_title">What does \u201c\u2014\u201d mean?</string>
+    <string name="help_faq_dash_body">\u201c\u2014\u201d means the value is unknown right now, not zero. It appears, for example, before Usage Access is granted or when a counter cannot be read.</string>
+    <string name="help_faq_accuracy_title">How do I check the accuracy?</string>
+    <string name="help_faq_accuracy_body">Compare today\'s total with the system network settings for the same window. A day monitored from midnight is more accurate than one that started mid-day, which is why partial days are labelled.</string>
 
     <string name="onboarding_tagline">First run</string>
     <string name="onboarding_title">Welcome to Mizan</string>

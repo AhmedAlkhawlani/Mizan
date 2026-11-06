@@ -61,12 +61,14 @@ private const val WEBSITE_URL = "https://ahmedalkhawlani.github.io/maknoonApp/"
 fun AboutScreen(
     modifier: Modifier = Modifier,
     onBack: () -> Unit = {},
+    onOpenHelp: () -> Unit = {},
 ) {
     var showTeam by rememberSaveable { mutableStateOf(false) }
 
     AboutContent(
         onBack = onBack,
         onOpenTeam = { showTeam = true },
+        onOpenHelp = onOpenHelp,
         modifier = modifier,
     )
     if (showTeam) {
@@ -79,6 +81,7 @@ internal fun AboutContent(
     onBack: () -> Unit,
     onOpenTeam: () -> Unit,
     modifier: Modifier = Modifier,
+    onOpenHelp: () -> Unit = {},
 ) {
     Column(modifier = modifier.fillMaxSize()) {
         AppTopBar {
@@ -116,6 +119,18 @@ internal fun AboutContent(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
+            item(key = "help") {
+                OutlinedButton(
+                    onClick = onOpenHelp,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 48.dp),
+                ) {
+                    Icon(painter = painterResource(R.drawable.ic_info), contentDescription = null)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(text = stringResource(R.string.about_help_open))
+                }
+            }
             item(key = "how") {
                 LazyHeader(title = stringResource(R.string.about_how_title))
             }

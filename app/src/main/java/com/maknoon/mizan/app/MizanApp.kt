@@ -34,6 +34,7 @@ import com.maknoon.mizan.ui.apps.AppDetailScreen
 import com.maknoon.mizan.ui.apps.AppsScreen
 import com.maknoon.mizan.ui.budget.BudgetScreen
 import com.maknoon.mizan.ui.dashboard.DashboardScreen
+import com.maknoon.mizan.ui.help.HelpScreen
 import com.maknoon.mizan.ui.history.HistoryScreen
 import com.maknoon.mizan.ui.onboarding.OnboardingScreen
 import com.maknoon.mizan.ui.saver.SaverScreen
@@ -60,6 +61,9 @@ internal const val BUDGET_ROUTE = "budget"
 
 /** The about screen, reached from the dashboard header beside the budget action. */
 internal const val ABOUT_ROUTE = "about"
+
+/** The in-app guide, reached from the about screen. */
+internal const val HELP_ROUTE = "help"
 
 private fun appDetailRoute(packageName: String): String =
     "apps/detail/${Uri.encode(packageName)}"
@@ -167,7 +171,15 @@ fun MizanApp(
             composable(MizanDestination.History.route) { HistoryScreen() }
             composable(MizanDestination.Saver.route) { SaverScreen() }
             composable(BUDGET_ROUTE) { BudgetScreen(onBack = { navController.popBackStack() }) }
-            composable(ABOUT_ROUTE) { AboutScreen(onBack = { navController.popBackStack() }) }
+            composable(ABOUT_ROUTE) {
+                AboutScreen(
+                    onBack = { navController.popBackStack() },
+                    onOpenHelp = {
+                        navController.navigate(HELP_ROUTE) { launchSingleTop = true }
+                    },
+                )
+            }
+            composable(HELP_ROUTE) { HelpScreen(onBack = { navController.popBackStack() }) }
         }
     }
 }

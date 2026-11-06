@@ -296,6 +296,34 @@
     <string name="about_team_phone_number" translatable="false">775057134</string>
     <string name="about_team_telegram_handle" translatable="false">t.me/maknoonsoft</string>
     <string name="about_team_website_handle" translatable="false">ahmedalkhawlani.github.io/maknoonApp</string>
+    <string name="about_help_open">دليل الاستخدام</string>
+
+    <string name="help_title">دليل الاستخدام</string>
+    <string name="help_subtitle">ماذا تعني كل شاشة وكل رقم</string>
+    <string name="help_back">رجوع</string>
+    <string name="help_quick_title">البداية السريعة</string>
+    <string name="help_quick_body">اضغط «ابدأ» في الرئيسية ليعمل العدّاد في الخلفية. يظهر إشعار دائم بالسرعة وإجمالي اليوم، وفيه زر إيقاف مؤقت. عندما تتوقف المراقبة لا تُسجَّل أرقام جديدة حتى تعيد التشغيل.</string>
+    <string name="help_dashboard_title">الشاشة الرئيسية</string>
+    <string name="help_dashboard_body">بطاقة السرعة تعرض التنزيل والرفع لحظياً. بطاقة اليوم تعرض ما استُهلك منذ منتصف الليل، وكلمة «جزئي» تعني أن القياس لم يغطِّ اليوم كاملاً. شريط الميزانية يظهر فقط إذا كان لديك حد. سطر الحالة يقول: تعمل، متوقفة، أو تعذّر قراءة العدّادات.</string>
+    <string name="help_notification_title">الإشعار والودجات وشارة الحالة</string>
+    <string name="help_notification_body">الإشعار الدائم صامت ويتحدث كل ثانية، والضغط عليه يفتح التطبيق. الودجتان اختياريتان: ودجة السرعة 2×1 وودجة الميزانية 2×2، تُضافان من شاشة الجهاز، ولكل نسخة إعداداتها. شارة شريط الحالة تعرض السرعة بجانب الساعة حسب القالب الذي تختاره.</string>
+    <string name="help_history_title">شاشة السجل</string>
+    <string name="help_history_body">المخطط العلوي لآخر سبعة أيام (تنزيل فوق رفع)، وتحته ساعات اليوم الأربع والعشرين. اليوم غير المراقب يظهر عموداً فارغاً لا صفراً، والنقطة الكهرمانية تعني يوماً جزئياً. زر التصدير يحفظ ملف CSV في مجلد التنزيل عبر منتقي النظام.</string>
+    <string name="help_apps_title">شاشة التطبيقات</string>
+    <string name="help_apps_body">تحتاج هذه الشاشة إذن «الوصول إلى الاستخدام» من إعدادات النظام. الأرقام تأتي من عدّادات أندرويد وقد تتأخر دقائق بعد الاستخدام. اختر الفترة: اليوم، ٧ أيام، أو دورة الفاتورة. اضغط أي تطبيق لترى مخططه وانقسام خلوي/Wi‑Fi. تطبيقات النظام لا تُعرض.</string>
+    <string name="help_budget_title">الميزانية ودورة الفاتورة</string>
+    <string name="help_budget_body">حدّد سقفاً يومياً أو شهرياً للجهاز ولكل تطبيق، واختر MB أو GB؛ تبديل الوحدة يعيد كتابة الرقم فقط ولا يغيّر السقف (2 GB = 2000 MB). عند 80% يصل تنبيه «اقتربت»، وعند 100% «تجاوزت»، مرة واحدة لكل مستوى في الفترة، ويبقى حتى تضغط «حسناً». دورة الفاتورة تبدأ من اليوم الذي تختاره بين ١ و٢٨.</string>
+    <string name="help_saver_title">شاشة الحماية</string>
+    <string name="help_saver_body">الحماية تحجب تطبيقات محددة من الشبكة عبر نفق محلي داخل جهازك، بلا خادم وبلا إذن إنترنت. الحجب يخص الشبكات المقنّنة؛ على Wi‑Fi غير المقنّن يمرّ الترافيك. أوقف الحماية في أي وقت من مفتاحها أو من الإشعار.</string>
+    <string name="help_faq_title">أسئلة متكررة</string>
+    <string name="help_faq_no_internet_title">لماذا لا يطلب التطبيق إذن الإنترنت؟</string>
+    <string name="help_faq_no_internet_body">لأن كل القياس يحدث داخل الجهاز: يقرأ ميزان عدّادات أندرويد نفسها ولا يرسل شيئاً إلى أي خادم، فلا يحتاج إذن الإنترنت إطلاقاً.</string>
+    <string name="help_faq_less_title">لماذا رقمي أقل من رقم المشغّل؟</string>
+    <string name="help_faq_less_body">قد يكون الفرق ترافيك أجهزة متصلة بهوتسبوتك (لا يُحسب هنا بعد)، أو ترافيك لا تعرضه عدّادات أندرويد، أو طريقة المشغّل في حساب الباقات. ميزان يعرض ما سجّله النظام لا تقديراً.</string>
+    <string name="help_faq_dash_title">ماذا تعني «—»؟</string>
+    <string name="help_faq_dash_body">«—» تعني أن القيمة غير معروفة الآن، وليست صفراً. تظهر مثلاً قبل منح إذن الاستخدام أو عندما تتعذّر قراءة عدّاد.</string>
+    <string name="help_faq_accuracy_title">كيف أتأكد من دقة الأرقام؟</string>
+    <string name="help_faq_accuracy_body">قارن إجمالي اليوم مع إعدادات الشبكة في النظام لنفس الفترة. يوم راقبه ميزان من منتصف الليل أكثر دقة من يوم بدأ في منتصفه، ولهذا تُوسم الأيام الجزئية.</string>
 
     <string name="onboarding_tagline">الإعداد الأولي</string>
     <string name="onboarding_title">مرحباً في ميزان</string>

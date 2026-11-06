@@ -1,6 +1,7 @@
 package com.maknoon.mizan.core.data.usage
 
 import android.content.Context
+import android.util.Log
 import com.maknoon.mizan.core.data.db.DeviceDailyEntity
 import com.maknoon.mizan.core.data.db.DeviceHourlyEntity
 import com.maknoon.mizan.core.data.db.DeviceStateEntity
@@ -11,6 +12,7 @@ import com.maknoon.mizan.core.domain.accounting.TrafficAccountant
 import com.maknoon.mizan.core.domain.accounting.TrafficSnapshot
 import java.time.Instant
 import java.time.ZoneId
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -50,9 +52,18 @@ class DeviceUsageRepository(
     /** Records one sample and returns the day's usage so far. */
     suspend fun record(snapshot: TrafficSnapshot): DailyUsage {
         val usage = accountant().record(snapshot)
-        accumulateHourly(usage, snapshot.atMillis)
-        if (shouldPersist(usage, snapshot.atMillis)) {
-            persist(usage, snapshot.atMillis)
+        // The accountant has the sample either way, so a rejected write costs only storage: the
+        // hour bucket stays pending and the next sample carries it again. An exception here used
+        // to escape into the monitoring worker and kill the app with it (§12/8).
+        try {
+            accumulateHourly(usage, snapshot.atMillis)
+            if (shouldPersist(usage, snapshot.atMillis)) {
+                persist(usage, snapshot.atMillis)
+            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Log.w(TAG, "sample not stored", e)
         }
         return usage
     }
@@ -155,6 +166,8 @@ class DeviceUsageRepository(
     )
 
     companion object {
+        private const val TAG = "DeviceUsageRepository"
+
         const val DEFAULT_PERSIST_INTERVAL_MILLIS = 5_000L
 
         fun create(context: Context): DeviceUsageRepository = DeviceUsageRepository(

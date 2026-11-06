@@ -222,6 +222,23 @@ class DeviceUsageRepositoryTest {
     }
 
     @Test
+    fun `a rejected write keeps the reading and retries the traffic`() = runTest {
+        repository.record(snapshot(rx = 1_000, atMillis = millisAt(hour = 8, second = 0)))
+        repository.record(snapshot(rx = 1_500, atMillis = millisAt(hour = 8, second = 1)))
+        dao.failingHourWrites = 1
+
+        val usage = repository.record(snapshot(rx = 2_000, atMillis = millisAt(hour = 8, second = 6)))
+
+        assertThat(usage.rxBytes).isEqualTo(2_000)
+        assertThat(dao.hourlyRows).isEmpty()
+
+        repository.record(snapshot(rx = 2_300, atMillis = millisAt(hour = 8, second = 12)))
+
+        // The failed flush is not lost traffic: the pending bucket carried both deltas over.
+        assertThat(dao.hourlyRows[day1.toEpochDay() to 8]!!.rxBytes).isEqualTo(1_300)
+    }
+
+    @Test
     fun `crossing an hour flushes the previous bucket immediately`() = runTest {
         repository.record(
             snapshot(rx = 1_000, atMillis = millisAt(hour = 8, minute = 59, second = 58)),
@@ -295,6 +312,9 @@ class DeviceUsageRepositoryTest {
         var stateWrites = 0
             private set
 
+        /** How many upcoming bucket opens refuse to run, the way a rejected statement would. */
+        var failingHourWrites = 0
+
         override suspend fun daily(epochDay: Long): DeviceDailyEntity? = dailyRows[epochDay]
 
         override fun observeDailyRange(
@@ -317,6 +337,10 @@ class DeviceUsageRepositoryTest {
         }
 
         override suspend fun openHourBucket(epochDay: Long, hour: Int) {
+            if (failingHourWrites > 0) {
+                failingHourWrites--
+                throw IllegalStateException("disk I/O error")
+            }
             val key = epochDay to hour
             if (key !in hourlyRows) hourlyRows[key] = DeviceHourlyEntity(epochDay, hour, 0L, 0L)
         }

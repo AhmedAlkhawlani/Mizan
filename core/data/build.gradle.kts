@@ -18,6 +18,12 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+
+    testOptions {
+        // The repository logs a rejected write instead of letting it reach the caller, so the
+        // JVM tests need android.util.Log to answer rather than throw "not mocked".
+        unitTests.isReturnDefaultValues = true
+    }
 }
 
 kotlin {

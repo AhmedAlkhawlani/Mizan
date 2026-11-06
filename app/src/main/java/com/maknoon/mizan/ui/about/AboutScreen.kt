@@ -1,6 +1,7 @@
 package com.maknoon.mizan.ui.about
 
 import android.content.Intent
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -17,6 +18,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -43,6 +45,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import com.maknoon.mizan.R
+import com.maknoon.mizan.app.AppLanguage
+import com.maknoon.mizan.app.LanguagePreference
 import com.maknoon.mizan.core.designsystem.theme.MizanTheme
 import com.maknoon.mizan.core.domain.format.isolateLtr
 import com.maknoon.mizan.ui.component.AppTopBar
@@ -119,6 +123,9 @@ internal fun AboutContent(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
+            item(key = "language") {
+                LanguageCard()
+            }
             item(key = "help") {
                 OutlinedButton(
                     onClick = onOpenHelp,
@@ -191,6 +198,54 @@ internal fun AboutContent(
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(text = stringResource(R.string.about_team_open))
                 }
+            }
+        }
+    }
+}
+
+/**
+ * The language switch. The choice is stored synchronously because the activity reads it before
+ * its first frame, so the screen is recreated instead of being partially re-lettered in place.
+ */
+@Composable
+private fun LanguageCard() {
+    val context = LocalContext.current
+    val activity = LocalActivity.current
+    val selected = LanguagePreference.stored(context)
+    val options = listOf(
+        R.string.about_language_arabic to AppLanguage.ARABIC,
+        R.string.about_language_english to AppLanguage.ENGLISH,
+        R.string.about_language_system to LanguagePreference.SYSTEM,
+    )
+
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier.padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Text(
+                text = stringResource(R.string.about_language_title),
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.semantics { heading() },
+            )
+            Text(
+                text = stringResource(R.string.about_language_body),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            options.forEach { (label, tag) ->
+                FilterChip(
+                    selected = selected == tag,
+                    onClick = {
+                        if (selected != tag) {
+                            LanguagePreference.set(context, tag)
+                            activity?.recreate()
+                        }
+                    },
+                    label = { Text(text = stringResource(label)) },
+                    modifier = Modifier.fillMaxWidth(),
+                )
             }
         }
     }

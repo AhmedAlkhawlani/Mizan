@@ -8,6 +8,7 @@ import android.graphics.Paint
 import android.graphics.RectF
 import android.util.Log
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.Dp
@@ -46,6 +47,7 @@ import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
 import com.maknoon.mizan.MainActivity
 import com.maknoon.mizan.R
+import com.maknoon.mizan.app.AppLanguage
 import com.maknoon.mizan.core.data.widget.BudgetWidgetConfig
 import com.maknoon.mizan.core.data.widget.BudgetWidgetRepository
 import com.maknoon.mizan.core.data.widget.BudgetWidgetSnapshot
@@ -98,7 +100,11 @@ class BudgetWidget : GlanceAppWidget() {
         } else {
             null
         }
-        provideContent { BudgetWidgetContent(state, config, icon) }
+        provideContent {
+            CompositionLocalProvider(LocalContext provides AppLanguage.localized(context)) {
+                BudgetWidgetContent(state, config, icon)
+            }
+        }
     }
 
     private suspend fun loadConfig(context: Context, id: GlanceId): BudgetWidgetConfig = try {

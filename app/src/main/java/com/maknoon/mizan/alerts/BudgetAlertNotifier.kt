@@ -16,6 +16,7 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.maknoon.mizan.MainActivity
 import com.maknoon.mizan.R
+import com.maknoon.mizan.app.AppLanguage
 import com.maknoon.mizan.core.domain.budget.BudgetAlert
 import com.maknoon.mizan.core.domain.budget.BudgetLevel
 import com.maknoon.mizan.core.domain.budget.BudgetPeriod
@@ -30,7 +31,9 @@ import com.maknoon.mizan.core.domain.format.isolateLtr
  * must make a sound, so it gets a separate channel. It is ongoing and not auto-cancelled: the
  * only way to remove it is the «حسناً» action, which acknowledges the rows behind it.
  */
-class BudgetAlertNotifier(private val context: Context) {
+class BudgetAlertNotifier(rawContext: Context) {
+
+    private val context = AppLanguage.localized(rawContext)
 
     private val manager = NotificationManagerCompat.from(context)
 

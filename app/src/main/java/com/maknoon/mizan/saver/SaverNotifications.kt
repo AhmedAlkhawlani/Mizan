@@ -7,6 +7,7 @@ import android.app.PendingIntent
 import android.content.Context
 import androidx.core.app.NotificationCompat
 import com.maknoon.mizan.R
+import com.maknoon.mizan.app.AppLanguage
 
 /** The ongoing notification for the blocking-only tunnel, with an instant stop action. */
 object SaverNotifications {
@@ -15,7 +16,8 @@ object SaverNotifications {
 
     private const val CHANNEL_ID = "saver"
 
-    fun createChannel(context: Context, manager: NotificationManager) {
+    fun createChannel(base: Context, manager: NotificationManager) {
+        val context = AppLanguage.localized(base)
         val channel = NotificationChannel(
             CHANNEL_ID,
             context.getString(R.string.saver_notification_channel),
@@ -28,42 +30,51 @@ object SaverNotifications {
     }
 
     fun startingNotification(
-        context: Context,
+        base: Context,
         openIntent: PendingIntent,
         stopIntent: PendingIntent,
-    ): Notification = build(
-        context = context,
-        text = context.getString(R.string.saver_notification_starting),
-        openIntent = openIntent,
-        stopIntent = stopIntent,
-    )
+    ): Notification {
+        val context = AppLanguage.localized(base)
+        return build(
+            context = context,
+            text = context.getString(R.string.saver_notification_starting),
+            openIntent = openIntent,
+            stopIntent = stopIntent,
+        )
+    }
 
     fun activeNotification(
-        context: Context,
+        base: Context,
         blockedCount: Int,
         openIntent: PendingIntent,
         stopIntent: PendingIntent,
-    ): Notification = build(
-        context = context,
-        text = context.resources.getQuantityString(
-            R.plurals.saver_notification_active,
-            blockedCount,
-            blockedCount,
-        ),
-        openIntent = openIntent,
-        stopIntent = stopIntent,
-    )
+    ): Notification {
+        val context = AppLanguage.localized(base)
+        return build(
+            context = context,
+            text = context.resources.getQuantityString(
+                R.plurals.saver_notification_active,
+                blockedCount,
+                blockedCount,
+            ),
+            openIntent = openIntent,
+            stopIntent = stopIntent,
+        )
+    }
 
     fun unmeteredNotification(
-        context: Context,
+        base: Context,
         openIntent: PendingIntent,
         stopIntent: PendingIntent,
-    ): Notification = build(
-        context = context,
-        text = context.getString(R.string.saver_notification_unmetered),
-        openIntent = openIntent,
-        stopIntent = stopIntent,
-    )
+    ): Notification {
+        val context = AppLanguage.localized(base)
+        return build(
+            context = context,
+            text = context.getString(R.string.saver_notification_unmetered),
+            openIntent = openIntent,
+            stopIntent = stopIntent,
+        )
+    }
 
     private fun build(
         context: Context,

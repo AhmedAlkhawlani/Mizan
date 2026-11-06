@@ -7,6 +7,7 @@ import android.service.quicksettings.Tile
 import android.service.quicksettings.TileService
 import com.maknoon.mizan.MainActivity
 import com.maknoon.mizan.R
+import com.maknoon.mizan.app.AppLanguage
 import com.maknoon.mizan.core.domain.format.ByteFormatter
 import com.maknoon.mizan.monitoring.MonitoringState
 import com.maknoon.mizan.monitoring.MonitoringStateHolder
@@ -63,17 +64,18 @@ class MizanTileService : TileService() {
     private fun render(state: MonitoringState) {
         val tile = qsTile ?: return
         val usage = state.usage
+        val context = AppLanguage.localized(this)
 
         tile.state = if (state.running) Tile.STATE_ACTIVE else Tile.STATE_INACTIVE
         tile.icon = Icon.createWithResource(this, R.drawable.ic_notification_monitor)
 
         val detail = when {
-            !state.running -> getString(R.string.tile_stopped)
-            usage == null -> getString(R.string.tile_unavailable)
-            else -> getString(R.string.tile_speed, ByteFormatter.rate(usage.downBytesPerSecond))
+            !state.running -> context.getString(R.string.tile_stopped)
+            usage == null -> context.getString(R.string.tile_unavailable)
+            else -> context.getString(R.string.tile_speed, ByteFormatter.rate(usage.downBytesPerSecond))
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            tile.label = getString(R.string.app_name)
+            tile.label = context.getString(R.string.app_name)
             tile.subtitle = detail
         } else {
             tile.label = detail

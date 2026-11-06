@@ -3,6 +3,7 @@ package com.maknoon.mizan.widget
 import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -29,6 +30,7 @@ import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
 import com.maknoon.mizan.MainActivity
 import com.maknoon.mizan.R
+import com.maknoon.mizan.app.AppLanguage
 import com.maknoon.mizan.core.data.widget.SpeedWidgetConfig
 import com.maknoon.mizan.core.data.widget.WidgetConfigStore
 import com.maknoon.mizan.core.designsystem.theme.MizanPalette
@@ -50,7 +52,11 @@ class SpeedWidget : GlanceAppWidget() {
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         val state = MonitoringStateHolder.state.value.toDashboardUiState()
         val config = loadConfig(context, id)
-        provideContent { SpeedWidgetContent(state, config) }
+        provideContent {
+            CompositionLocalProvider(LocalContext provides AppLanguage.localized(context)) {
+                SpeedWidgetContent(state, config)
+            }
+        }
     }
 
     private suspend fun loadConfig(context: Context, id: GlanceId): SpeedWidgetConfig = try {

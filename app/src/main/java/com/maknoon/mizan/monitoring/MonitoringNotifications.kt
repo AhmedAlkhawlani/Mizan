@@ -8,6 +8,7 @@ import android.content.Context
 import androidx.core.app.NotificationCompat
 import androidx.core.graphics.drawable.IconCompat
 import com.maknoon.mizan.R
+import com.maknoon.mizan.app.AppLanguage
 import com.maknoon.mizan.core.domain.format.ByteFormatter
 import com.maknoon.mizan.core.domain.format.isolateLtr
 
@@ -23,7 +24,8 @@ object MonitoringNotifications {
      * silent and never buzz. High importance with sound is reserved for budget alerts
      * (docs/04), which arrive in phase 4.
      */
-    fun createChannel(context: Context, manager: NotificationManager) {
+    fun createChannel(base: Context, manager: NotificationManager) {
+        val context = AppLanguage.localized(base)
         val channel = NotificationChannel(
             MONITORING_CHANNEL_ID,
             context.getString(R.string.notification_channel_monitoring),
@@ -42,12 +44,13 @@ object MonitoringNotifications {
      * once-a-second refresh can never buzz the user.
      */
     fun monitoringNotification(
-        context: Context,
+        base: Context,
         state: MonitoringState,
         openIntent: PendingIntent,
         stopIntent: PendingIntent,
         statusIcon: IconCompat? = null,
     ): Notification {
+        val context = AppLanguage.localized(base)
         val usage = state.usage
 
         val speedLine = if (usage == null) {

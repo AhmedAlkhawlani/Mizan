@@ -7,20 +7,29 @@ import java.util.Locale
 /**
  * Arabic is a first language, not a translation (ADR-008).
  *
- * The app therefore runs in Arabic even on a device set to another language, which also makes
- * the whole interface right-to-left from the first frame instead of only the Arabic strings.
- * The language tag is a parameter so the settings screen can switch it later; until then it
- * stays at the default.
+ * It stays the default even on a phone set to another language, which also makes the interface
+ * right-to-left from the first frame instead of only the Arabic strings. [LanguagePreference]
+ * lets the operator pick English or follow the system locale afterwards.
  */
 object AppLanguage {
     const val ARABIC = "ar"
+    const val ENGLISH = "en"
     const val DEFAULT_LANGUAGE_TAG = ARABIC
 
-    /** Returns a context whose resources resolve [languageTag] and whose direction follows it. */
-    fun wrapContext(base: Context, languageTag: String): Context {
-        val locale = Locale.forLanguageTag(languageTag)
-        Locale.setDefault(locale)
+    /**
+     * The context a non-activity caller should resolve strings with, so notifications, the tile
+     * and the widgets follow the operator's choice instead of the phone's language.
+     *
+     * It does not touch the process-wide default locale: these calls run on background
+     * threads, and flipping a global from there would leak into unrelated formatting.
+     */
+    fun localized(base: Context): Context {
+        val tag = LanguagePreference.resolvedTag(LanguagePreference.stored(base)) ?: return base
+        return contextFor(base, tag)
+    }
 
+    private fun contextFor(base: Context, languageTag: String): Context {
+        val locale = Locale.forLanguageTag(languageTag)
         val configuration = Configuration(base.resources.configuration)
         configuration.setLocale(locale)
         configuration.setLayoutDirection(locale)

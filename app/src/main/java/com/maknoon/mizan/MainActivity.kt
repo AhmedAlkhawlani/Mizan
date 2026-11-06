@@ -32,13 +32,11 @@ class MainActivity : ComponentActivity() {
     private val shortcutDestination = MutableStateFlow<String?>(null)
 
     /**
-     * Applied before the activity's resources are created, so the first frame is already
-     * Arabic and right-to-left rather than re-laying out after a language change.
+     * Applied before the activity's resources are created, so the first frame already follows
+     * the operator's language choice (Arabic unless they picked otherwise) and its direction.
      */
     override fun attachBaseContext(newBase: Context) {
-        super.attachBaseContext(
-            AppLanguage.wrapContext(newBase, AppLanguage.DEFAULT_LANGUAGE_TAG),
-        )
+        super.attachBaseContext(AppLanguage.localized(newBase))
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

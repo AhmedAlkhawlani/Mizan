@@ -62,9 +62,7 @@ abstract class WidgetConfigActivity : ComponentActivity() {
     private var saving = false
 
     override fun attachBaseContext(newBase: Context) {
-        super.attachBaseContext(
-            AppLanguage.wrapContext(newBase, AppLanguage.DEFAULT_LANGUAGE_TAG),
-        )
+        super.attachBaseContext(AppLanguage.localized(newBase))
     }
 
     final override fun onCreate(savedInstanceState: Bundle?) {

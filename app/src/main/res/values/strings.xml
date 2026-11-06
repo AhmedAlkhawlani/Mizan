@@ -297,6 +297,11 @@
     <string name="about_team_telegram_handle" translatable="false">t.me/maknoonsoft</string>
     <string name="about_team_website_handle" translatable="false">ahmedalkhawlani.github.io/maknoonApp</string>
     <string name="about_help_open">دليل الاستخدام</string>
+    <string name="about_language_title">لغة التطبيق</string>
+    <string name="about_language_body">تُطبَّق فوراً على الشاشات والإشعارات والودجات.</string>
+    <string name="about_language_arabic" translatable="false">العربية</string>
+    <string name="about_language_english" translatable="false">English</string>
+    <string name="about_language_system">حسب النظام</string>
 
     <string name="help_title">دليل الاستخدام</string>
     <string name="help_subtitle">ماذا تعني كل شاشة وكل رقم</string>
@@ -312,7 +317,7 @@
     <string name="help_apps_title">شاشة التطبيقات</string>
     <string name="help_apps_body">تحتاج هذه الشاشة إذن «الوصول إلى الاستخدام» من إعدادات النظام. الأرقام تأتي من عدّادات أندرويد وقد تتأخر دقائق بعد الاستخدام. اختر الفترة: اليوم، ٧ أيام، أو دورة الفاتورة. اضغط أي تطبيق لترى مخططه وانقسام خلوي/Wi‑Fi. تطبيقات النظام لا تُعرض.</string>
     <string name="help_budget_title">الميزانية ودورة الفاتورة</string>
-    <string name="help_budget_body">حدّد سقفاً يومياً أو شهرياً للجهاز ولكل تطبيق، واختر MB أو GB؛ تبديل الوحدة يعيد كتابة الرقم فقط ولا يغيّر السقف (2 GB = 2000 MB). عند 80% يصل تنبيه «اقتربت»، وعند 100% «تجاوزت»، مرة واحدة لكل مستوى في الفترة، ويبقى حتى تضغط «حسناً». دورة الفاتورة تبدأ من اليوم الذي تختاره بين ١ و٢٨.</string>
+    <string name="help_budget_body" formatted="false">حدّد سقفاً يومياً أو شهرياً للجهاز ولكل تطبيق، واختر MB أو GB؛ تبديل الوحدة يعيد كتابة الرقم فقط ولا يغيّر السقف (2 GB = 2000 MB). عند 80% يصل تنبيه «اقتربت»، وعند 100% «تجاوزت»، مرة واحدة لكل مستوى في الفترة، ويبقى حتى تضغط «حسناً». دورة الفاتورة تبدأ من اليوم الذي تختاره بين ١ و٢٨.</string>
     <string name="help_saver_title">شاشة الحماية</string>
     <string name="help_saver_body">الحماية تحجب تطبيقات محددة من الشبكة عبر نفق محلي داخل جهازك، بلا خادم وبلا إذن إنترنت. الحجب يخص الشبكات المقنّنة؛ على Wi‑Fi غير المقنّن يمرّ الترافيك. أوقف الحماية في أي وقت من مفتاحها أو من الإشعار.</string>
     <string name="help_faq_title">أسئلة متكررة</string>

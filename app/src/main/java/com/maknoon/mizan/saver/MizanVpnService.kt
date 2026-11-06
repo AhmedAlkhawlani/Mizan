@@ -22,6 +22,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import com.maknoon.mizan.MainActivity
 import com.maknoon.mizan.R
+import com.maknoon.mizan.app.AppLanguage
 import com.maknoon.mizan.core.data.db.MizanDatabaseProvider
 import com.maknoon.mizan.core.data.network.NetworkProfilesRepository
 import com.maknoon.mizan.core.data.settings.MizanSettings
@@ -250,7 +251,7 @@ class MizanVpnService : VpnService() {
         val attribution = buildUidAttribution(installed, plan.packageNames)
 
         val builder = Builder()
-            .setSession(getString(R.string.saver_vpn_session))
+            .setSession(AppLanguage.localized(this).getString(R.string.saver_vpn_session))
             .setMtu(VPN_MTU)
             .addAddress(VPN_IPV4_ADDRESS, 32)
             .addRoute("0.0.0.0", 0)

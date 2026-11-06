@@ -283,6 +283,9 @@
     <string name="about_team_website_label">🌐 Website</string>
     <string name="about_team_close">Close</string>
     <string name="about_help_open">User guide</string>
+    <string name="about_language_title">App language</string>
+    <string name="about_language_body">Applies immediately to screens, notifications and widgets.</string>
+    <string name="about_language_system">System</string>
 
     <string name="help_title">User guide</string>
     <string name="help_subtitle">What every screen and figure means</string>
@@ -298,7 +301,7 @@
     <string name="help_apps_title">Apps</string>
     <string name="help_apps_body">This screen needs Usage Access from system settings. The figures come from Android\'s counters and can lag a few minutes behind usage. Pick Today, 7 days, or the billing cycle; tap an app for its chart and its mobile/Wi-Fi split. System apps are not listed.</string>
     <string name="help_budget_title">Budgets and billing cycle</string>
-    <string name="help_budget_body">Set a daily or monthly cap for the device and for each app, in MB or GB; switching the unit only rewrites the number and never the cap (2 GB = 2000 MB). At 80% one \u201capproaching\u201d alert arrives, at 100% one \u201cexceeded\u201d alert, once per level per period, and it stays until you tap \u201cOK\u201d. The billing cycle starts on the day you choose, 1\u201328.</string>
+    <string name="help_budget_body" formatted="false">Set a daily or monthly cap for the device and for each app, in MB or GB; switching the unit only rewrites the number and never the cap (2 GB = 2000 MB). At 80% one \u201capproaching\u201d alert arrives, at 100% one \u201cexceeded\u201d alert, once per level per period, and it stays until you tap \u201cOK\u201d. The billing cycle starts on the day you choose, 1\u201328.</string>
     <string name="help_saver_title">Protection</string>
     <string name="help_saver_body">Protection blocks chosen apps from the network through a local tunnel inside your phone, with no server and no Internet permission. Blocking applies on metered networks; on unmetered Wi-Fi traffic passes. Stop protection any time from its switch or the notification.</string>
     <string name="help_faq_title">Common questions</string>

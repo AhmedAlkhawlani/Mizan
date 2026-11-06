@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
@@ -18,18 +19,21 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.maknoon.mizan.R
+import com.maknoon.mizan.ui.budget.BudgetUnit
 
 /**
- * The enable switch and the gigabyte field for one budget, shared by the device editor and the
- * per-app dialog so both accept the same input and show the same invalid message.
+ * The enable switch, the limit field and its unit chips for one budget, shared by the device
+ * editor and the per-app dialog so both accept the same input and show the same invalid message.
  */
 @Composable
 fun BudgetLimitField(
     text: String,
     enabled: Boolean,
     error: Boolean,
+    unit: BudgetUnit,
     onTextChange: (String) -> Unit,
     onEnabledChange: (Boolean) -> Unit,
+    onUnitChange: (BudgetUnit) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -73,5 +77,21 @@ fun BudgetLimitField(
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
         )
+        // The unit is chosen before the cap is switched on, so the chips stay live while the
+        // number field itself waits for the enable switch.
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            BudgetUnit.entries.forEach { option ->
+                FilterChip(
+                    selected = option == unit,
+                    onClick = { onUnitChange(option) },
+                    label = { Text(text = stringResource(option.labelRes())) },
+                )
+            }
+        }
     }
+}
+
+private fun BudgetUnit.labelRes(): Int = when (this) {
+    BudgetUnit.MEGABYTES -> R.string.budget_unit_mb
+    BudgetUnit.GIGABYTES -> R.string.budget_unit_gb
 }

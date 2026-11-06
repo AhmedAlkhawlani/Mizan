@@ -61,6 +61,7 @@ import com.maknoon.mizan.core.platform.usage.UsageAccess
 import com.maknoon.mizan.sync.AppUsageSyncScheduler
 import com.maknoon.mizan.ui.component.AppTopBar
 import com.maknoon.mizan.ui.component.AppTopBarRow
+import com.maknoon.mizan.ui.budget.BudgetUnit
 import com.maknoon.mizan.ui.component.BudgetLimitField
 import java.time.Instant
 import java.time.ZoneId
@@ -115,10 +116,12 @@ fun AppsScreen(
     editorState?.let { editor ->
         AppBudgetDialog(
             uiState = editor,
-            onDailyLimitChange = viewModel::onEditorDailyLimitChange,
+            onDailyLimitChange = { viewModel.onEditorDailyLimitChange(it, editor.daily.unit) },
             onDailyEnabledChange = viewModel::onEditorDailyEnabledChange,
-            onMonthlyLimitChange = viewModel::onEditorMonthlyLimitChange,
+            onDailyUnitChange = viewModel::onEditorDailyUnitChange,
+            onMonthlyLimitChange = { viewModel.onEditorMonthlyLimitChange(it, editor.monthly.unit) },
             onMonthlyEnabledChange = viewModel::onEditorMonthlyEnabledChange,
+            onMonthlyUnitChange = viewModel::onEditorMonthlyUnitChange,
             onDismiss = viewModel::closeBudgetEditor,
         )
     }
@@ -358,8 +361,10 @@ internal fun AppBudgetDialog(
     uiState: AppBudgetUiState,
     onDailyLimitChange: (String) -> Unit,
     onDailyEnabledChange: (Boolean) -> Unit,
+    onDailyUnitChange: (BudgetUnit) -> Unit,
     onMonthlyLimitChange: (String) -> Unit,
     onMonthlyEnabledChange: (Boolean) -> Unit,
+    onMonthlyUnitChange: (BudgetUnit) -> Unit,
     onDismiss: () -> Unit,
 ) {
     AlertDialog(
@@ -384,8 +389,10 @@ internal fun AppBudgetDialog(
                     text = uiState.daily.text,
                     enabled = uiState.daily.enabled,
                     error = uiState.daily.error,
+                    unit = uiState.daily.unit,
                     onTextChange = onDailyLimitChange,
                     onEnabledChange = onDailyEnabledChange,
+                    onUnitChange = onDailyUnitChange,
                 )
                 Text(
                     text = stringResource(R.string.app_budget_monthly_title),
@@ -395,8 +402,10 @@ internal fun AppBudgetDialog(
                     text = uiState.monthly.text,
                     enabled = uiState.monthly.enabled,
                     error = uiState.monthly.error,
+                    unit = uiState.monthly.unit,
                     onTextChange = onMonthlyLimitChange,
                     onEnabledChange = onMonthlyEnabledChange,
+                    onUnitChange = onMonthlyUnitChange,
                 )
             }
         },
@@ -571,8 +580,10 @@ private fun AppBudgetPreview() {
             ),
             onDailyLimitChange = {},
             onDailyEnabledChange = {},
+            onDailyUnitChange = {},
             onMonthlyLimitChange = {},
             onMonthlyEnabledChange = {},
+            onMonthlyUnitChange = {},
             onDismiss = {},
         )
     }

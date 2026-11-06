@@ -167,9 +167,11 @@
     <string name="budget_daily_title">Daily budget</string>
     <string name="budget_monthly_title">Monthly budget</string>
     <string name="budget_enabled">Enable budget</string>
-    <string name="budget_limit_label">Limit (GB)</string>
+    <string name="budget_limit_label">Limit</string>
     <string name="budget_limit_hint">e.g. 2.5</string>
     <string name="budget_limit_invalid">Enter a number greater than zero</string>
+    <string name="budget_unit_mb" translatable="false">MB</string>
+    <string name="budget_unit_gb" translatable="false">GB</string>
     <string name="budget_cycle_title">Billing cycle</string>
     <string name="budget_cycle_start_day">Cycle start day</string>
     <string name="budget_cycle_note">The monthly budget starts with the billing cycle and ends before the next one begins.</string>

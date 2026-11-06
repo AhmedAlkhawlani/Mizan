@@ -12,56 +12,88 @@ class BudgetUiStateTest {
 
     @Test
     fun `parseLimitBytes converts gigabytes to bytes`() {
-        assertThat(parseLimitBytes("2.5")).isEqualTo(2_500_000_000L)
-        assertThat(parseLimitBytes("1")).isEqualTo(1_000_000_000L)
-        assertThat(parseLimitBytes("0.5")).isEqualTo(500_000_000L)
+        assertThat(parseLimitBytes("2.5", BudgetUnit.GIGABYTES)).isEqualTo(2_500_000_000L)
+        assertThat(parseLimitBytes("1", BudgetUnit.GIGABYTES)).isEqualTo(1_000_000_000L)
+        assertThat(parseLimitBytes("0.5", BudgetUnit.GIGABYTES)).isEqualTo(500_000_000L)
+    }
+
+    @Test
+    fun `parseLimitBytes converts megabytes to bytes`() {
+        assertThat(parseLimitBytes("90", BudgetUnit.MEGABYTES)).isEqualTo(90_000_000L)
+        assertThat(parseLimitBytes("2.5", BudgetUnit.MEGABYTES)).isEqualTo(2_500_000L)
+        assertThat(parseLimitBytes("1000", BudgetUnit.MEGABYTES)).isEqualTo(1_000_000_000L)
     }
 
     @Test
     fun `parseLimitBytes accepts a trailing decimal point while typing`() {
-        assertThat(parseLimitBytes("2.")).isEqualTo(2_000_000_000L)
+        assertThat(parseLimitBytes("2.", BudgetUnit.GIGABYTES)).isEqualTo(2_000_000_000L)
     }
 
     @Test
     fun `parseLimitBytes normalises Arabic and Persian digits and separators`() {
-        assertThat(parseLimitBytes("٢٫٥")).isEqualTo(2_500_000_000L)
-        assertThat(parseLimitBytes("۲.۵")).isEqualTo(2_500_000_000L)
-        assertThat(parseLimitBytes("1٬000")).isEqualTo(1_000_000_000_000L)
-        assertThat(parseLimitBytes("1,000")).isEqualTo(1_000_000_000_000L)
-        assertThat(parseLimitBytes("1 000.5")).isEqualTo(1_000_500_000_000L)
+        assertThat(parseLimitBytes("٢٫٥", BudgetUnit.GIGABYTES)).isEqualTo(2_500_000_000L)
+        assertThat(parseLimitBytes("۲.۵", BudgetUnit.GIGABYTES)).isEqualTo(2_500_000_000L)
+        assertThat(parseLimitBytes("1٬000", BudgetUnit.GIGABYTES)).isEqualTo(1_000_000_000_000L)
+        assertThat(parseLimitBytes("1,000", BudgetUnit.GIGABYTES)).isEqualTo(1_000_000_000_000L)
+        assertThat(parseLimitBytes("1 000.5", BudgetUnit.GIGABYTES)).isEqualTo(1_000_500_000_000L)
     }
 
     @Test
     fun `parseLimitBytes rejects non-numbers and non-positive limits`() {
-        assertThat(parseLimitBytes("")).isNull()
-        assertThat(parseLimitBytes("abc")).isNull()
-        assertThat(parseLimitBytes("0")).isNull()
-        assertThat(parseLimitBytes("-5")).isNull()
-        assertThat(parseLimitBytes("1.2.3")).isNull()
-        assertThat(parseLimitBytes("2.5x")).isNull()
+        assertThat(parseLimitBytes("", BudgetUnit.GIGABYTES)).isNull()
+        assertThat(parseLimitBytes("abc", BudgetUnit.GIGABYTES)).isNull()
+        assertThat(parseLimitBytes("0", BudgetUnit.GIGABYTES)).isNull()
+        assertThat(parseLimitBytes("-5", BudgetUnit.GIGABYTES)).isNull()
+        assertThat(parseLimitBytes("1.2.3", BudgetUnit.GIGABYTES)).isNull()
+        assertThat(parseLimitBytes("2.5x", BudgetUnit.GIGABYTES)).isNull()
     }
 
     @Test
     fun `parseLimitBytes accepts a comma only as a thousands separator`() {
-        assertThat(parseLimitBytes("1,5")).isNull()
-        assertThat(parseLimitBytes("12,34")).isNull()
-        assertThat(parseLimitBytes("100,000")).isEqualTo(100_000_000_000_000L)
+        assertThat(parseLimitBytes("1,5", BudgetUnit.GIGABYTES)).isNull()
+        assertThat(parseLimitBytes("12,34", BudgetUnit.GIGABYTES)).isNull()
+        assertThat(parseLimitBytes("100,000", BudgetUnit.GIGABYTES)).isEqualTo(100_000_000_000_000L)
     }
 
     @Test
     fun `parseLimitBytes rejects limits at or above the cap`() {
         // 1,000,000 GB hits MAX_LIMIT_BYTES and must not overflow into a smaller long.
-        assertThat(parseLimitBytes("1000000")).isNull()
-        assertThat(parseLimitBytes("999999999999999999")).isNull()
+        assertThat(parseLimitBytes("1000000", BudgetUnit.GIGABYTES)).isNull()
+        assertThat(parseLimitBytes("999999999999999999", BudgetUnit.GIGABYTES)).isNull()
+        // The same cap in megabytes is a thousand times smaller a number, and still rejected.
+        assertThat(parseLimitBytes("1000000000000", BudgetUnit.MEGABYTES)).isNull()
     }
 
     @Test
-    fun `formatLimitGb renders stored bytes as trimmed gigabytes and zero as empty`() {
-        assertThat(formatLimitGb(0L)).isEmpty()
-        assertThat(formatLimitGb(1_000_000_000L)).isEqualTo("1")
-        assertThat(formatLimitGb(2_500_000_000L)).isEqualTo("2.5")
-        assertThat(formatLimitGb(500_000_000L)).isEqualTo("0.5")
-        assertThat(formatLimitGb(100_000_000_000L)).isEqualTo("100")
+    fun `formatLimit renders stored bytes in the chosen unit and zero as empty`() {
+        assertThat(formatLimit(0L, BudgetUnit.GIGABYTES)).isEmpty()
+        assertThat(formatLimit(1_000_000_000L, BudgetUnit.GIGABYTES)).isEqualTo("1")
+        assertThat(formatLimit(2_500_000_000L, BudgetUnit.GIGABYTES)).isEqualTo("2.5")
+        assertThat(formatLimit(500_000_000L, BudgetUnit.GIGABYTES)).isEqualTo("0.5")
+        assertThat(formatLimit(100_000_000_000L, BudgetUnit.GIGABYTES)).isEqualTo("100")
+        assertThat(formatLimit(90_000_000L, BudgetUnit.MEGABYTES)).isEqualTo("90")
+        assertThat(formatLimit(2_500_000_000L, BudgetUnit.MEGABYTES)).isEqualTo("2500")
+    }
+
+    @Test
+    fun `a stored cap below one gigabyte opens in megabytes`() {
+        assertThat(unitForBytes(0L)).isEqualTo(BudgetUnit.GIGABYTES)
+        assertThat(unitForBytes(90_000_000L)).isEqualTo(BudgetUnit.MEGABYTES)
+        assertThat(unitForBytes(999_999_999L)).isEqualTo(BudgetUnit.MEGABYTES)
+        assertThat(unitForBytes(1_000_000_000L)).isEqualTo(BudgetUnit.GIGABYTES)
+    }
+
+    @Test
+    fun `switching the unit rewrites the number and keeps the bytes`() {
+        assertThat(convertLimitText("2", BudgetUnit.GIGABYTES, BudgetUnit.MEGABYTES)).isEqualTo("2000")
+        assertThat(convertLimitText("1500", BudgetUnit.MEGABYTES, BudgetUnit.GIGABYTES)).isEqualTo("1.5")
+        assertThat(convertLimitText("90", BudgetUnit.MEGABYTES, BudgetUnit.MEGABYTES)).isEqualTo("90")
+    }
+
+    @Test
+    fun `switching the unit leaves text that does not parse yet alone`() {
+        assertThat(convertLimitText("", BudgetUnit.GIGABYTES, BudgetUnit.MEGABYTES)).isEmpty()
+        assertThat(convertLimitText("abc", BudgetUnit.GIGABYTES, BudgetUnit.MEGABYTES)).isEqualTo("abc")
     }
 
     @Test
@@ -88,6 +120,34 @@ class BudgetUiStateTest {
         assertThat(state.monthly.text).isEqualTo("50")
         assertThat(state.monthly.enabled).isFalse()
         assertThat(state.cycleStartDay).isEqualTo(5)
+    }
+
+    @Test
+    fun `stored rows pick their unit from the stored bytes`() {
+        val state = budgetUiState(
+            listOf(
+                budget(BudgetPeriod.DAILY, limitBytes = 90_000_000L, enabled = true),
+                budget(BudgetPeriod.MONTHLY, limitBytes = 50_000_000_000L, enabled = true),
+            ),
+            cycleStartDay = 1,
+        )
+
+        assertThat(state.daily.text).isEqualTo("90")
+        assertThat(state.daily.unit).isEqualTo(BudgetUnit.MEGABYTES)
+        assertThat(state.monthly.text).isEqualTo("50")
+        assertThat(state.monthly.unit).isEqualTo(BudgetUnit.GIGABYTES)
+    }
+
+    @Test
+    fun `the chosen unit wins over the one derived from the stored bytes`() {
+        val state = budgetUiState(
+            listOf(budget(BudgetPeriod.DAILY, limitBytes = 90_000_000L, enabled = true)),
+            cycleStartDay = 1,
+            dailyUnit = BudgetUnit.GIGABYTES,
+        )
+
+        assertThat(state.daily.text).isEqualTo("0.09")
+        assertThat(state.daily.unit).isEqualTo(BudgetUnit.GIGABYTES)
     }
 
     @Test

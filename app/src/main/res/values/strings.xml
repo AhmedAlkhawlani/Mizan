@@ -177,9 +177,11 @@
     <string name="budget_daily_title">ميزانية اليوم</string>
     <string name="budget_monthly_title">ميزانية الشهر</string>
     <string name="budget_enabled">تفعيل الميزانية</string>
-    <string name="budget_limit_label">الحد الأقصى (GB)</string>
+    <string name="budget_limit_label">الحد الأقصى</string>
     <string name="budget_limit_hint">مثال: 2.5</string>
     <string name="budget_limit_invalid">أدخل رقماً أكبر من صفر</string>
+    <string name="budget_unit_mb" translatable="false">MB</string>
+    <string name="budget_unit_gb" translatable="false">GB</string>
     <string name="budget_cycle_title">دورة الفاتورة</string>
     <string name="budget_cycle_start_day">يوم بداية الدورة</string>
     <string name="budget_cycle_note">تبدأ ميزانية الشهر مع دورة الفاتورة وتنتهي قبل بداية الدورة التالية.</string>

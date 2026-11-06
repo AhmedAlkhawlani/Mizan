@@ -40,6 +40,8 @@ class BudgetViewModel(application: Application) : AndroidViewModel(application) 
 
     private val dailyText = MutableStateFlow<String?>(null)
     private val monthlyText = MutableStateFlow<String?>(null)
+    private val dailyUnit = MutableStateFlow<BudgetUnit?>(null)
+    private val monthlyUnit = MutableStateFlow<BudgetUnit?>(null)
 
     // Read-then-upsert is not atomic, and two quick keystrokes could both see "no row" and
     // insert duplicates, so every write goes through one lock.
@@ -51,16 +53,24 @@ class BudgetViewModel(application: Application) : AndroidViewModel(application) 
             settings.cycleStartDay,
             dailyText,
             monthlyText,
-            settings.statusBarSpeedMode,
-        ) { budgets, cycleStartDay, daily, monthly, statusBarIcon ->
-            budgetUiState(budgets, cycleStartDay, daily, monthly, statusBarIcon)
+            combine(dailyUnit, monthlyUnit) { daily, monthly -> daily to monthly },
+        ) { budgets, cycleStartDay, daily, monthly, units ->
+            budgetUiState(
+                budgets = budgets,
+                cycleStartDay = cycleStartDay,
+                dailyText = daily,
+                monthlyText = monthly,
+                dailyUnit = units.first,
+                monthlyUnit = units.second,
+            )
         },
-        // combine tops out at five flows, so the three icon settings join the state afterwards.
+        settings.statusBarSpeedMode,
         settings.statusBarShowBytes,
         settings.statusBarBadgeStyle,
         settings.statusBarBoldGlyphs,
-    ) { state, showBytes, style, bold ->
+    ) { state, statusBarIcon, showBytes, style, bold ->
         state.copy(
+            statusBarIcon = statusBarIcon,
             statusBarShowBytes = showBytes,
             statusBarStyle = style,
             statusBarBoldGlyphs = bold,
@@ -72,14 +82,38 @@ class BudgetViewModel(application: Application) : AndroidViewModel(application) 
         initialValue = BudgetUiState(),
     )
 
-    fun onDailyLimitChange(text: String) {
+    fun onDailyLimitChange(text: String, unit: BudgetUnit) {
         dailyText.value = text
-        viewModelScope.launch { persistLimit(BudgetPeriod.DAILY, text) }
+        viewModelScope.launch { persistLimit(BudgetPeriod.DAILY, text, unit) }
     }
 
-    fun onMonthlyLimitChange(text: String) {
+    fun onMonthlyLimitChange(text: String, unit: BudgetUnit) {
         monthlyText.value = text
-        viewModelScope.launch { persistLimit(BudgetPeriod.MONTHLY, text) }
+        viewModelScope.launch { persistLimit(BudgetPeriod.MONTHLY, text, unit) }
+    }
+
+    fun onDailyUnitChange(unit: BudgetUnit) {
+        changeUnit(BudgetPeriod.DAILY, unit)
+    }
+
+    fun onMonthlyUnitChange(unit: BudgetUnit) {
+        changeUnit(BudgetPeriod.MONTHLY, unit)
+    }
+
+    /**
+     * Switching the unit rewrites the visible number into the other unit instead of re-reading
+     * the same digits as a thousand times smaller or larger cap.
+     */
+    private fun changeUnit(period: BudgetPeriod, unit: BudgetUnit) {
+        val field = if (period == BudgetPeriod.DAILY) uiState.value.daily else uiState.value.monthly
+        if (field.unit == unit) return
+        if (period == BudgetPeriod.DAILY) dailyUnit.value = unit else monthlyUnit.value = unit
+        val converted = convertLimitText(field.text, field.unit, unit)
+        if (period == BudgetPeriod.DAILY) {
+            onDailyLimitChange(converted, unit)
+        } else {
+            onMonthlyLimitChange(converted, unit)
+        }
     }
 
     fun onDailyEnabledChange(enabled: Boolean) {
@@ -112,8 +146,8 @@ class BudgetViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     /** An unparsable keystroke is ignored: the stored limit keeps its last valid value. */
-    private suspend fun persistLimit(period: BudgetPeriod, text: String) {
-        val bytes = parseLimitBytes(text) ?: return
+    private suspend fun persistLimit(period: BudgetPeriod, text: String, unit: BudgetUnit) {
+        val bytes = parseLimitBytes(text, unit) ?: return
         persistMutex.withLock {
             val existing = dao.deviceBudget(period)
             dao.upsert(

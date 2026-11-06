@@ -10,6 +10,8 @@ import com.maknoon.mizan.core.data.usage.AppUsageQueries
 import com.maknoon.mizan.core.domain.budget.BudgetPeriod
 import com.maknoon.mizan.core.domain.budget.BudgetScope
 import com.maknoon.mizan.core.domain.cycle.BillingCycleCalculator
+import com.maknoon.mizan.ui.budget.BudgetUnit
+import com.maknoon.mizan.ui.budget.convertLimitText
 import com.maknoon.mizan.ui.budget.parseLimitBytes
 import java.time.Duration
 import java.time.ZoneId
@@ -97,6 +99,8 @@ class AppsViewModel(application: Application) : AndroidViewModel(application) {
     private val editorTarget = MutableStateFlow<EditorTarget?>(null)
     private val editorDailyText = MutableStateFlow<String?>(null)
     private val editorMonthlyText = MutableStateFlow<String?>(null)
+    private val editorDailyUnit = MutableStateFlow<BudgetUnit?>(null)
+    private val editorMonthlyUnit = MutableStateFlow<BudgetUnit?>(null)
 
     // Read-then-upsert is not atomic, so two quick keystrokes could both see "no row" and insert
     // duplicates; every write to the app caps goes through one lock.
@@ -108,8 +112,19 @@ class AppsViewModel(application: Application) : AndroidViewModel(application) {
         budgetDao.observeAppBudgets(),
         editorDailyText,
         editorMonthlyText,
-    ) { target, budgets, dailyText, monthlyText ->
-        target?.let { appBudgetUiState(it.packageName, it.label, budgets, dailyText, monthlyText) }
+        combine(editorDailyUnit, editorMonthlyUnit) { daily, monthly -> daily to monthly },
+    ) { target, budgets, dailyText, monthlyText, units ->
+        target?.let {
+            appBudgetUiState(
+                packageName = it.packageName,
+                label = it.label,
+                budgets = budgets,
+                dailyText = dailyText,
+                monthlyText = monthlyText,
+                dailyUnit = units.first,
+                monthlyUnit = units.second,
+            )
+        }
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS),
@@ -123,6 +138,8 @@ class AppsViewModel(application: Application) : AndroidViewModel(application) {
     fun openBudgetEditor(packageName: String, label: String) {
         editorDailyText.value = null
         editorMonthlyText.value = null
+        editorDailyUnit.value = null
+        editorMonthlyUnit.value = null
         editorTarget.value = EditorTarget(packageName, label)
     }
 
@@ -130,18 +147,42 @@ class AppsViewModel(application: Application) : AndroidViewModel(application) {
         editorTarget.value = null
         editorDailyText.value = null
         editorMonthlyText.value = null
+        editorDailyUnit.value = null
+        editorMonthlyUnit.value = null
     }
 
-    fun onEditorDailyLimitChange(text: String) {
+    fun onEditorDailyLimitChange(text: String, unit: BudgetUnit) {
         editorDailyText.value = text
         val target = editorTarget.value ?: return
-        viewModelScope.launch { persistLimit(target.packageName, BudgetPeriod.DAILY, text) }
+        viewModelScope.launch { persistLimit(target.packageName, BudgetPeriod.DAILY, text, unit) }
     }
 
-    fun onEditorMonthlyLimitChange(text: String) {
+    fun onEditorMonthlyLimitChange(text: String, unit: BudgetUnit) {
         editorMonthlyText.value = text
         val target = editorTarget.value ?: return
-        viewModelScope.launch { persistLimit(target.packageName, BudgetPeriod.MONTHLY, text) }
+        viewModelScope.launch { persistLimit(target.packageName, BudgetPeriod.MONTHLY, text, unit) }
+    }
+
+    fun onEditorDailyUnitChange(unit: BudgetUnit) {
+        changeUnit(BudgetPeriod.DAILY, unit)
+    }
+
+    fun onEditorMonthlyUnitChange(unit: BudgetUnit) {
+        changeUnit(BudgetPeriod.MONTHLY, unit)
+    }
+
+    /** Same contract as the device editor: the number is rewritten, not re-read, on a unit swap. */
+    private fun changeUnit(period: BudgetPeriod, unit: BudgetUnit) {
+        val open = editorState.value ?: return
+        val field = if (period == BudgetPeriod.DAILY) open.daily else open.monthly
+        if (field.unit == unit) return
+        if (period == BudgetPeriod.DAILY) editorDailyUnit.value = unit else editorMonthlyUnit.value = unit
+        val converted = convertLimitText(field.text, field.unit, unit)
+        if (period == BudgetPeriod.DAILY) {
+            onEditorDailyLimitChange(converted, unit)
+        } else {
+            onEditorMonthlyLimitChange(converted, unit)
+        }
     }
 
     fun onEditorDailyEnabledChange(enabled: Boolean) {
@@ -162,8 +203,13 @@ class AppsViewModel(application: Application) : AndroidViewModel(application) {
         }
 
     /** An unparsable keystroke is ignored: the stored limit keeps its last valid value. */
-    private suspend fun persistLimit(packageName: String, period: BudgetPeriod, text: String) {
-        val bytes = parseLimitBytes(text) ?: return
+    private suspend fun persistLimit(
+        packageName: String,
+        period: BudgetPeriod,
+        text: String,
+        unit: BudgetUnit,
+    ) {
+        val bytes = parseLimitBytes(text, unit) ?: return
         persistMutex.withLock {
             val existing = budgetDao.appBudget(packageName, period)
             budgetDao.upsert(

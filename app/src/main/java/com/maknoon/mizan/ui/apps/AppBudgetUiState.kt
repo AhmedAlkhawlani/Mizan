@@ -3,14 +3,17 @@ package com.maknoon.mizan.ui.apps
 import com.maknoon.mizan.core.data.db.BudgetEntity
 import com.maknoon.mizan.core.domain.budget.BudgetPeriod
 import com.maknoon.mizan.core.domain.budget.BudgetScope
-import com.maknoon.mizan.ui.budget.formatLimitGb
+import com.maknoon.mizan.ui.budget.BudgetUnit
+import com.maknoon.mizan.ui.budget.formatLimit
 import com.maknoon.mizan.ui.budget.parseLimitBytes
+import com.maknoon.mizan.ui.budget.unitForBytes
 
 /** One cap in the per-app editor: the daily or the monthly limit. */
 data class AppBudgetFieldUi(
     val text: String = "",
     val enabled: Boolean = false,
     val error: Boolean = false,
+    val unit: BudgetUnit = BudgetUnit.GIGABYTES,
 )
 
 /** The per-app budget dialog; null while the dialog is closed. */
@@ -33,18 +36,33 @@ internal fun appBudgetUiState(
     budgets: List<BudgetEntity>,
     dailyText: String? = null,
     monthlyText: String? = null,
+    dailyUnit: BudgetUnit? = null,
+    monthlyUnit: BudgetUnit? = null,
 ): AppBudgetUiState {
     val rows = budgets.filter { it.scope == BudgetScope.APP && it.targetId == packageName }
     return AppBudgetUiState(
         packageName = packageName,
         label = label,
-        daily = fieldUi(rows.firstOrNull { it.period == BudgetPeriod.DAILY }, dailyText),
-        monthly = fieldUi(rows.firstOrNull { it.period == BudgetPeriod.MONTHLY }, monthlyText),
+        daily = fieldUi(rows.firstOrNull { it.period == BudgetPeriod.DAILY }, dailyText, dailyUnit),
+        monthly = fieldUi(
+            rows.firstOrNull { it.period == BudgetPeriod.MONTHLY },
+            monthlyText,
+            monthlyUnit,
+        ),
     )
 }
 
-private fun fieldUi(row: BudgetEntity?, userText: String?): AppBudgetFieldUi = AppBudgetFieldUi(
-    text = userText ?: formatLimitGb(row?.limitBytes ?: 0L),
-    enabled = row?.enabled ?: false,
-    error = userText != null && userText.isNotEmpty() && parseLimitBytes(userText) == null,
-)
+private fun fieldUi(
+    row: BudgetEntity?,
+    userText: String?,
+    userUnit: BudgetUnit?,
+): AppBudgetFieldUi {
+    val unit = userUnit ?: unitForBytes(row?.limitBytes ?: 0L)
+    val bytes = row?.limitBytes ?: 0L
+    return AppBudgetFieldUi(
+        text = userText ?: formatLimit(bytes, unit),
+        enabled = row?.enabled ?: false,
+        error = userText != null && userText.isNotEmpty() && parseLimitBytes(userText, unit) == null,
+        unit = unit,
+    )
+}

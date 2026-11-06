@@ -72,10 +72,12 @@ fun BudgetScreen(
 
     BudgetContent(
         uiState = uiState,
-        onDailyLimitChange = viewModel::onDailyLimitChange,
+        onDailyLimitChange = { viewModel.onDailyLimitChange(it, uiState.daily.unit) },
         onDailyEnabledChange = viewModel::onDailyEnabledChange,
-        onMonthlyLimitChange = viewModel::onMonthlyLimitChange,
+        onDailyUnitChange = viewModel::onDailyUnitChange,
+        onMonthlyLimitChange = { viewModel.onMonthlyLimitChange(it, uiState.monthly.unit) },
         onMonthlyEnabledChange = viewModel::onMonthlyEnabledChange,
+        onMonthlyUnitChange = viewModel::onMonthlyUnitChange,
         onCycleStartDayChange = viewModel::setCycleStartDay,
         onStatusBarSpeedModeChange = viewModel::setStatusBarSpeedMode,
         onStatusBarShowBytesChange = viewModel::setStatusBarShowBytes,
@@ -91,8 +93,10 @@ internal fun BudgetContent(
     uiState: BudgetUiState,
     onDailyLimitChange: (String) -> Unit,
     onDailyEnabledChange: (Boolean) -> Unit,
+    onDailyUnitChange: (BudgetUnit) -> Unit,
     onMonthlyLimitChange: (String) -> Unit,
     onMonthlyEnabledChange: (Boolean) -> Unit,
+    onMonthlyUnitChange: (BudgetUnit) -> Unit,
     onCycleStartDayChange: (Int) -> Unit,
     onStatusBarSpeedModeChange: (StatusBarSpeedMode) -> Unit,
     onStatusBarShowBytesChange: (Boolean) -> Unit,
@@ -143,6 +147,7 @@ internal fun BudgetContent(
                     field = uiState.daily,
                     onLimitChange = onDailyLimitChange,
                     onEnabledChange = onDailyEnabledChange,
+                    onUnitChange = onDailyUnitChange,
                 )
             }
             item(key = "monthly") {
@@ -151,6 +156,7 @@ internal fun BudgetContent(
                     field = uiState.monthly,
                     onLimitChange = onMonthlyLimitChange,
                     onEnabledChange = onMonthlyEnabledChange,
+                    onUnitChange = onMonthlyUnitChange,
                 )
             }
             item(key = "cycle") {
@@ -178,6 +184,7 @@ private fun BudgetCard(
     field: BudgetFieldUi,
     onLimitChange: (String) -> Unit,
     onEnabledChange: (Boolean) -> Unit,
+    onUnitChange: (BudgetUnit) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Card(modifier = modifier.fillMaxWidth()) {
@@ -193,8 +200,10 @@ private fun BudgetCard(
                 text = field.text,
                 enabled = field.enabled,
                 error = field.error,
+                unit = field.unit,
                 onTextChange = onLimitChange,
                 onEnabledChange = onEnabledChange,
+                onUnitChange = onUnitChange,
             )
         }
     }
@@ -477,8 +486,10 @@ private fun BudgetPreview() {
             ),
             onDailyLimitChange = {},
             onDailyEnabledChange = {},
+            onDailyUnitChange = {},
             onMonthlyLimitChange = {},
             onMonthlyEnabledChange = {},
+            onMonthlyUnitChange = {},
             onCycleStartDayChange = {},
             onStatusBarSpeedModeChange = {},
             onStatusBarShowBytesChange = {},

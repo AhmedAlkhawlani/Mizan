@@ -110,7 +110,9 @@ Guard is entirely optional; measuring and history do not depend on it.
 From the gear on Home:
 
 - **Daily budget** and **Monthly budget** for the device, in any size (MB/GB); leave one empty to
-  disable it.
+  disable it. Each limit field carries an **MB / GB** switch: switching rewrites the number to its
+  equivalent (2 GB ⇄ 2000 MB) without changing the stored cap, and a stored cap below one
+  gigabyte opens in MB on its own.
 - **Cycle start day** — the day your carrier restarts the month; the monthly budget and the
   history follow it.
 - **Per-app budget** from the app's detail screen.

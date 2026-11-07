@@ -7,6 +7,8 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -29,6 +31,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -162,16 +165,30 @@ internal fun DashboardContent(
                 .padding(horizontal = 20.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            SpeedCard(uiState)
-            if (uiState.dailyBudgetLimit != null) {
-                BudgetBarCard(uiState)
+            // The cards scroll and the action stays pinned: with five cards the control fell
+            // below the screen on a 2280px phone, so the one thing the operator may need to
+            // reach was the one thing they could not.
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                SpeedCard(uiState)
+                if (uiState.dailyBudgetLimit != null) {
+                    BudgetBarCard(uiState)
+                }
+                TodayCard(uiState)
+                if (uiState.topApps.isNotEmpty()) {
+                    TopAppsCard(uiState.topApps)
+                }
+                if (uiState.running && uiState.dailyBudgetLimit == null) {
+                    BudgetPromptCard(onOpenBudget = onOpenBudget)
+                }
             }
-            TodayCard(uiState)
-            if (uiState.topApps.isNotEmpty()) {
-                TopAppsCard(uiState.topApps)
-            }
+            // The status stays with the action, not inside the scroll: whether the monitor is
+            // running is the one line that must never be off-screen.
             StatusText(uiState)
-            Spacer(Modifier.weight(1f))
             // Stopping is a secondary action: the screen exists to answer "where did my data go",
             // so a running monitor shows an outlined control and a stopped one a filled start.
             if (uiState.running) {
@@ -450,6 +467,42 @@ private fun TopAppsCard(rows: List<TopAppRow>, modifier: Modifier = Modifier) {
                         modifier = Modifier.fillMaxWidth(),
                     )
                 }
+            }
+        }
+    }
+}
+
+/**
+ * Offers the budget that is not set. Without it the screen has no ceiling to compare today
+ * against, which is the one question a data counter exists to answer before the allowance ends.
+ */
+@Composable
+private fun BudgetPromptCard(onOpenBudget: () -> Unit, modifier: Modifier = Modifier) {
+    Card(modifier = modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                Text(
+                    text = stringResource(R.string.dashboard_budget_prompt_title),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Text(
+                    text = stringResource(R.string.dashboard_budget_prompt_body),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            TextButton(onClick = onOpenBudget) {
+                Text(text = stringResource(R.string.dashboard_budget_prompt_action))
             }
         }
     }

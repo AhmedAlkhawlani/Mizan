@@ -30,6 +30,10 @@
     <string name="dashboard_guard_on">محمي</string>
     <string name="dashboard_guard_off">غير محمي</string>
     <string name="dashboard_top_apps">أعلى التطبيقات اليوم</string>
+    <string name="dashboard_budget_prompt_title">لا ميزانية يومية</string>
+    <string name="dashboard_budget_prompt_body">حدّد حدّاً لتصلك تنبيهات عند ٨٠٪ وعند التجاوز.</string>
+    <string name="dashboard_budget_prompt_action">تحديد</string>
+    <string name="history_peak_day">أعلى يوم في الأسبوع: %1$s</string>
     <string name="dashboard_start">بدء القياس</string>
     <string name="dashboard_stop">إيقاف القياس</string>
     <string name="dashboard_budget_settings">إعدادات الميزانية</string>

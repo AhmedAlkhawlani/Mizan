@@ -69,6 +69,7 @@ import com.maknoon.mizan.core.designsystem.theme.MizanPalette
 import com.maknoon.mizan.core.designsystem.theme.MizanTheme
 import com.maknoon.mizan.core.designsystem.theme.statusColors
 import com.maknoon.mizan.core.domain.format.ByteFormatter
+import com.maknoon.mizan.core.domain.format.isolateFirstStrong
 import com.maknoon.mizan.core.domain.network.NetworkTransport
 import com.maknoon.mizan.core.domain.network.ResolvedNetwork
 import com.maknoon.mizan.core.domain.saver.BlockedTrafficSnapshot
@@ -859,7 +860,7 @@ private fun TrafficRowItem(row: TrafficRow, modifier: Modifier = Modifier) {
         }
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = row.label,
+                text = isolateFirstStrong(row.label),
                 style = MaterialTheme.typography.bodyMedium,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -954,7 +955,7 @@ private fun AppRow(
         AppIcon(packageName = app.packageName)
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = app.label,
+                text = isolateFirstStrong(app.label),
                 style = MaterialTheme.typography.bodyLarge,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -1147,7 +1148,7 @@ private fun AppPickerRow(
         AppIcon(packageName = app.packageName)
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = app.label,
+                text = isolateFirstStrong(app.label),
                 style = MaterialTheme.typography.bodyLarge,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,

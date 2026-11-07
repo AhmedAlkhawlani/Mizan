@@ -45,6 +45,7 @@ import com.maknoon.mizan.core.designsystem.component.UsageBarChart
 import com.maknoon.mizan.core.designsystem.theme.MizanTheme
 import com.maknoon.mizan.core.designsystem.theme.statusColors
 import com.maknoon.mizan.core.domain.format.ByteFormatter
+import com.maknoon.mizan.core.domain.format.isolateFirstStrong
 import com.maknoon.mizan.core.domain.format.isolateLtr
 import com.maknoon.mizan.ui.component.AppTopBar
 import com.maknoon.mizan.ui.component.AppTopBarRow
@@ -95,7 +96,7 @@ internal fun AppDetailContent(
                     verticalArrangement = Arrangement.spacedBy(2.dp),
                 ) {
                     Text(
-                        text = uiState.label,
+                        text = isolateFirstStrong(uiState.label),
                         style = MaterialTheme.typography.titleLarge,
                         modifier = Modifier.semantics { heading() },
                         maxLines = 1,

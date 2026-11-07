@@ -56,6 +56,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.maknoon.mizan.R
 import com.maknoon.mizan.core.designsystem.theme.MizanTheme
 import com.maknoon.mizan.core.designsystem.theme.statusColors
+import com.maknoon.mizan.core.domain.format.isolateFirstStrong
 import com.maknoon.mizan.core.domain.format.ByteFormatter
 import com.maknoon.mizan.core.platform.usage.UsageAccess
 import com.maknoon.mizan.sync.AppUsageSyncScheduler
@@ -264,7 +265,7 @@ private fun AppUsageRow(
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = row.label,
+                        text = isolateFirstStrong(row.label),
                         style = MaterialTheme.typography.titleMedium,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,

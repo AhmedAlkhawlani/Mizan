@@ -100,8 +100,9 @@ why.
    you return.
 2. **Apps** — choose which apps may not reach the internet. Blocking works per UID, so two apps
    that share an identifier are blocked together (that is Android's behaviour, not the app's).
-3. **Allow on unmetered Wi‑Fi** — when this is on, blocked apps are allowed through on an
-   unmetered network and stay blocked on mobile data and on metered networks.
+3. **Protect on every network** — a switch in the “Current network” card, **on by default**: what
+   you block is blocked on any connection, home Wi‑Fi and mobile data alike. Turn it off to block
+   on metered networks only, which lets the blocked apps through on unmetered Wi‑Fi.
 4. **Blocked attempts** — how many packets and bytes the firewall stopped, split per app.
 5. **Stop now** — from the switch, or from an action in the Guard notification. Stopping closes
    the tunnel for real and restores normal networking.
@@ -205,7 +206,8 @@ Differences from rounding, compression and changing signal are normal. Detail in
 
 **Guard is not blocking an app.**
 - Check that the switch is on and that the "Network guard" notification is present.
-- If you are on unmetered Wi‑Fi and the exception is enabled, that app is allowed **on purpose**.
+- If you are on Wi‑Fi and turned off “Protect on every network”, that app is allowed **on purpose**.
+  Turn the switch back on.
 - Some system components connect through shared services that do not pass through the same tunnel;
   the firewall works at the connection layer and cannot hide your address or encrypt traffic whose
   origin it does not know.

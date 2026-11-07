@@ -109,6 +109,7 @@
     <string name="saver_apps_allowed_note">التطبيقات المسموحة تبقى خارج النفق وتعمل طبيعياً.</string>
     <string name="saver_need_consent">امنح موافقة VPN أولاً لتشغيل الحماية.</string>
     <string name="saver_need_apps">اختر تطبيقاً واحداً على الأقل لتشغيل الحماية.</string>
+    <string name="saver_consent_refused">لم تُمنح موافقة VPN، فبقيت الحماية متوقفة. اضغط المفتاح للمحاولة مرة أخرى.</string>
     <string name="saver_apps_empty">لم تختر أي تطبيق بعد. التطبيقات هنا وحدها تُمنع من الشبكة.</string>
     <string name="saver_apps_choose">اختيار التطبيقات</string>
     <string name="saver_apps_shared_uid_note">التطبيقات التي تتشارك معرّف UID مع تطبيق محظور تُحجب معه.</string>

@@ -38,6 +38,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -97,6 +98,7 @@ fun SaverScreen(
     var consentGranted by remember { mutableStateOf(VpnService.prepare(context) == null) }
     var pendingEnable by rememberSaveable { mutableStateOf(false) }
     var showingPicker by rememberSaveable { mutableStateOf(false) }
+    var consentRefused by rememberSaveable { mutableStateOf(false) }
 
     val consentLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult(),
@@ -104,6 +106,7 @@ fun SaverScreen(
         // The system is the authority, not the result code alone: re-check after the dialog.
         val granted = VpnService.prepare(context) == null
         consentGranted = granted
+        consentRefused = !granted
         if (granted && pendingEnable) {
             pendingEnable = false
             viewModel.setEnabled(true)
@@ -113,6 +116,7 @@ fun SaverScreen(
     }
 
     val launchConsent: () -> Unit = {
+        consentRefused = false
         val consentIntent = VpnService.prepare(context)
         if (consentIntent == null) {
             consentGranted = true
@@ -122,6 +126,20 @@ fun SaverScreen(
             }
         } else {
             consentLauncher.launch(consentIntent)
+        }
+    }
+
+    // A press on the switch that had to open the picker first still means "turn protection on":
+    // once an app is selected and the picker closes, the request is honoured instead of dropped.
+    LaunchedEffect(showingPicker, pendingEnable, uiState.blockedPackages.isEmpty()) {
+        if (showingPicker || !pendingEnable || uiState.blockedPackages.isEmpty()) {
+            return@LaunchedEffect
+        }
+        if (consentGranted) {
+            pendingEnable = false
+            viewModel.setEnabled(true)
+        } else {
+            launchConsent()
         }
     }
 
@@ -139,19 +157,30 @@ fun SaverScreen(
     SaverContent(
         uiState = uiState,
         consentGranted = consentGranted,
+        consentRefused = consentRefused,
         onRequestConsent = launchConsent,
         onEnabledChange = { enabled ->
-            if (enabled) {
-                if (consentGranted) {
+            // The switch is never disabled: every press has a visible consequence.
+            when (guardToggleAction(enabled, uiState.blockedPackages.size, consentGranted)) {
+                GuardToggleAction.STOP -> {
+                    pendingEnable = false
+                    viewModel.setEnabled(false)
+                }
+
+                GuardToggleAction.START -> {
+                    pendingEnable = false
                     viewModel.setEnabled(true)
-                } else {
-                    // Ask for consent first, then turn the switch on if the user grants it.
+                }
+
+                GuardToggleAction.CHOOSE_APPS -> {
+                    pendingEnable = true
+                    showingPicker = true
+                }
+
+                GuardToggleAction.REQUEST_CONSENT -> {
                     pendingEnable = true
                     launchConsent()
                 }
-            } else {
-                pendingEnable = false
-                viewModel.setEnabled(false)
             }
         },
         onChooseApps = { showingPicker = true },
@@ -165,7 +194,12 @@ fun SaverScreen(
             loading = uiState.appsLoading,
             blockedPackages = uiState.blockedPackages,
             onBlockedChange = viewModel::setAppBlocked,
-            onDismiss = { showingPicker = false },
+            onDismiss = {
+                showingPicker = false
+                // Closing the picker empty-handed cancels the pending "turn on" request, so a
+                // later tap on an app row cannot switch protection on behind the operator's back.
+                if (uiState.blockedPackages.isEmpty()) pendingEnable = false
+            },
         )
     }
 }
@@ -179,6 +213,7 @@ internal fun SaverContent(
     onChooseApps: () -> Unit,
     onAppBlockedChange: (String, Boolean) -> Unit,
     modifier: Modifier = Modifier,
+    consentRefused: Boolean = false,
 ) {
     val blockedApps = uiState.apps.filter { it.packageName in uiState.blockedPackages }
     val allowedApps = uiState.apps.filter { it.packageName !in uiState.blockedPackages }
@@ -191,6 +226,7 @@ internal fun SaverContent(
         GuardHeader(
             uiState = uiState,
             consentGranted = consentGranted,
+            consentRefused = consentRefused,
             onEnabledChange = onEnabledChange,
         )
 
@@ -308,9 +344,9 @@ private fun GuardHeader(
     consentGranted: Boolean,
     onEnabledChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
+    consentRefused: Boolean = false,
 ) {
     val blockedCount = uiState.blockedPackages.size
-    val canToggle = consentGranted && (blockedCount > 0 || uiState.enabled)
     val failure = uiState.failure
     val statusText = when {
         failure != null -> stringResource(failure.messageRes())
@@ -331,6 +367,7 @@ private fun GuardHeader(
         else -> MaterialTheme.colorScheme.onSurfaceVariant
     }
     val hintRes = when {
+        consentRefused -> R.string.saver_consent_refused
         !consentGranted -> R.string.saver_need_consent
         blockedCount == 0 -> R.string.saver_need_apps
         else -> null
@@ -342,7 +379,7 @@ private fun GuardHeader(
                 .fillMaxWidth()
                 .toggleable(
                     value = uiState.enabled,
-                    enabled = canToggle,
+                    enabled = true,
                     role = Role.Switch,
                     onValueChange = onEnabledChange,
                 ),
@@ -388,16 +425,37 @@ private fun GuardHeader(
             Switch(
                 checked = uiState.enabled,
                 onCheckedChange = null,
-                enabled = canToggle,
             )
         }
         StatusLine(text = statusText, color = statusColor)
         if (hintRes != null) {
-            Text(
-                text = stringResource(hintRes),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            // The reason a press cannot start the tunnel has to be as visible as the switch:
+            // a faint grey line under a live-looking switch reads as a broken button.
+            val hintColor =
+                if (consentRefused) MaterialTheme.colorScheme.error
+                else MaterialTheme.colorScheme.primary
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(hintColor.copy(alpha = 0.10f))
+                    .border(1.dp, hintColor.copy(alpha = 0.22f), RoundedCornerShape(12.dp))
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_info),
+                    contentDescription = null,
+                    modifier = Modifier.size(16.dp),
+                    tint = hintColor,
+                )
+                Text(
+                    text = stringResource(hintRes),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = hintColor,
+                )
+            }
         }
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),

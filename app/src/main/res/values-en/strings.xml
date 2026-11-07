@@ -107,6 +107,7 @@
     <string name="saver_apps_allowed_note">Allowed apps stay outside the tunnel and work normally.</string>
     <string name="saver_need_consent">Grant VPN consent first to start protection.</string>
     <string name="saver_need_apps">Choose at least one app to start protection.</string>
+    <string name="saver_consent_refused">VPN consent was not granted, so protection stayed off. Press the switch to try again.</string>
     <string name="saver_apps_empty">No apps chosen yet. Only apps listed here are kept off the network.</string>
     <string name="saver_apps_choose">Choose apps</string>
     <string name="saver_apps_shared_uid_note">Apps that share a UID with a blocked app are blocked with it.</string>

@@ -58,6 +58,11 @@ the Guard tab itself, not here.
 seen, so it does not return unless you clear the app's data. Every step stays available inside the
 app afterwards.
 
+**Guide and language:** the ⓘ icon at the top of Home opens "About Mizan", which carries a
+"User guide" button explaining every screen, every figure and the common questions, and an
+"App language" card to pick Arabic, English, or "System". The choice applies immediately to the
+screens and their direction, and to notifications, widgets and the tile.
+
 ---
 
 ## 4) The screens

@@ -317,6 +317,15 @@ private fun DailyChartCard(uiState: HistoryUiState, modifier: Modifier = Modifie
                 total = stringResource(R.string.history_total, isolateLtr(uiState.weekTotalLabel)),
             )
             Legend()
+            // The bars are relative, so without the value they are scaled against, a short bar
+            // and an empty one look the same.
+            uiState.weekPeakLabel?.let { peak ->
+                Text(
+                    text = stringResource(R.string.history_peak_day, isolateLtr(peak)),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
             // The canvas always paints its list left-to-right. Wrapping the canvas and its axis
             // in LTR keeps bars and labels aligned in the otherwise RTL screen; time therefore
             // reads oldest-to-newest, like the figures, which stay Western digits per docs/04.

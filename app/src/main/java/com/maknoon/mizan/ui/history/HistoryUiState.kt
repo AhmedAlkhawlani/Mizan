@@ -42,6 +42,8 @@ data class HistoryUiState(
     val hours: List<HourBarUi> = emptyList(),
     val todayEpochDay: Long = 0L,
     val weekTotalLabel: String = UNKNOWN,
+    /** The tallest day of the window: the value the chart's bars are scaled against. */
+    val weekPeakLabel: String? = null,
     val todayTotalLabel: String = UNKNOWN,
     val cycleStartDay: Int = BillingCycleCalculator.MIN_START_DAY,
     val cycleStartEpochDay: Long = 0L,
@@ -113,6 +115,7 @@ internal fun historyUiState(
         hours = hourRows.map { it.copy(fraction = fractionOf(it.totalBytes, hourPeak)) },
         todayEpochDay = todayEpochDay,
         weekTotalLabel = ByteFormatter.data(dayRows.sumOf { it.totalBytes }),
+        weekPeakLabel = if (dayPeak > 0L) ByteFormatter.data(dayPeak) else null,
         todayTotalLabel = ByteFormatter.data(dayRows.last().totalBytes),
         cycleStartDay = BillingCycleCalculator.normalizedStartDay(cycleStartDay),
         cycleStartEpochDay = cycle.startEpochDay,

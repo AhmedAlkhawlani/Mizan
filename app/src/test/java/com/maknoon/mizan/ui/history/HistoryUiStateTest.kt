@@ -57,6 +57,23 @@ class HistoryUiStateTest {
     }
 
     @Test
+    fun `the peak label is the tallest day, and absent when nothing was measured`() {
+        val state = historyUiState(
+            daily = listOf(
+                daily(today, rx = 3_000),
+                daily(today - 1, rx = 1_000, tx = 1_000),
+            ),
+            hourly = emptyList(),
+            todayEpochDay = today,
+        )
+        val empty = historyUiState(emptyList(), emptyList(), today)
+
+        assertThat(state.weekPeakLabel).isEqualTo("3 KB")
+        // Null, not "0 B": a chart with no bars has no scale to state.
+        assertThat(empty.weekPeakLabel).isNull()
+    }
+
+    @Test
     fun `the week total covers only the days on screen`() {
         val state = historyUiState(
             daily = listOf(

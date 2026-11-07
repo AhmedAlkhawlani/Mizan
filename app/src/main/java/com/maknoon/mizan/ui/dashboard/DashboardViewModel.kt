@@ -8,10 +8,12 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.maknoon.mizan.core.data.db.BudgetEntity
 import com.maknoon.mizan.core.data.db.MizanDatabaseProvider
+import com.maknoon.mizan.core.data.settings.MizanSettings
 import com.maknoon.mizan.core.domain.budget.BudgetPeriod
 import com.maknoon.mizan.core.domain.format.ByteFormatter
 import com.maknoon.mizan.monitoring.MonitoringStateHolder
 import com.maknoon.mizan.network.ResolvedNetworkHolder
+import com.maknoon.mizan.saver.SaverStateHolder
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -26,17 +28,24 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
 
     private val budgetDao = MizanDatabaseProvider.budgetDao(application)
 
+    private val settings = MizanSettings(application)
+
     val uiState: StateFlow<DashboardUiState> = combine(
         MonitoringStateHolder.state,
         ResolvedNetworkHolder.state,
         budgetDao.observeDevice(),
-    ) { monitoring, network, budgets ->
+        SaverStateHolder.state,
+        settings.dataSaverEnabled,
+    ) { monitoring, network, budgets, guard, saverEnabled ->
         val totalBytes = monitoring.usage?.totalBytes ?: 0L
         val daily = budgets.firstOrNull {
             it.period == BudgetPeriod.DAILY && it.enabled && it.limitBytes > 0L
         }
         monitoring.toDashboardUiState().copy(
             networkMetered = network?.metered,
+            // Only a tunnel the service reports as established counts as protection; the stored
+            // switch alone would claim a guard that may have failed to start.
+            guardProtected = if (!saverEnabled) null else guard.active,
             dailyBudgetLimit = daily?.let { ByteFormatter.data(it.limitBytes) },
             dailyBudgetFraction = daily?.let { budgetFraction(totalBytes, it) } ?: 0f,
         )

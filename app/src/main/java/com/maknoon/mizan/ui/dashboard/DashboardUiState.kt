@@ -20,6 +20,11 @@ data class DashboardUiState(
     val partial: Boolean = false,
     /** null while the connection is unknown or absent; the chip then says so instead of guessing. */
     val networkMetered: Boolean? = null,
+    /**
+     * Whether the firewall is up right now. `null` means the operator never switched protection
+     * on, so no chip is drawn: an "unprotected" badge on every launch would be noise, not news.
+     */
+    val guardProtected: Boolean? = null,
     val dailyBudgetLimit: String? = null,
     val dailyBudgetFraction: Float = 0f,
 ) {

@@ -130,6 +130,10 @@ internal fun DashboardContent(
                 )
                 Spacer(Modifier.size(8.dp))
                 NetworkChip(metered = uiState.networkMetered)
+                uiState.guardProtected?.let { protected ->
+                    Spacer(Modifier.size(6.dp))
+                    GuardChip(protected = protected)
+                }
                 Spacer(Modifier.weight(1f))
                 IconButton(onClick = onOpenBudget) {
                     Icon(
@@ -180,9 +184,11 @@ internal fun DashboardContent(
 /** docs/02 §4.6: the chip reports the resolved profile of the current default network. */
 @Composable
 private fun NetworkChip(metered: Boolean?, modifier: Modifier = Modifier) {
+    // Green is reserved for protection, so an unmetered connection uses the data colour: it is
+    // a fact about the connection, not a good state.
     val (labelRes, tint) = when (metered) {
         true -> R.string.network_chip_metered to MaterialTheme.statusColors.warning
-        false -> R.string.network_chip_unmetered to MaterialTheme.statusColors.guard
+        false -> R.string.network_chip_unmetered to MaterialTheme.colorScheme.primary
         null -> R.string.saver_network_disconnected to MaterialTheme.colorScheme.onSurfaceVariant
     }
     val shape = RoundedCornerShape(999.dp)
@@ -194,6 +200,44 @@ private fun NetworkChip(metered: Boolean?, modifier: Modifier = Modifier) {
     ) {
         Text(
             text = stringResource(labelRes),
+            style = MaterialTheme.typography.labelSmall,
+            fontWeight = FontWeight.SemiBold,
+            color = tint,
+        )
+    }
+}
+
+/**
+ * Says, on the dashboard, whether the firewall is actually up — the network chip only describes
+ * the connection, so without this a blocked app opening normally has no explanation on screen.
+ * Drawn only once the operator has switched protection on (see [DashboardUiState.guardProtected]).
+ */
+@Composable
+private fun GuardChip(protected: Boolean, modifier: Modifier = Modifier) {
+    val tint =
+        if (protected) MaterialTheme.statusColors.guard
+        else MaterialTheme.colorScheme.onSurfaceVariant
+    val shape = RoundedCornerShape(999.dp)
+    Row(
+        modifier = modifier
+            .border(1.dp, tint.copy(alpha = 0.45f), shape)
+            .background(tint.copy(alpha = 0.10f), shape)
+            .padding(horizontal = 10.dp, vertical = 6.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        if (protected) {
+            Icon(
+                painter = painterResource(R.drawable.ic_shield),
+                contentDescription = null,
+                modifier = Modifier.size(12.dp),
+                tint = tint,
+            )
+        }
+        Text(
+            text = stringResource(
+                if (protected) R.string.dashboard_guard_on else R.string.dashboard_guard_off,
+            ),
             style = MaterialTheme.typography.labelSmall,
             fontWeight = FontWeight.SemiBold,
             color = tint,

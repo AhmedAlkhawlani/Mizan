@@ -632,7 +632,9 @@ private fun NetworkCard(
                     color = when {
                         !uiState.enabled -> MaterialTheme.colorScheme.onSurfaceVariant
                         !blockingHere -> MaterialTheme.colorScheme.primary
-                        else -> MaterialTheme.statusColors.warning
+                        // Blocking is the state the operator asked for, so it is not a warning:
+                        // amber here read as "something is wrong" while the guard was working.
+                        else -> MaterialTheme.statusColors.guard
                     },
                 )
                 network.profile?.let { profile ->

@@ -188,6 +188,16 @@ val granted = mode == AppOpsManager.MODE_ALLOWED
 - `QUERY_ALL_PACKAGES` لأجل عرض أسماء التطبيقات؛ بديله `<queries>` إن أمكن لتقليل سياسة Play.
 - لا `READ_PHONE_STATE`، ولا `ACCESS_FINE_LOCATION` في v1.
 
+**صلاحيتان تظهران في APK ولا تُكتبان هنا، لأنهما مدمجتان من المكتبات لا منّا:**
+
+| الصلاحية | المصدر | الأثر |
+|---|---|---|
+| `WAKE_LOCK` | `androidx.work:work-runtime` | إبقاء الجهاز مستيقظاً أثناء مزامنة دورية |
+| `DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION` | `androidx.core` | صلاحية داخلية للتطبيق نفسه تحمي مستقبلاته |
+
+تُتحقَّق القائمة الفعلية من الـAPK لا من المصدر: `aapt2 dump permissions <apk>`.
+آخر تحقق (1.0.2): لا `INTERNET`، والصلاحيات هي السبع أعلاه + هاتان.
+
 ## 9) خصوصية ودقة — قواعد صارمة
 
 1. لا نجمع أسماء مواقع ولا DNS ولا محتوى.

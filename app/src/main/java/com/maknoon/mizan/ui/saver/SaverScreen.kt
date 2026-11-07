@@ -185,6 +185,7 @@ fun SaverScreen(
         },
         onChooseApps = { showingPicker = true },
         onAppBlockedChange = viewModel::setAppBlocked,
+        onProtectEveryNetworkChange = viewModel::setProtectEveryNetwork,
         modifier = modifier,
     )
 
@@ -214,6 +215,7 @@ internal fun SaverContent(
     onAppBlockedChange: (String, Boolean) -> Unit,
     modifier: Modifier = Modifier,
     consentRefused: Boolean = false,
+    onProtectEveryNetworkChange: (Boolean) -> Unit = {},
 ) {
     val blockedApps = uiState.apps.filter { it.packageName in uiState.blockedPackages }
     val allowedApps = uiState.apps.filter { it.packageName !in uiState.blockedPackages }
@@ -241,7 +243,7 @@ internal fun SaverContent(
                     onRequestConsent = onRequestConsent,
                 )
             }
-            item { NetworkCard(uiState = uiState) }
+            item { NetworkCard(uiState = uiState, onProtectEveryNetworkChange = onProtectEveryNetworkChange) }
             item { TrafficCard(uiState = uiState) }
 
             if (uiState.appsLoading) {
@@ -561,6 +563,7 @@ private fun StatusLine(text: String, color: Color, modifier: Modifier = Modifier
 @Composable
 private fun NetworkCard(
     uiState: SaverUiState,
+    onProtectEveryNetworkChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val network = uiState.network
@@ -615,16 +618,19 @@ private fun NetworkCard(
                         MaterialTheme.colorScheme.primary
                     },
                 )
+                // The tunnel is up on any connection when the operator asked for it, so the
+                // platform's metered flag only decides the outcome when that setting is off.
+                val blockingHere = uiState.protectEveryNetwork || network.metered
                 val behavior = when {
                     !uiState.enabled -> R.string.saver_behavior_off
-                    uiState.unmetered || !network.metered -> R.string.saver_behavior_unmetered
+                    !blockingHere -> R.string.saver_behavior_unmetered
                     else -> R.string.saver_behavior_metered
                 }
                 BehaviorLine(
                     text = stringResource(behavior),
                     color = when {
                         !uiState.enabled -> MaterialTheme.colorScheme.onSurfaceVariant
-                        uiState.unmetered || !network.metered -> MaterialTheme.colorScheme.primary
+                        !blockingHere -> MaterialTheme.colorScheme.primary
                         else -> MaterialTheme.statusColors.warning
                     },
                 )
@@ -643,6 +649,30 @@ private fun NetworkCard(
                     )
                 }
             }
+        }
+        // The operator's decision, not the platform's. A blocklist that silently stands down on
+        // home Wi-Fi reads as a broken firewall, so this is on by default and only the operator
+        // can relax it.
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = stringResource(R.string.saver_network_any_title),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                Text(
+                    text = stringResource(R.string.saver_network_any_body),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Switch(
+                checked = uiState.protectEveryNetwork,
+                onCheckedChange = onProtectEveryNetworkChange,
+            )
         }
     }
 }

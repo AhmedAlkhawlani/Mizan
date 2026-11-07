@@ -86,6 +86,8 @@
     <string name="saver_network_metered">شبكة مقنّنة</string>
     <string name="saver_network_unmetered">شبكة غير مقنّنة</string>
     <string name="saver_network_roaming">تجوال</string>
+    <string name="saver_network_any_title">الحماية على كل الشبكات</string>
+    <string name="saver_network_any_body">احجب التطبيقات المختارة حتى على شبكة غير مقنّنة مثل Wi‑Fi المنزل. أطفئها لتقتصر الحماية على الشبكات المقنّنة فقط.</string>
     <string name="saver_profile_label">ملف التعريف: %1$s</string>
     <string name="saver_transport_wifi">Wi‑Fi</string>
     <string name="saver_transport_cellular">خلوي</string>

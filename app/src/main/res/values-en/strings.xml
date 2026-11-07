@@ -84,6 +84,8 @@
     <string name="saver_network_metered">Metered network</string>
     <string name="saver_network_unmetered">Unmetered network</string>
     <string name="saver_network_roaming">Roaming</string>
+    <string name="saver_network_any_title">Protect on every network</string>
+    <string name="saver_network_any_body">Block the chosen apps even on an unmetered network such as home Wi-Fi. Turn it off to block on metered networks only.</string>
     <string name="saver_profile_label">Profile: %1$s</string>
     <string name="saver_transport_wifi">Wi‑Fi</string>
     <string name="saver_transport_cellular">Mobile</string>

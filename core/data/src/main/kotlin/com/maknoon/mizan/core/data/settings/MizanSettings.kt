@@ -72,6 +72,22 @@ class MizanSettings(context: Context) {
     }
 
     /**
+     * Whether the firewall applies on every connection, not only on metered ones.
+     *
+     * On by default, because a blocklist is the operator's instruction: the tunnel used to stand
+     * down on any unmetered network, so a blocked app opened normally on home Wi-Fi and the
+     * screen looked broken. Turning it off restores the older data-saving rule, where the
+     * blocked apps are allowed through while the connection is unmetered.
+     */
+    val protectEveryNetwork: Flow<Boolean> = store.data
+        .map { preferences -> preferences[PROTECT_EVERY_NETWORK] ?: true }
+        .distinctUntilChanged()
+
+    suspend fun setProtectEveryNetwork(enabled: Boolean) {
+        store.edit { preferences -> preferences[PROTECT_EVERY_NETWORK] = enabled }
+    }
+
+    /**
      * Whether the first-run walkthrough has been completed or skipped. Absent means "not seen",
      * so an update that introduces it shows the flow once instead of hiding it from every
      * existing install.
@@ -147,6 +163,7 @@ class MizanSettings(context: Context) {
         val CYCLE_START_DAY = intPreferencesKey("cycle_start_day")
         val DATA_SAVER_ENABLED = booleanPreferencesKey("data_saver_enabled")
         val BLOCKED_PACKAGES = stringSetPreferencesKey("data_saver_blocked_packages")
+        val PROTECT_EVERY_NETWORK = booleanPreferencesKey("data_saver_protect_every_network")
         val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
         val STATUS_BAR_SPEED_MODE = stringPreferencesKey("status_bar_speed_mode")
         val STATUS_BAR_SHOW_BYTES = booleanPreferencesKey("status_bar_show_bytes")

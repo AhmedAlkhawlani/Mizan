@@ -219,6 +219,7 @@ class MizanVpnService : VpnService() {
 
     private suspend fun establishTunnel(currentGeneration: Int) {
         val blockedPackages = settings.blockedPackages.first()
+        val protectEveryNetwork = settings.protectEveryNetwork.first()
         if (currentGeneration != generation) return
         if (blockedPackages.isEmpty()) {
             fail(currentGeneration, SaverFailure.NO_APPS)
@@ -231,10 +232,11 @@ class MizanVpnService : VpnService() {
 
         val resolved = resolveNetwork()
         if (currentGeneration != generation) return
-        blocking = shouldBlockTraffic(resolved)
+        blocking = shouldBlockTraffic(resolved, protectEveryNetwork)
         if (!blocking) {
-            // Unmetered (6.4): blocked apps are allowed through, so no tunnel is built. The
-            // switch stays on and the service keeps listening for a network change.
+            // The operator chose "metered connections only" (6.4): blocked apps are allowed
+            // through, so no tunnel is built. The switch stays on and the service keeps
+            // listening for a network change.
             settings.setDataSaverEnabled(true)
             SaverStateHolder.publish(SaverState(serviceRunning = true, unmetered = true))
             refreshUnmeteredNotification()
@@ -309,7 +311,8 @@ class MizanVpnService : VpnService() {
 
     private fun onNetworkChanged() {
         scope.launch {
-            if (shouldBlockTraffic(resolveNetwork()) != blocking) {
+            val protectEveryNetwork = settings.protectEveryNetwork.first()
+            if (shouldBlockTraffic(resolveNetwork(), protectEveryNetwork) != blocking) {
                 reload()
             }
         }

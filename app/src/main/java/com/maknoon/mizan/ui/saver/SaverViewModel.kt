@@ -45,6 +45,8 @@ data class SaverUiState(
     val unmetered: Boolean = false,
     val network: ResolvedNetwork? = null,
     val blockedTraffic: BlockedTrafficSnapshot = BlockedTrafficSnapshot(),
+    /** Whether the firewall applies on every connection; on by default (see MizanSettings). */
+    val protectEveryNetwork: Boolean = true,
 )
 
 /**
@@ -72,7 +74,8 @@ class SaverViewModel(application: Application) : AndroidViewModel(application) {
     private val networkAndTraffic = combine(
         ResolvedNetworkHolder.state,
         SaverTrafficHolder.snapshot,
-    ) { resolved, traffic -> resolved to traffic }
+        settings.protectEveryNetwork,
+    ) { resolved, traffic, protectEvery -> Triple(resolved, traffic, protectEvery) }
 
     val uiState: StateFlow<SaverUiState> = combine(
         settings.dataSaverEnabled,
@@ -81,7 +84,7 @@ class SaverViewModel(application: Application) : AndroidViewModel(application) {
         SaverStateHolder.state,
         networkAndTraffic,
     ) { enabled, blocked, appsState, runtime, netAndTraffic ->
-        val (resolved, traffic) = netAndTraffic
+        val (resolved, traffic, protectEvery) = netAndTraffic
         val installedNames = appsState.apps.mapTo(HashSet()) { it.packageName }
         SaverUiState(
             enabled = enabled,
@@ -95,6 +98,7 @@ class SaverViewModel(application: Application) : AndroidViewModel(application) {
             unmetered = runtime.unmetered,
             network = resolved,
             blockedTraffic = traffic,
+            protectEveryNetwork = protectEvery,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -142,6 +146,17 @@ class SaverViewModel(application: Application) : AndroidViewModel(application) {
             settings.setBlockedPackages(runnable)
             settings.setDataSaverEnabled(true)
             SaverControl.start(app)
+        }
+    }
+
+    /**
+     * Switches between "block on every network" and "block on metered networks only". A running
+     * tunnel has to be rebuilt because the decision changed, not the selection.
+     */
+    fun setProtectEveryNetwork(enabled: Boolean) {
+        viewModelScope.launch {
+            settings.setProtectEveryNetwork(enabled)
+            scheduleRuntimeApply()
         }
     }
 

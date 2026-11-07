@@ -22,7 +22,6 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -54,6 +53,7 @@ import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.maknoon.mizan.R
+import com.maknoon.mizan.core.designsystem.component.FractionBar
 import com.maknoon.mizan.core.designsystem.theme.MizanTheme
 import com.maknoon.mizan.core.designsystem.theme.statusColors
 import com.maknoon.mizan.core.domain.format.isolateFirstStrong
@@ -296,13 +296,9 @@ private fun AppUsageRow(
                         }
                     }
                 }
-                LinearProgressIndicator(
-                    progress = { row.share },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(4.dp),
-                    color = MaterialTheme.statusColors.dataDown,
-                    trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                FractionBar(
+                    fraction = row.share,
+                    modifier = Modifier.fillMaxWidth(),
                 )
             }
             AppRowMenu(onBudgetClick = onBudgetClick)

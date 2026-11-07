@@ -27,6 +27,7 @@
     <string name="dashboard_status_unavailable">This device does not report network counters.</string>
     <string name="dashboard_guard_on">Protected</string>
     <string name="dashboard_guard_off">Unprotected</string>
+    <string name="dashboard_top_apps">Top apps today</string>
     <string name="dashboard_start">Start measuring</string>
     <string name="dashboard_stop">Stop measuring</string>
     <string name="dashboard_budget_settings">Budget settings</string>

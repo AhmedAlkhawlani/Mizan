@@ -27,12 +27,21 @@ data class DashboardUiState(
     val guardProtected: Boolean? = null,
     val dailyBudgetLimit: String? = null,
     val dailyBudgetFraction: Float = 0f,
+    /** The heaviest apps today, already formatted; empty while the day has no synced rows. */
+    val topApps: List<TopAppRow> = emptyList(),
 ) {
     companion object {
         /** docs/02 §9: an unavailable figure is shown as a dash, never guessed. */
         const val UNKNOWN = "—"
     }
 }
+
+/** One line of the dashboard's top-apps card; [fraction] is its share of the heaviest app. */
+data class TopAppRow(
+    val label: String,
+    val bytes: String,
+    val fraction: Float,
+)
 
 internal fun MonitoringState.toDashboardUiState(): DashboardUiState {
     val usage = usage

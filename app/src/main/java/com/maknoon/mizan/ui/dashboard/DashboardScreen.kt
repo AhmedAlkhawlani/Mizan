@@ -27,6 +27,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -47,6 +48,7 @@ import androidx.compose.ui.semantics.progressBarRangeInfo
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDirection
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
@@ -54,8 +56,10 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.maknoon.mizan.R
+import com.maknoon.mizan.core.designsystem.component.FractionBar
 import com.maknoon.mizan.core.designsystem.theme.MizanTheme
 import com.maknoon.mizan.core.designsystem.theme.statusColors
+import com.maknoon.mizan.core.domain.format.isolateFirstStrong
 import com.maknoon.mizan.core.domain.format.isolateLtr
 import com.maknoon.mizan.monitoring.MonitoringControl
 import com.maknoon.mizan.ui.component.AppTopBar
@@ -163,19 +167,31 @@ internal fun DashboardContent(
                 BudgetBarCard(uiState)
             }
             TodayCard(uiState)
+            if (uiState.topApps.isNotEmpty()) {
+                TopAppsCard(uiState.topApps)
+            }
             StatusText(uiState)
             Spacer(Modifier.weight(1f))
-            Button(
-                onClick = if (uiState.running) onStop else onStart,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = 48.dp),
-            ) {
-                Text(
-                    text = stringResource(
-                        if (uiState.running) R.string.dashboard_stop else R.string.dashboard_start,
-                    ),
-                )
+            // Stopping is a secondary action: the screen exists to answer "where did my data go",
+            // so a running monitor shows an outlined control and a stopped one a filled start.
+            if (uiState.running) {
+                OutlinedButton(
+                    onClick = onStop,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 48.dp),
+                ) {
+                    Text(text = stringResource(R.string.dashboard_stop))
+                }
+            } else {
+                Button(
+                    onClick = onStart,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 48.dp),
+                ) {
+                    Text(text = stringResource(R.string.dashboard_start))
+                }
             }
         }
     }
@@ -392,9 +408,55 @@ private fun BudgetBarCard(uiState: DashboardUiState, modifier: Modifier = Modifi
     }
 }
 
+/**
+ * The three heaviest apps today, as a comparison rather than a list: every bar is scaled to the
+ * heaviest, so the row that matters is obvious at a glance. The figures are the synced per-app
+ * totals, not a live reading, and the apps screen carries the full list.
+ */
 @Composable
-private fun TodayCard(uiState: DashboardUiState, modifier: Modifier = Modifier) {
-    Card(modifier = modifier
+private fun TopAppsCard(rows: List<TopAppRow>, modifier: Modifier = Modifier) {
+    Card(modifier = modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp),
+        ) {
+            Text(
+                text = stringResource(R.string.dashboard_top_apps),
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            rows.forEach { row ->
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = isolateFirstStrong(row.label),
+                            style = MaterialTheme.typography.bodyMedium,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f),
+                        )
+                        Text(
+                            text = isolateLtr(row.bytes),
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                textDirection = TextDirection.Ltr,
+                            ),
+                            color = MaterialTheme.statusColors.dataDown,
+                        )
+                    }
+                    FractionBar(
+                        fraction = row.fraction,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun TodayCard(uiState: DashboardUiState, modifier: Modifier = Modifier) {    Card(modifier = modifier
         .fillMaxWidth()
         .semantics(mergeDescendants = true) {}) {
         Row(

@@ -29,6 +29,7 @@
     <string name="dashboard_status_unavailable">تعذّر قراءة عدّادات الشبكة على هذا الجهاز.</string>
     <string name="dashboard_guard_on">محمي</string>
     <string name="dashboard_guard_off">غير محمي</string>
+    <string name="dashboard_top_apps">أعلى التطبيقات اليوم</string>
     <string name="dashboard_start">بدء القياس</string>
     <string name="dashboard_stop">إيقاف القياس</string>
     <string name="dashboard_budget_settings">إعدادات الميزانية</string>

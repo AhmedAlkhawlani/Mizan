@@ -27,13 +27,15 @@
     <string name="dashboard_status_running">المراقبة تعمل</string>
     <string name="dashboard_status_stopped">المراقبة متوقفة — اضغط بدء القياس.</string>
     <string name="dashboard_status_unavailable">تعذّر قراءة عدّادات الشبكة على هذا الجهاز.</string>
+    <string name="dashboard_guard_on">محمي</string>
+    <string name="dashboard_guard_off">غير محمي</string>
     <string name="dashboard_start">بدء القياس</string>
     <string name="dashboard_stop">إيقاف القياس</string>
     <string name="dashboard_budget_settings">إعدادات الميزانية</string>
     <string name="dashboard_about">عن ميزان</string>
     <string name="dashboard_budget_line">%1$s من %2$s</string>
-    <string name="network_chip_metered">مقنّن</string>
-    <string name="network_chip_unmetered">غير مقنّن</string>
+    <string name="network_chip_metered">شبكة محدودة</string>
+    <string name="network_chip_unmetered">شبكة غير محدودة</string>
     <string name="apps_access_title">الوصول إلى بيانات الاستخدام</string>
     <string name="apps_access_body">ليعرف ميزان استهلاك كل تطبيق، يحتاج إذن «الوصول إلى بيانات الاستخدام» من إعدادات النظام. يمنح هذا الإذن أندرويد صلاحية أوسع (معرفة التطبيقات التي تستخدمها)، لكن ميزان لا يقرأ إلا عدّادات البايتات، ولا يرسل شيئاً خارج الجهاز.</string>
     <string name="apps_access_action">فتح إعدادات الوصول</string>
@@ -73,21 +75,21 @@
     <string name="saver_privacy_title">خصوصية بالتصميم</string>
     <string name="saver_privacy_body">ميزان لا يملك إذن الإنترنت، فلا يستطيع إرسال بياناتك إلى أي سيرفر. لا تحليلات ولا حسابات، وكل القوائم والقرارات تبقى على جهازك.</string>
     <string name="saver_limits_title">قيود يجب معرفتها</string>
-    <string name="saver_limits_body">VPN واحد فقط: تفعيل حماية ميزان يقطع أي VPN آخر. ستظهر أيقونة VPN في شريط الحالة. التطبيقات المحظورة تُحجب على الشبكات المقنّنة فقط (الخلوي غالباً)؛ على Wi-Fi غير المقنّن تعمل طبيعياً.</string>
+    <string name="saver_limits_body">VPN واحد فقط: تفعيل حماية ميزان يقطع أي VPN آخر. ستظهر أيقونة VPN في شريط الحالة. الحجب يعمل على أي شبكة افتراضياً؛ وإن أطفأت «الحماية على كل الشبكات» اقتصر على الشبكات المحدودة (الخلوي غالباً) وعملت التطبيقات طبيعياً على Wi‑Fi غير المحدود.</string>
     <string name="saver_revoke_note">يمكنك سحب الموافقة من إعدادات VPN في النظام في أي وقت.</string>
     <string name="saver_status_starting">جارٍ تشغيل الحماية…</string>
     <string name="saver_status_stopped">الحماية متوقفة.</string>
-    <string name="saver_status_unmetered">متصل بشبكة غير مقنّنة — التطبيقات المحظورة مسموحة الآن.</string>
+    <string name="saver_status_unmetered">متصل بشبكة غير محدودة — التطبيقات المحظورة مسموحة الآن.</string>
     <string name="saver_local_vpn_pill">VPN محلي</string>
     <string name="saver_vpn_note">اتصال VPN محلي — لا يمر أي شيء عبر سيرفر.</string>
     <string name="saver_network_title">الشبكة الحالية</string>
     <string name="saver_network_reading">جارٍ قراءة الشبكة…</string>
     <string name="saver_network_disconnected">غير متصل</string>
-    <string name="saver_network_metered">شبكة مقنّنة</string>
-    <string name="saver_network_unmetered">شبكة غير مقنّنة</string>
+    <string name="saver_network_metered">شبكة محدودة</string>
+    <string name="saver_network_unmetered">شبكة غير محدودة</string>
     <string name="saver_network_roaming">تجوال</string>
     <string name="saver_network_any_title">الحماية على كل الشبكات</string>
-    <string name="saver_network_any_body">احجب التطبيقات المختارة حتى على شبكة غير مقنّنة مثل Wi‑Fi المنزل. أطفئها لتقتصر الحماية على الشبكات المقنّنة فقط.</string>
+    <string name="saver_network_any_body">احجب التطبيقات المختارة حتى على شبكة غير محدودة مثل Wi‑Fi المنزل. أطفئها لتقتصر الحماية على الشبكات المحدودة فقط.</string>
     <string name="saver_profile_label">ملف التعريف: %1$s</string>
     <string name="saver_transport_wifi">Wi‑Fi</string>
     <string name="saver_transport_cellular">خلوي</string>
@@ -96,7 +98,7 @@
     <string name="saver_transport_other">شبكة أخرى</string>
     <string name="saver_behavior_off">الحماية متوقفة — لا يُحجب شيء الآن.</string>
     <string name="saver_behavior_metered">التطبيقات المحظورة لا تستطيع الوصول إلى الشبكة الآن.</string>
-    <string name="saver_behavior_unmetered">الشبكة غير مقنّنة — التطبيقات المحظورة مسموحة الآن.</string>
+    <string name="saver_behavior_unmetered">الشبكة غير محدودة — التطبيقات المحظورة مسموحة الآن.</string>
     <string name="saver_behavior_disconnected">لا اتصال — لا شيء يُحجب.</string>
     <string name="saver_traffic_title">المحاولات المحجوبة</string>
     <string name="saver_traffic_empty">لم تُحجب أي حزمة بعد. ستظهر هنا محاولات التطبيقات المحظورة.</string>
@@ -128,7 +130,7 @@
     <string name="saver_notification_channel">حماية الشبكة</string>
     <string name="saver_notification_channel_description">إشعار دائم يبيّن أن جدار الحماية يعمل، مع زر إيقاف فوري.</string>
     <string name="saver_notification_starting">جارٍ تشغيل الحماية…</string>
-    <string name="saver_notification_unmetered">الشبكة غير مقنّنة — التطبيقات المحظورة مسموحة.</string>
+    <string name="saver_notification_unmetered">الشبكة غير محدودة — التطبيقات المحظورة مسموحة.</string>
     <string name="saver_notification_action_stop">إيقاف الحماية</string>
 
     <plurals name="saver_active_status">
@@ -322,7 +324,7 @@
     <string name="help_budget_title">الميزانية ودورة الفاتورة</string>
     <string name="help_budget_body" formatted="false">حدّد سقفاً يومياً أو شهرياً للجهاز ولكل تطبيق، واختر MB أو GB؛ تبديل الوحدة يعيد كتابة الرقم فقط ولا يغيّر السقف (2 GB = 2000 MB). عند 80% يصل تنبيه «اقتربت»، وعند 100% «تجاوزت»، مرة واحدة لكل مستوى في الفترة، ويبقى حتى تضغط «حسناً». دورة الفاتورة تبدأ من اليوم الذي تختاره بين ١ و٢٨.</string>
     <string name="help_saver_title">شاشة الحماية</string>
-    <string name="help_saver_body">الحماية تحجب تطبيقات محددة من الشبكة عبر نفق محلي داخل جهازك، بلا خادم وبلا إذن إنترنت. الحجب يخص الشبكات المقنّنة؛ على Wi‑Fi غير المقنّن يمرّ الترافيك. أوقف الحماية في أي وقت من مفتاحها أو من الإشعار.</string>
+    <string name="help_saver_body">الحماية تحجب تطبيقات محددة من الشبكة عبر نفق محلي داخل جهازك، بلا خادم وبلا إذن إنترنت. الحجب يعمل على أي شبكة افتراضياً، ويمكن قصره على الشبكات المحدودة من مفتاح «الحماية على كل الشبكات». أوقف الحماية في أي وقت من مفتاحها أو من الإشعار.</string>
     <string name="help_faq_title">أسئلة متكررة</string>
     <string name="help_faq_no_internet_title">لماذا لا يطلب التطبيق إذن الإنترنت؟</string>
     <string name="help_faq_no_internet_body">لأن كل القياس يحدث داخل الجهاز: يقرأ ميزان عدّادات أندرويد نفسها ولا يرسل شيئاً إلى أي خادم، فلا يحتاج إذن الإنترنت إطلاقاً.</string>

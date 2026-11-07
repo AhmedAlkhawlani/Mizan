@@ -25,6 +25,8 @@
     <string name="dashboard_status_running">Monitoring is running</string>
     <string name="dashboard_status_stopped">Monitoring is stopped — tap start.</string>
     <string name="dashboard_status_unavailable">This device does not report network counters.</string>
+    <string name="dashboard_guard_on">Protected</string>
+    <string name="dashboard_guard_off">Unprotected</string>
     <string name="dashboard_start">Start measuring</string>
     <string name="dashboard_stop">Stop measuring</string>
     <string name="dashboard_budget_settings">Budget settings</string>
@@ -71,7 +73,7 @@
     <string name="saver_privacy_title">Private by design</string>
     <string name="saver_privacy_body">Mizan has no internet permission, so it cannot send your data to any server. No analytics, no accounts, and every list and decision stays on your device.</string>
     <string name="saver_limits_title">Limits to know</string>
-    <string name="saver_limits_body">One VPN at a time: enabling Mizan\u2019s guard disconnects any other VPN. A VPN icon appears in the status bar. Blocked apps are blocked on metered networks only (usually mobile); on unmetered Wi-Fi they work normally.</string>
+    <string name="saver_limits_body">One VPN at a time: enabling Mizan\u2019s guard disconnects any other VPN. A VPN icon appears in the status bar. Blocking applies on any network by default; turning off “Protect on every network” limits it to metered connections (usually mobile) and lets the apps work on unmetered Wi-Fi.</string>
     <string name="saver_revoke_note">You can revoke consent from the system\u2019s VPN settings at any time.</string>
     <string name="saver_status_starting">Starting protection…</string>
     <string name="saver_status_stopped">Protection is off.</string>
@@ -306,7 +308,7 @@
     <string name="help_budget_title">Budgets and billing cycle</string>
     <string name="help_budget_body" formatted="false">Set a daily or monthly cap for the device and for each app, in MB or GB; switching the unit only rewrites the number and never the cap (2 GB = 2000 MB). At 80% one \u201capproaching\u201d alert arrives, at 100% one \u201cexceeded\u201d alert, once per level per period, and it stays until you tap \u201cOK\u201d. The billing cycle starts on the day you choose, 1\u201328.</string>
     <string name="help_saver_title">Protection</string>
-    <string name="help_saver_body">Protection blocks chosen apps from the network through a local tunnel inside your phone, with no server and no Internet permission. Blocking applies on metered networks; on unmetered Wi-Fi traffic passes. Stop protection any time from its switch or the notification.</string>
+    <string name="help_saver_body">Protection blocks chosen apps from the network through a local tunnel inside your phone, with no server and no Internet permission. Blocking applies on any network by default and can be limited to metered connections from the “Protect on every network” switch. Stop protection any time from its switch or the notification.</string>
     <string name="help_faq_title">Common questions</string>
     <string name="help_faq_no_internet_title">Why does the app ask for no Internet permission?</string>
     <string name="help_faq_no_internet_body">Because every measurement happens on the device: Mizan reads Android\'s own counters and sends nothing anywhere, so it needs no Internet permission at all.</string>

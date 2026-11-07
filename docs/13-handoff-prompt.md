@@ -18,7 +18,7 @@
 1. **خطوة = كومت واحد** برسالة Conventional Commits (الخطوات مرقّمة في `docs/05` و`docs/16`).
 2. **قبل كل كومت:** `./gradlew testDebugUnitTest test lintDebug assembleDebug` ويجب أن ينجح.
    (`test` مضافة لأن `:core:domain` وحدة JVM خالصة ومهمتها `test` لا `testDebugUnitTest`.)
-   الأساس الآن **323 اختبار وحدة فريد** (app 91 · data 61 · domain 145 · platform 26)، 0 فشل،
+   الأساس الآن **328 اختبار وحدة فريد** (app 96 · data 61 · domain 145 · platform 26)، 0 فشل،
    وlint 0 أخطاء — لا تخفض الرقم ولا تُطفئ تحذيراً بإسكات أسطر.
 3. لا root، ولا APIs مخفية، ولا صلاحيات غير مذكورة في `docs/02` §8.
    (استثناء مقصود: `docs/02` §8 تذكر `INTERNET` في القائمة، لكن القاعدة الملزمة تمنعه — التطبيق بلا إذن إنترنت إطلاقاً.)

@@ -2,6 +2,7 @@ package com.maknoon.mizan.app
 
 import android.content.Context
 import android.content.res.Configuration
+import android.view.View
 import java.util.Locale
 
 /**
@@ -27,6 +28,24 @@ object AppLanguage {
         val tag = LanguagePreference.resolvedTag(LanguagePreference.stored(base)) ?: return base
         return contextFor(base, tag)
     }
+
+    /**
+     * Whether the interface reads right-to-left.
+     *
+     * The localized context swaps the strings, but the window keeps the system's `ldrtl` flag on
+     * some builds, so the direction is derived from the choice itself instead of from that flag.
+     */
+    fun isRtl(context: Context): Boolean = isRtl(
+        stored = LanguagePreference.stored(context),
+        systemRtl = context.resources.configuration.layoutDirection == View.LAYOUT_DIRECTION_RTL,
+    )
+
+    internal fun isRtl(stored: String, systemRtl: Boolean): Boolean =
+        when (LanguagePreference.resolvedTag(stored)) {
+            ENGLISH -> false
+            ARABIC -> true
+            else -> systemRtl
+        }
 
     private fun contextFor(base: Context, languageTag: String): Context {
         val locale = Locale.forLanguageTag(languageTag)

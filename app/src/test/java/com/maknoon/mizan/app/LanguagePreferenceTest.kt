@@ -25,4 +25,16 @@ class LanguagePreferenceTest {
         assertThat(LanguagePreference.resolvedTag("fr")).isEqualTo("ar")
         assertThat(LanguagePreference.resolvedTag("")).isEqualTo("ar")
     }
+
+    @Test
+    fun `direction follows the chosen language, not the system`() {
+        assertThat(AppLanguage.isRtl(AppLanguage.ARABIC, systemRtl = false)).isTrue()
+        assertThat(AppLanguage.isRtl(AppLanguage.ENGLISH, systemRtl = true)).isFalse()
+    }
+
+    @Test
+    fun `system direction follows the phone`() {
+        assertThat(AppLanguage.isRtl(LanguagePreference.SYSTEM, systemRtl = true)).isTrue()
+        assertThat(AppLanguage.isRtl(LanguagePreference.SYSTEM, systemRtl = false)).isFalse()
+    }
 }

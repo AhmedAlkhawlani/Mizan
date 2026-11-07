@@ -42,6 +42,7 @@ import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.lifecycle.lifecycleScope
 import com.maknoon.mizan.R
 import com.maknoon.mizan.app.AppLanguage
+import com.maknoon.mizan.app.LocalizedDirection
 import com.maknoon.mizan.core.data.widget.BudgetWidgetConfig
 import com.maknoon.mizan.core.data.widget.SpeedWidgetConfig
 import com.maknoon.mizan.core.data.widget.WidgetConfigStore
@@ -141,39 +142,41 @@ class SpeedWidgetConfigActivity : WidgetConfigActivity() {
                 MizanTheme {
                     var showToday by rememberSaveable { mutableStateOf(initial.showToday) }
                     var showUpload by rememberSaveable { mutableStateOf(initial.showUpload) }
-                    WidgetConfigScreen(
-                        title = stringResource(R.string.widget_config_speed_title),
-                        subtitle = stringResource(R.string.widget_config_speed_subtitle),
-                        options = listOf(
-                            WidgetConfigOption(
-                                key = OPTION_TODAY,
-                                label = stringResource(R.string.widget_config_show_today),
-                                hint = stringResource(R.string.widget_config_show_today_hint),
-                                checked = showToday,
+                    LocalizedDirection {
+                        WidgetConfigScreen(
+                            title = stringResource(R.string.widget_config_speed_title),
+                            subtitle = stringResource(R.string.widget_config_speed_subtitle),
+                            options = listOf(
+                                WidgetConfigOption(
+                                    key = OPTION_TODAY,
+                                    label = stringResource(R.string.widget_config_show_today),
+                                    hint = stringResource(R.string.widget_config_show_today_hint),
+                                    checked = showToday,
+                                ),
+                                WidgetConfigOption(
+                                    key = OPTION_UPLOAD,
+                                    label = stringResource(R.string.widget_config_show_upload),
+                                    hint = stringResource(R.string.widget_config_show_upload_hint),
+                                    checked = showUpload,
+                                ),
                             ),
-                            WidgetConfigOption(
-                                key = OPTION_UPLOAD,
-                                label = stringResource(R.string.widget_config_show_upload),
-                                hint = stringResource(R.string.widget_config_show_upload_hint),
-                                checked = showUpload,
-                            ),
-                        ),
-                        onToggle = { key, checked ->
-                            if (key == OPTION_TODAY) showToday = checked else showUpload = checked
-                        },
-                        onCancel = ::finish,
-                        onSave = {
-                            saveAndFinish(
-                                save = {
-                                    WidgetConfigStore(this@SpeedWidgetConfigActivity)
-                                        .saveSpeed(appWidgetId, SpeedWidgetConfig(showToday, showUpload))
-                                },
-                                refresh = {
-                                    SpeedWidget().update(this@SpeedWidgetConfigActivity, glanceId())
-                                },
-                            )
-                        },
-                    )
+                            onToggle = { key, checked ->
+                                if (key == OPTION_TODAY) showToday = checked else showUpload = checked
+                            },
+                            onCancel = ::finish,
+                            onSave = {
+                                saveAndFinish(
+                                    save = {
+                                        WidgetConfigStore(this@SpeedWidgetConfigActivity)
+                                            .saveSpeed(appWidgetId, SpeedWidgetConfig(showToday, showUpload))
+                                    },
+                                    refresh = {
+                                        SpeedWidget().update(this@SpeedWidgetConfigActivity, glanceId())
+                                    },
+                                )
+                            },
+                        )
+                    }
                 }
             }
         }
@@ -202,41 +205,43 @@ class BudgetWidgetConfigActivity : WidgetConfigActivity() {
                 MizanTheme {
                     var showTopApp by rememberSaveable { mutableStateOf(initial.showTopApp) }
                     var showRemaining by rememberSaveable { mutableStateOf(initial.showRemaining) }
-                    WidgetConfigScreen(
-                        title = stringResource(R.string.widget_config_budget_title),
-                        subtitle = stringResource(R.string.widget_config_budget_subtitle),
-                        options = listOf(
-                            WidgetConfigOption(
-                                key = OPTION_TOP_APP,
-                                label = stringResource(R.string.widget_config_show_top_app),
-                                hint = stringResource(R.string.widget_config_show_top_app_hint),
-                                checked = showTopApp,
+                    LocalizedDirection {
+                        WidgetConfigScreen(
+                            title = stringResource(R.string.widget_config_budget_title),
+                            subtitle = stringResource(R.string.widget_config_budget_subtitle),
+                            options = listOf(
+                                WidgetConfigOption(
+                                    key = OPTION_TOP_APP,
+                                    label = stringResource(R.string.widget_config_show_top_app),
+                                    hint = stringResource(R.string.widget_config_show_top_app_hint),
+                                    checked = showTopApp,
+                                ),
+                                WidgetConfigOption(
+                                    key = OPTION_REMAINING,
+                                    label = stringResource(R.string.widget_config_show_remaining),
+                                    hint = stringResource(R.string.widget_config_show_remaining_hint),
+                                    checked = showRemaining,
+                                ),
                             ),
-                            WidgetConfigOption(
-                                key = OPTION_REMAINING,
-                                label = stringResource(R.string.widget_config_show_remaining),
-                                hint = stringResource(R.string.widget_config_show_remaining_hint),
-                                checked = showRemaining,
-                            ),
-                        ),
-                        onToggle = { key, checked ->
-                            if (key == OPTION_TOP_APP) showTopApp = checked else showRemaining = checked
-                        },
-                        onCancel = ::finish,
-                        onSave = {
-                            saveAndFinish(
-                                save = {
-                                    WidgetConfigStore(this@BudgetWidgetConfigActivity).saveBudget(
-                                        appWidgetId,
-                                        BudgetWidgetConfig(showTopApp, showRemaining),
-                                    )
-                                },
-                                refresh = {
-                                    BudgetWidget().update(this@BudgetWidgetConfigActivity, glanceId())
-                                },
-                            )
-                        },
-                    )
+                            onToggle = { key, checked ->
+                                if (key == OPTION_TOP_APP) showTopApp = checked else showRemaining = checked
+                            },
+                            onCancel = ::finish,
+                            onSave = {
+                                saveAndFinish(
+                                    save = {
+                                        WidgetConfigStore(this@BudgetWidgetConfigActivity).saveBudget(
+                                            appWidgetId,
+                                            BudgetWidgetConfig(showTopApp, showRemaining),
+                                        )
+                                    },
+                                    refresh = {
+                                        BudgetWidget().update(this@BudgetWidgetConfigActivity, glanceId())
+                                    },
+                                )
+                            },
+                        )
+                    }
                 }
             }
         }

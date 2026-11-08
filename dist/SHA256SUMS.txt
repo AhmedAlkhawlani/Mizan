@@ -1,0 +1,4 @@
+e058dc6f08cbca82c7a6026af6d54656b9272dcea7ff6246339d9c15d7bba362  releases/1.0.0/Mizan-v1.0.0-Release.apk
+1eb4e7dc5ecc9f040c424c34bb177b439005926343081bac35a22ee83aca9fd9  releases/1.0.1/Mizan-v1.0.1-Release.apk
+bc0b6a1a3c44892355adf53c16bba16bf3fdd6add53b72e0cd531209012ab479  releases/1.0.2/Mizan-v1.0.2-Release.apk
+282a00a2862e7b1a7e336c626ecd6d7e13742883c5e966a373c5fc86e92f7507  releases/1.0.3/Mizan-v1.0.3-Release.apk

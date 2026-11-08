@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ميزان — الطبقة الخلفية للأيقونة التكيفية. لوحة ٤٣٢ = ١٠٨dp، بلا محتوى. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 432 432" width="432" height="432">
+  <defs>
+    <radialGradient id="mzBbg" cx="50%" cy="42%" r="62%">
+      <stop offset="0" stop-color="#12303C"/>
+      <stop offset="0.55" stop-color="#0A141C"/>
+      <stop offset="1" stop-color="#07090D"/>
+    </radialGradient>
+  </defs>
+  <rect width="432" height="432" fill="url(#mzBbg)"/>
+</svg>

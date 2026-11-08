@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ميزان — الشعار.
+  الفكرة: مؤشّر (حلقة) يحتضن سهمَي بيانات — هابط وصاعد — واللؤلؤة محورهما في المركز.
+  الخيط العائلي: اللؤلؤة نفسها في مركز اللوحة (256,256)، كما في شعار المنظومة.
+  لا درع، ولا حرف M.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512"
+     role="img" aria-label="ميزان — مؤشّر البيانات">
+  <defs>
+    <linearGradient id="mzRing" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#00E5FF" stop-opacity="1"/>
+      <stop offset="1" stop-color="#00E5FF" stop-opacity="0.35"/>
+    </linearGradient>
+    <linearGradient id="mzArrow" x1="196" y1="172" x2="344" y2="340" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#00E5FF"/>
+      <stop offset="1" stop-color="#38CFFF"/>
+    </linearGradient>
+    <filter id="mzGlow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="4" result="b"/>
+      <feMerge>
+        <feMergeNode in="b"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="mzPearl" x="-200%" y="-200%" width="500%" height="500%">
+      <feGaussianBlur stdDeviation="10" result="b"/>
+      <feMerge>
+        <feMergeNode in="b"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- المؤشّر -->
+  <circle cx="256" cy="256" r="176" fill="none" stroke="url(#mzRing)" stroke-width="14"/>
+  <!-- الخط الداخلي: نفس لغة الخط الداخلي في درع المنظومة -->
+  <circle cx="256" cy="256" r="150" fill="none" stroke="#00E5FF" stroke-opacity="0.18" stroke-width="1.5"/>
+
+  <!-- السهمان: هابط وصاعد، متناظران حول المحور -->
+  <g filter="url(#mzGlow)" fill="url(#mzArrow)" stroke="none">
+    <path d="M179,172 L213,172 L213,300 L227,300 L196,340 L165,300 L179,300 Z"/>
+    <path d="M299,340 L333,340 L333,212 L347,212 L316,172 L285,212 L299,212 Z"/>
+  </g>
+
+  <!-- اللؤلؤة: محور المؤشّر -->
+  <circle cx="256" cy="256" r="26" fill="#FF4081" filter="url(#mzPearl)"/>
+  <circle cx="256" cy="256" r="26" fill="none" stroke="#FFD1E0" stroke-opacity="0.7" stroke-width="1.2"/>
+</svg>

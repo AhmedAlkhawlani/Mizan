@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ميزان — الطبقة الأمامية للأيقونة التكيفية.
+  لوحة ٤٣٢ = ١٠٨dp، والمحتوى داخل دائرة ٧٢dp (نصف قطر ١٤٤ وحدة).
+  أقصى نصف قطر للمحتوى ١٨٣ × ٠٫٧٦ = ١٣٩ ≤ ١٤٤ — لا يُقصّ شيء في الدائرة.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 432 432" width="432" height="432"
+     role="img" aria-label="ميزان — الطبقة الأمامية">
+  <defs>
+    <linearGradient id="mzFring" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#00E5FF" stop-opacity="1"/>
+      <stop offset="1" stop-color="#00E5FF" stop-opacity="0.4"/>
+    </linearGradient>
+    <linearGradient id="mzFarrow" x1="196" y1="172" x2="344" y2="340" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#00E5FF"/>
+      <stop offset="1" stop-color="#38CFFF"/>
+    </linearGradient>
+    <radialGradient id="mzFhalo">
+      <stop offset="0" stop-color="#FF4081" stop-opacity="0.45"/>
+      <stop offset="0.55" stop-color="#FF4081" stop-opacity="0.14"/>
+      <stop offset="1" stop-color="#FF4081" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="mzFglow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="4" result="b"/>
+      <feMerge>
+        <feMergeNode in="b"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <g transform="translate(216 216) scale(0.76) translate(-256 -256)">
+    <circle cx="256" cy="256" r="176" fill="none" stroke="url(#mzFring)" stroke-width="16"/>
+    <circle cx="256" cy="256" r="150" fill="none" stroke="#00E5FF" stroke-opacity="0.16" stroke-width="2"/>
+
+    <g filter="url(#mzFglow)" fill="url(#mzFarrow)" stroke="none">
+    <path d="M179,172 L213,172 L213,300 L227,300 L196,340 L165,300 L179,300 Z"/>
+    <path d="M299,340 L333,340 L333,212 L347,212 L316,172 L285,212 L299,212 Z"/>
+  </g>
+
+    <circle cx="256" cy="256" r="64" fill="url(#mzFhalo)"/>
+    <circle cx="256" cy="256" r="27" fill="#FF4081"/>
+    <circle cx="256" cy="256" r="27" fill="none" stroke="#FFD1E0" stroke-opacity="0.7" stroke-width="1.8"/>
+  </g>
+</svg>

@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ميزان — ورقة المعاينة</title>
+<style>
+  :root{--bg:#07090D;--card:#0C1219;--line:#1B2530;--txt:#E9F1F8;--dim:#93A2B4;
+        --cyan:#00E5FF;--pink:#FF4081}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--txt);
+       font-family:"IBM Plex Sans Arabic","SF Arabic","Segoe UI",Tahoma,sans-serif;line-height:1.7}
+  header{padding:40px 24px 24px;text-align:center;border-bottom:1px solid var(--line)}
+  header h1{margin:0 0 6px;font-size:24px}
+  header p{margin:0;color:var(--dim);font-size:13px}
+  main{max-width:1100px;margin:0 auto;padding:24px}
+  section{margin:36px 0}
+  h2{font-size:15px;color:var(--dim);font-weight:600;margin:0 0 14px;
+     border-inline-start:3px solid var(--cyan);padding-inline-start:10px}
+  .row{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-end}
+  .box{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;
+       display:flex;flex-direction:column;align-items:center;gap:8px}
+  .box span{font-size:11px;color:var(--dim)}
+  .light{background:#F1F5F9;border-color:#D8E0EA}
+  .light span{color:#475569}
+  .mask{width:120px;height:120px;overflow:hidden;position:relative;background:#12303C}
+  .mask img{position:absolute;inset:0;width:100%;height:100%}
+  .circle{border-radius:50%}
+  .squircle{border-radius:28%}
+  .squircle2{border-radius:50% 50% 50% 50%/ 60% 60% 40% 40%}
+  .stack{position:relative;width:120px;height:120px;overflow:hidden;background:#07090D}
+  .stack img{position:absolute;inset:0;width:100%;height:100%}
+  .sw{display:flex;gap:10px;flex-wrap:wrap}
+  .chip{width:88px;border-radius:12px;overflow:hidden;border:1px solid var(--line);font-size:10px;text-align:center}
+  .chip i{display:block;height:44px}
+  .chip b{display:block;padding:4px 0;color:var(--dim);font-weight:400}
+  .note{font-size:12px;color:var(--dim);margin:10px 0 0}
+  footer{color:var(--dim);font-size:11px;text-align:center;padding:30px 20px 50px}
+</style>
+</head>
+<body>
+<header>
+  <h1>ميزان — مؤشّر البيانات</h1>
+  <p>حلقة + سهمان + لؤلؤة · سماوي #00E5FF على #07090D · بلا درع</p>
+</header>
+<main>
+
+  <section>
+    <h2>الأيقونة الكاملة</h2>
+    <div class="row">
+      <div class="box"><img src="mizan-launcher.svg" width="220" height="220" alt="أيقونة 512"><span>512 · svg</span></div>
+      <div class="box"><img src="png/launcher-192.png" width="192" height="192" alt="192"><span>192</span></div>
+      <div class="box"><img src="png/launcher-144.png" width="144" height="144" alt="144"><span>144</span></div>
+      <div class="box"><img src="png/launcher-96.png" width="96" height="96" alt="96"><span>96</span></div>
+      <div class="box"><img src="png/launcher-72.png" width="72" height="72" alt="72"><span>72 · مدمجة</span></div>
+      <div class="box"><img src="png/launcher-48.png" width="48" height="48" alt="48"><span>48 · مدمجة</span></div>
+    </div>
+    <p class="note">٤٨ و٧٢ مُصدَّرتان من <code>mizan-launcher-compact.svg</code>: بلا توهّج ولا هالة.</p>
+  </section>
+
+  <section>
+    <h2>النسخة المدمجة</h2>
+    <div class="row">
+      <div class="box"><img src="mizan-launcher-compact.svg" width="120" height="120" alt=""><span>120</span></div>
+      <div class="box"><img src="mizan-launcher-compact.svg" width="72" height="72" alt=""><span>72</span></div>
+      <div class="box"><img src="mizan-launcher-compact.svg" width="48" height="48" alt=""><span>48</span></div>
+      <div class="box"><img src="mizan-launcher-compact.svg" width="32" height="32" alt=""><span>32 · الحد الأدنى</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>القصّ الدائري — الأيقونة التكيفية كما يقصّها أندرويد</h2>
+    <div class="row">
+      <div class="box">
+        <div class="stack circle">
+          <img src="png/adaptive-background-432.png" alt="">
+          <img src="png/adaptive-foreground-432.png" alt="">
+        </div><span>دائرة</span>
+      </div>
+      <div class="box">
+        <div class="stack squircle">
+          <img src="png/adaptive-background-432.png" alt="">
+          <img src="png/adaptive-foreground-432.png" alt="">
+        </div><span>مربّع مستدير</span>
+      </div>
+      <div class="box">
+        <div class="stack squircle2">
+          <img src="png/adaptive-background-432.png" alt="">
+          <img src="png/adaptive-foreground-432.png" alt="">
+        </div><span>بيضاوي</span>
+      </div>
+      <div class="box">
+        <div class="mask circle"><img src="png/launcher-512.png" alt=""></div><span>أيقونة كاملة · دائرة</span>
+      </div>
+    </div>
+    <p class="note">الطبقة الأمامية بمقياس ٠٫٧٦: أقصى نصف قطر ١٣٩ من أصل ١٤٤ — لا يُقصّ شيء.</p>
+  </section>
+
+  <section>
+    <h2>الطبقات</h2>
+    <div class="row">
+      <div class="box"><img src="png/adaptive-background-432.png" width="120" height="120" alt=""><span>background</span></div>
+      <div class="box"><img src="png/adaptive-foreground-432.png" width="120" height="120" alt=""><span>foreground</span></div>
+      <div class="box"><div class="stack"><img src="png/adaptive-background-432.png" alt=""><img src="png/adaptive-foreground-432.png" alt=""></div><span>مركّبتان</span></div>
+      <div class="box"><img src="png/adaptive-foreground-108.png" width="108" height="108" alt=""><span>108 · كما تُثبَّت</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>الشعار على خلفيتين</h2>
+    <div class="row">
+      <div class="box"><img src="mizan-mark.svg" width="120" height="120" alt=""><span>عادي · داكن</span></div>
+      <div class="box light"><img src="mizan-mark-inverse.svg" width="120" height="120" alt=""><span>معكوس · فاتح</span></div>
+      <div class="box light"><img src="png/mark-mono-512.png" width="120" height="120" alt=""><span>أحادي · فاتح</span></div>
+      <div class="box"><img src="png/mark-mono-512.png" width="120" height="120" alt="" style="filter:invert(1)"><span>أحادي · داكن</span></div>
+    </div>
+    <p class="note">على الفاتح لا يُستخدم الشعار العادي: السماوي #00E5FF يختفي على الأبيض.</p>
+  </section>
+
+  <section>
+    <h2>الألوان</h2>
+    <div class="sw">
+      <div class="chip"><i style="background:#00E5FF"></i><b>#00E5FF</b></div>
+      <div class="chip"><i style="background:#38CFFF"></i><b>#38CFFF</b></div>
+      <div class="chip"><i style="background:#FF4081"></i><b>#FF4081</b></div>
+      <div class="chip"><i style="background:#FFD1E0"></i><b>#FFD1E0</b></div>
+      <div class="chip"><i style="background:#12303C"></i><b>#12303C</b></div>
+      <div class="chip"><i style="background:#07090D"></i><b>#07090D</b></div>
+    </div>
+  </section>
+
+</main>
+<footer>المصدر: <code>apps/mizan/brand/</code> · المواصفة في <code>logo.md</code> · اللؤلؤة من <code>system/brand/maknoon-mark.svg</code></footer>
+</body>
+</html>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ميزان — نسخة أحادية اللون (currentColor).
+  للطباعة والختم. بلا توهّج وبلا تدرّج وبلا خط داخلي، وسماكات أعرض لتعويض فقد اللون.
+  اللؤلؤة باقية كشكل، بلون الحبر نفسه.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512"
+     role="img" aria-label="ميزان — أحادي اللون">
+  <circle cx="256" cy="256" r="176" fill="none" stroke="currentColor" stroke-width="16"/>
+  <g  fill="currentColor" stroke="none">
+    <path d="M179,172 L213,172 L213,300 L227,300 L196,340 L165,300 L179,300 Z"/>
+    <path d="M299,340 L333,340 L333,212 L347,212 L316,172 L285,212 L299,212 Z"/>
+  </g>
+  <circle cx="256" cy="256" r="26" fill="currentColor"/>
+</svg>

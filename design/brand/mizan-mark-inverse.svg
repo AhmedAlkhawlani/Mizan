@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ميزان — النسخة المعكوسة للخلفيات الفاتحة.
+  السماوي #00E5FF يختفي على الأبيض، فتُستخدم درجات داكنة من نفس الصبغتين (لا لون جديد).
+  بلا توهّج: التوهّج على الأبيض يترك غبشاً.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512"
+     role="img" aria-label="ميزان — على خلفية فاتحة">
+  <defs>
+    <linearGradient id="mzInvRing" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#00606C" stop-opacity="1"/>
+      <stop offset="1" stop-color="#00606C" stop-opacity="0.45"/>
+    </linearGradient>
+    <linearGradient id="mzInvArrow" x1="196" y1="172" x2="344" y2="340" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#00525C"/>
+      <stop offset="1" stop-color="#008FA6"/>
+    </linearGradient>
+  </defs>
+
+  <circle cx="256" cy="256" r="176" fill="none" stroke="url(#mzInvRing)" stroke-width="16"/>
+  <circle cx="256" cy="256" r="150" fill="none" stroke="#00606C" stroke-opacity="0.22" stroke-width="1.5"/>
+
+  <g  fill="url(#mzInvArrow)" stroke="none">
+    <path d="M179,172 L213,172 L213,300 L227,300 L196,340 L165,300 L179,300 Z"/>
+    <path d="M299,340 L333,340 L333,212 L347,212 L316,172 L285,212 L299,212 Z"/>
+  </g>
+
+  <circle cx="256" cy="256" r="26" fill="#D81B60"/>
+  <circle cx="256" cy="256" r="26" fill="none" stroke="#F8BBD0" stroke-opacity="0.9" stroke-width="1.4"/>
+</svg>
